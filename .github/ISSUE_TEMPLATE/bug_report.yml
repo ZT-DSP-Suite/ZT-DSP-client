@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a defect in the protocol text or in an implementation
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste keys, PSKs, passwords or private paths. For a security vulnerability,
+        use the private reporting route in SECURITY.md instead of this form.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Python reference implementation
+        - Rust implementation (zt_dsp_rs/)
+        - Protocol text / Master Guide
+        - Documentation, packaging or CI
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of "python -m zt_dsp_py --version", or the docs revision for a text defect.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Exact commands, and the Master Guide section if the defect is in the text.
+    validations:
+      required: true
