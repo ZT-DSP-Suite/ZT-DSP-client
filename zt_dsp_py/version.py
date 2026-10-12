@@ -12,6 +12,13 @@ code version
     To identify a specific implementation, use the identifier `ZT-DSP_<language_prefix>-<major.minor.revision>`;
     this implementation is `ZT-DSP_PY-1.0.0`. Implementations in different languages may share the same version number, distinguished by the language prefix.
 
+Hardware support (TPM and HWID)
+    This implementation contains **no** code that writes, reads or modifies a Trusted Platform Module
+    or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the
+    caller; keeping them secret is the caller's responsibility. Binding them to a TPM/HWID is a
+    protocol-level goal **planned for a later version**. This statement is re-issued with every release;
+    the authoritative per-version matrix is Appendix D.1 of the Master Guide.
+
 The correspondence between documentation and code is maintained via a **bidirectional declaration**, not bound by version numbers:
 
     - Doc side: each document's header declares "which code settings this document governs"

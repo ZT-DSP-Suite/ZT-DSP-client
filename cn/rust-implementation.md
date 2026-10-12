@@ -44,7 +44,7 @@
 cargo build --release
 ```
 
-> ⚠ **Windows GNU 工具链注意**：项目位于含非 ASCII 字符的路径（`zt_dsp_rs/`）时，
+> **Windows GNU 工具链注意**：项目位于含非 ASCII 字符的路径（`zt_dsp_rs/`）时，
 > `x86_64-pc-windows-gnu` 的 dlltool 无法处理中文路径导致 `windows-sys` 编译失败。
 > 解决方法（二选一）：
 >

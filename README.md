@@ -4,6 +4,18 @@
 
 > ZT-DSP — Zero Trust Dynamic Synchronization Protocol. This repository is the **client (reference) implementation**.
 
+> ## Hardware support (TPM / HWID)
+>
+> **Neither implementation in this repository supports the TPM or the HWID.**
+> `zt_dsp_py` and `zt_dsp_rs` contain no code that writes, reads or modifies a Trusted Platform Module
+> or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the
+> caller (`--psk-file`, `--psk-env`, `--psk`); keeping them secret is the caller's responsibility.
+> Binding keys to a TPM/HWID is a protocol-level design goal that is **planned for a later version**.
+>
+> This statement is re-issued with every release; the authoritative per-version matrix is in the
+> Master Guide, Appendix D.1 (Chinese) / Appendix D.1 (English). For the current release it reads:
+> write TPM — not supported; write HWID — not supported; read or modify TPM/HWID — not supported.
+
 ## Documentation
 
 | 中文 | English |

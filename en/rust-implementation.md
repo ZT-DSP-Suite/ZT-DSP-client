@@ -44,7 +44,7 @@ Dependencies: Rust 1.75+ (the `rustup` default stable is fine), no other system 
 cargo build --release
 ```
 
-> ⚠ **Windows GNU toolchain note**: when the project is on a path containing non-ASCII characters (`zt_dsp_rs/`),
+> **Windows GNU toolchain note**: when the project is on a path containing non-ASCII characters (`zt_dsp_rs/`),
 > dlltool of `x86_64-pc-windows-gnu` cannot handle the Chinese path, causing `windows-sys` to fail to compile.
 > Workaround (either one):
 >

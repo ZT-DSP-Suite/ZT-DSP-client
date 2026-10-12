@@ -9,6 +9,18 @@ An open, zero trust, end-to-end encrypted communication protocol with official P
 - Forward secrecy: X25519 ephemeral keys + per-packet ratchet rotation (consume state before sending)
 - No reliance on a centralized trust anchor; the token hash (out-of-band exchange) is shared out-of-band
 
+> ## Hardware support statement (TPM and HWID)
+>
+> **Neither implementation in this repository supports the TPM or the HWID.** `zt_dsp_py` and `zt_dsp_rs`
+> contain **no** code that writes, reads or modifies a Trusted Platform Module or a Hardware Identifier.
+> The PSK and the token are ordinary configuration values supplied by the caller (`--psk-file`,
+> `--psk-env`, `--psk`), and keeping them secret is the caller's responsibility. Binding keys to a
+> TPM/HWID is a protocol-level design goal that is **planned for a later version**.
+>
+> This statement is re-issued with every release; the authoritative per-version matrix is in the
+> Master Guide, Appendix D.1. For the current release (code 1.0.0): write TPM — not supported;
+> write HWID — not supported; read or modify TPM/HWID — not supported.
+
 ## Correspondence Between Documentation and Code
 
 This implementation conforms to "ZT-DSP Protocol Master Guide"; the path is given by FOLLOWS_DOC_PATH in zt_dsp_py/version.py:
@@ -130,7 +142,7 @@ and a real two-sided TCP flow.
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
 | major digit increment | restatement of core protocol semantics (usually coupled with a code version increment) |
-| participates in network communication | ❌ pure document number |
+| participates in network communication | No (pure document number) |
 
 #### code version
 
@@ -144,7 +156,7 @@ and a real two-sided TCP flow.
 | minor digit increment | new optional capability (e.g. a new hook, a padding strategy) — on-wire format unchanged or backward-compatible addition only |
 | major digit increment | change to the on-wire byte format (frame layout / derivation formula) — old and new implementations are by design not interoperable (handshake will necessarily fail) |
 | multi-language coexistence | implementations in different languages **may share the same version number** (ZT-DSP_PY-1.0.0 and ZT-DSP_GO-1.0.0 coexist), distinguished by the language prefix |
-| participates in network communication | ❌ the version number itself does not participate; handshake frames carry no version string |
+| participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
 | other-language implementations | the official development languages are Python and Rust; to add another language, create a sibling directory named after its implementation ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
 | merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: **collect all code into a single file** (one implementation per file, no new directory trees added to the mainline directory), with a protocol conformance checklist attached |
 

@@ -8,6 +8,11 @@
 //! - The handshake frame **carries no version string**: the phase-1 parameter JSON and the phase-4 AAD both contain neither a version nor
 //!   a protocol identifier field. Whether the peer is compatible is reflected by the phase-3 confirmation tag verification.
 //!
+//! Hardware support (TPM and HWID): this implementation contains **no** code that writes, reads or modifies a Trusted Platform Module
+//! or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the caller; keeping them secret is the
+//! caller's responsibility. Binding them to a TPM/HWID is a protocol-level goal **planned for a later version**. This statement is
+//! re-issued with every release; the authoritative per-version matrix is Appendix D.1 of the Master Guide.
+//!
 //! The correspondence between the document and the code is maintained by a **bidirectional declaration**, not bound by version numbers:
 //! The code side declares "which document this implementation follows" (see `FOLLOWS_DOC` / `FOLLOWS_DOC_PATH`).
 //!
