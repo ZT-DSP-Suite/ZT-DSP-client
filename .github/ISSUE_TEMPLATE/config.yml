@@ -6,4 +6,4 @@ contact_links:
     about: Report privately. Do not open a public issue for a vulnerability.
   - name: Documentation and protocol questions
     url: https://github.com/ZT-DSP-Suite/ZT-DSP-docs
-    about: The Master Guide, reports and the defect register live in the docs repository.
+    about: The Master Guide and the bilingual terminology glossary live in the docs repository.
