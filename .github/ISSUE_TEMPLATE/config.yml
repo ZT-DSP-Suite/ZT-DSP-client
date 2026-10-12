@@ -2,8 +2,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/SCAL-ROAM/ZT-DSP-client/security/advisories/new
+    url: https://github.com/ZT-DSP-Suite/ZT-DSP-client/security/advisories/new
     about: Report privately. Do not open a public issue for a vulnerability.
   - name: Documentation and protocol questions
-    url: https://github.com/SCAL-ROAM/ZT-DSP-docs
+    url: https://github.com/ZT-DSP-Suite/ZT-DSP-docs
     about: The Master Guide, reports and the defect register live in the docs repository.
