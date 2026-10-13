@@ -1,6 +1,6 @@
 # ZT-DSP_RS-1.0.0
 
-**Zero Trust Dynamic Synchronization Protocol** — Rust official implementation (code version **1.0.0**, implementation identifier `ZT-DSP_RS-1.0.0`) | Compliant with the *ZT-DSP Protocol Master Guidance* (**docs 1.0.0**)
+**Zero Trust Dynamic Synchronization Protocol** — Rust official implementation (client version **1.0.0**, implementation identifier `ZT-DSP_RS-1.0.0`) | Compliant with the *ZT-DSP Protocol Master Guidance* (**docs 1.0.0**)
 
 A **complete Rust reference implementation** of Volume 4 (core protocol minimal set) and Appendices F/G/H (byte-by-byte specification / traffic analysis defense / state machine and timeout matrix) of the *ZT-DSP Protocol Master Guidance Library (1.0.0)*, which is **byte-for-byte interoperable on the wire** with the official Python implementation `ZT-DSP_PY-1.0.0` (interoperability verification below). It also has built-in benchmarks (handshake / throughput / cryptographic primitives) and can serve as a performance baseline for cross-language implementations.
 
@@ -8,7 +8,7 @@ A **complete Rust reference implementation** of Volume 4 (core protocol minimal 
 
 - On-wire behavior takes `zt_dsp_py` (ZT-DSP_PY-1.0.0) as the byte-for-byte standard: the four frame layouts, the parameter JSON (default 120B), the derivation formulas (MK/EK/SID/nonce aligned parameter by parameter), transcript construction, AAD/nonce construction, the measured 165B heartbeat size, etc. — all match;
 - Defence rules are **built in** as design and regression tests (see the "Hardening Comparison" section below);
-- Implementations in different languages share the same code version number and are distinguished by language prefix (docs / code naming convention, see the repository root README).
+- Implementations in different languages may share the same implementation version number and are distinguished by prefix; the relation to the total-guide version is many-to-many (see the naming conventions in the repository root README).
 
 ## Directory Layout
 
@@ -16,7 +16,7 @@ A **complete Rust reference implementation** of Volume 4 (core protocol minimal 
 ├── Cargo.toml / Cargo.lock   project manifests (version 1.0.0; single bin target)
 ├── README.md
 ├── zt-dsp-rs.rs              single entry: flat pull-in via #[path] + fn main + inline integration tests
-├── version.rs                single source of truth for the version contract (docs version / code version / followed document)
+├── version.rs                single source of truth for the version contract (total-guide version / client version / applicability / followed document)
 ├── errors.rs                 protocol-layer error system (typed convergence of Appendix H.5 in Rust)
 ├── params.rs                 parameter sets and validation (F.1: seven fixed-order matches; module_flags caps)
 ├── identity.rs               P2P placeholder token hash (4.1.1: HMAC-SHA3-256 role labels)
@@ -91,7 +91,7 @@ Type a message and press Enter to send; exit with `/quit`, `/exit`, `/q` or Ctrl
 | `--silent-hold` | `15` | strict silent hold duration (seconds) |
 | `--rate-limit` | `0` (off) | listener-side connection rate limiting (per second, rule P0-6) |
 
-PSK injection precedence (Appendix E.4): `--psk-file` (recommended) > `--psk-env` > `--psk` (insecure).
+PSK injection precedence: `--psk-file` (recommended) > `--psk-env` > `--psk` (insecure).
 Public default values and low-entropy keys are rejected (entropy < 3.5 bits/byte).
 
 ## Version Notes
@@ -107,7 +107,7 @@ Public default values and low-entropy keys are rejected (entropy < 3.5 bits/byte
 ## Tests
 
 ```bash
-cargo test                 # 49 unit + 14 integration = all 63 green
+cargo test
 ```
 
 Coverage: version contract, parameter JSON byte-for-byte (120B), RFC 5869 official vectors, derivation formulas,

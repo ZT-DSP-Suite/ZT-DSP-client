@@ -1,6 +1,6 @@
 # ZT-DSP
 
-**Zero Trust Dynamic Synchronization Protocol** — official development languages **Python and Rust**; official implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (code version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.0**)
+**Zero Trust Dynamic Synchronization Protocol** — official development languages **Python and Rust**; official implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.0**)
 
 An open, zero trust, end-to-end encrypted communication protocol with official Python and Rust implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
 
@@ -17,8 +17,8 @@ An open, zero trust, end-to-end encrypted communication protocol with official P
 > `--psk-env`, `--psk`), and keeping them secret is the caller's responsibility. Binding keys to a
 > TPM/HWID is a protocol-level design goal that is **planned for a later version**.
 >
-> This statement is re-issued with every release; the authoritative per-version matrix is in the
-> Master Guide, Appendix D.1. For the current release (code 1.0.0): write TPM — not supported;
+> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
+> support declaration in Master Guide section 4.1.4. For the current release (client version `ZT-DSP_PY-1.0.0`): write TPM — not supported;
 > write HWID — not supported; read or modify TPM/HWID — not supported.
 
 ## Correspondence Between Documentation and Code
@@ -26,7 +26,7 @@ An open, zero trust, end-to-end encrypted communication protocol with official P
 This implementation conforms to "ZT-DSP Protocol Master Guide"; the path is given by FOLLOWS_DOC_PATH in zt_dsp_py/version.py:
 
 ```
-ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md
+ZT-DSP-docs (sibling repo) > en/spec/ZT-DSP_1.0.0_Master_Guide.mdZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md
 ```
 
 Documentation and code are **not bound by version numbers**: the document side declares "which settings of the code this document governs", and the code side declares "which document this implementation follows".
@@ -36,7 +36,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 
 ```
 ├── zt_dsp_py/                  Python official implementation (implementation ID ZT-DSP_PY-1.0.0)
-│   ├── version.py             single source of truth for the version contract (docs version / code version / followed document)
+│   ├── version.py             single source of truth for the version contract (total-guide version / client version / applicability / followed document)
 │   ├── errors.py              protocol exception hierarchy (Master Guide Appendix H.5)
 │   ├── params.py              parameter set and validation (Appendix F.1: fixed seven-item order matching)
 │   ├── identity.py            P2P placeholder token hash (4.1.1)
@@ -79,9 +79,9 @@ export ZT_DSP_PSK=<64-digit hex>       # Linux/macOS
 zt-dsp-py --role listen --port 37291 --psk-env
 ```
 
-**Running with no arguments starts the interactive wizard** (Master Guide Appendix E.2, recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step. When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
+**Running with no arguments starts the interactive wizard** (recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step. When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
 
-Inside a session, type a message and press Enter to send; exit with /quit or Ctrl+C. For a two-instance demo on the local machine, see Master Guide Appendix E.5.
+Inside a session, type a message and press Enter to send; exit with /quit or Ctrl+C. For a two-instance demo on the local machine, open a second terminal and run the opposite role with the same PSK and parameters.
 
 ### Main Parameters
 
@@ -123,33 +123,34 @@ and a real two-sided TCP flow.
 
 | Item | Value |
 |----|----|
-| docs version | 1.0.0 (the Master Guide revision this implementation follows) |
-| code version | 1.0.0 |
-| implementation ID | ZT-DSP_PY-1.0.0 (language prefix PY) |
+| applicable total-guide version | 1.0.0 (may be several; see "Applicability" below) |
+| client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
+| server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
+| implementation ID | ZT-DSP_PY-1.0.0 (prefix PY) |
 | followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md |
 
 ### Naming Convention System (docs / code · required reading for takeover / fork)
 
-**This project has only two version numbers** — the docs version and the code version; handshake frames carry no version string, so peer compatibility is not judged by version numbers.
+**This project has three kinds of version number** — total-guide version, client version, server version; handshake frames carry no version string, so peer compatibility is not judged by version numbers.
 
-#### docs version
+#### total-guide version (docs version)
 
 | Item | Rule |
 |----|------|
 | format | 1.0.x (major.minor.revision) |
 | carrier | the Master Guide document (`en/spec/ZT-DSP_1.0.0_Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
-| current value | 1.0.0 |
+| current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
-| major digit increment | restatement of core protocol semantics (usually coupled with a code version increment) |
+| major digit increment | restatement of core protocol semantics (usually coupled with a client/server version increment) |
 | participates in network communication | No (pure document number) |
 
-#### code version
+#### client version and server version
 
 | Item | Rule |
 |----|------|
-| format | ZT-DSP_<language prefix>-<major.minor.revision>, short form code 1.0.0 |
-| carrier | a ZT-DSP implementation in **any language** — an implementation is a concretization of its protocol specification, and the spec version and the code version share the same number |
+| format | `ZT-DSP_<prefix>-<major.minor.revision>`, e.g. `ZT-DSP_PY-1.0.0` (client) / `ZT-DSP_SV-1.0.0` (server) |
+| carrier | two kinds: **client versions** (`ZT-DSP_<language prefix>-<major.minor.revision>`) and **server versions** (`ZT-DSP_SV-<major.minor.revision>`); an implementation concretizes the specification but does not share its version number |
 | current value | ZT-DSP_PY-1.0.0 and ZT-DSP_RS-1.0.0 |
 | language prefix table | PY=Python, GO=Go, RS=Rust, C=C++ (**not the C language or C#**, which must define their own prefixes), JS=JavaScript/TypeScript, JVM=Java/Kotlin; other languages define their own all-caps prefix, which must be unique across the repository |
 | revision digit increment | bug fixes, security hardening — on-wire byte format **unchanged** |
@@ -159,6 +160,19 @@ and a real two-sided TCP flow.
 | participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
 | other-language implementations | the official development languages are Python and Rust; to add another language, create a sibling directory named after its implementation ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
 | merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: **collect all code into a single file** (one implementation per file, no new directory trees added to the mainline directory), with a protocol conformance checklist attached |
+
+#### Applicability (many-to-many)
+
+The relation between a total-guide version and the client/server versions is **not** one-to-one; it is many-to-many:
+
+| Relation | Rule |
+|----------|------|
+| one total-guide version -> several implementation versions | several implementations of the same kind whose protocol behaviour has not changed **share one declaration**; no rewrite is needed per version |
+| several total-guide versions -> one implementation version | one implementation may apply to several guides at once; listed item by item in \APPLIES_TO_DOC_VERSIONS\ |
+| same number, different implementation | identical version numbers do **not** mean the same implementation and do not constitute a compatibility claim |
+| how compatibility is decided | applicability is a **declaration**, not a test; real compatibility is always shown by the phase-three confirmation-label check |
+
+So adding a Python patch release (\ZT-DSP_PY-1.0.1\, unchanged protocol behaviour) requires **no change** to this section; when the Master Guide moves to a new version, simply append it to the applicable list on the implementation side.
 
 #### Bidirectional Documentation–Code Declaration
 
@@ -171,8 +185,8 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 
 #### Display and Citation Conventions
 
-- **Citing an implementation**: use the full code version ID (e.g. ZT-DSP_PY-1.0.0); do not append the docs version
-- **--version output** (the two parts, in order): code version implementation ID, docs version → ZT-DSP_PY-1.0.0 (docs 1.0.0)
+- **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the total-guide version
+- **--version output** (the two parts, in order): implementation version identifier, total-guide version → ZT-DSP_PY-1.0.0 (docs 1.0.0)
 - **Citing protocol behavior**: write "for protocol behavior see section X of the ZT-DSP Protocol Master Guide"; do not cite a version string
 - **Prohibitions**: ① mixing the docs version into the implementation ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
 

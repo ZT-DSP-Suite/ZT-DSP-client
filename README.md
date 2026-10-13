@@ -12,8 +12,8 @@
 > caller (`--psk-file`, `--psk-env`, `--psk`); keeping them secret is the caller's responsibility.
 > Binding keys to a TPM/HWID is a protocol-level design goal that is **planned for a later version**.
 >
-> This statement is re-issued with every release; the authoritative per-version matrix is in the
-> Master Guide, Appendix D.1 (Chinese) / Appendix D.1 (English). For the current release it reads:
+> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
+> support declaration in Master Guide section 4.1.4. For the current release it reads:
 > write TPM — not supported; write HWID — not supported; read or modify TPM/HWID — not supported.
 
 ## Documentation
@@ -34,7 +34,7 @@ Documentation follows a bilingual mirror layout: `cn/` and `en/` contain the sam
 
 The official development languages are **Python** and **Rust**; both implementations are
 first-class and follow the same Protocol Master Guide (docs 1.0.0). Other languages can be
-added following the implementation-identifier rule `ZT-DSP_<language prefix>-<code version>`.
+added following the implementation-identifier rule `ZT-DSP_<prefix>-<implementation version>`.
 
 Source comments and docstrings are in English.
 
@@ -44,10 +44,10 @@ Source comments and docstrings are in English.
 # Install -- the package metadata lives inside zt_dsp_py/, so point pip at that directory
 python -m pip install -e ./zt_dsp_py
 
-# Test suite: run from the repository root (53 tests)
+# Test suite: run from the repository root (the package is zt_dsp_py, not zt_dsp)
 python -m pytest zt_dsp_py/tests -q
 
-# Interactive wizard (Master Guide Appendix E.2): run with no arguments on a terminal.
+# Interactive wizard: run with no arguments on a terminal.
 # With stdin/stdout redirected it prints usage and exits 0 instead of blocking.
 python -m zt_dsp_py
 
@@ -68,7 +68,7 @@ Rust official implementation (`zt_dsp_rs/`):
 
 ```bash
 cd zt_dsp_rs
-cargo test --release        # 63 tests
+cargo test --release
 cargo build --release
 ```
 

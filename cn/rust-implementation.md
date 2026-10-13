@@ -1,6 +1,6 @@
 # ZT-DSP_RS-1.0.0
 
-**Zero Trust Dynamic Synchronization Protocol** — Rust 官方实现（code 版本 **1.0.0**，实现标识 `ZT-DSP_RS-1.0.0`）｜遵循《ZT-DSP 协议总指导》（**docs 1.0.0**）
+**Zero Trust Dynamic Synchronization Protocol** — Rust 官方实现（客户端版本 **1.0.0**，实现标识 `ZT-DSP_RS-1.0.0`）｜遵循《ZT-DSP 协议总指导》（**docs 1.0.0**）
 
 依据《ZT-DSP 协议总指导库（1.0.0）》第四册（核心协议最小集）与附录 F/G/H（逐字节规范 / 流量分析防御 / 状态机与超时矩阵）实现的 **Rust 完整基准实现**，与官方 Python 实现 `ZT-DSP_PY-1.0.0` **线上逐字节互通**（互操作验证见下文）。同时内置基准测试（握手 / 吞吐 / 密码原语），可作为跨语言实现的性能基线。
 
@@ -16,7 +16,7 @@
 ├── Cargo.toml / Cargo.lock 工程清单（版本 1.0.0；单 bin 目标）
 ├── README.md
 ├── zt-dsp-rs.rs            单入口：#[path] 平铺引入 + fn main + 内联集成测试
-├── version.rs              版本契约唯一事实源（docs 版本 / code 版本 / 遵循文档）
+├── version.rs              版本契约唯一事实源（总指导版本 / 客户端版本 / 适用关系 / 遵循文档）
 ├── errors.rs               协议层错误体系（附录 H.5 的 Rust 类型化收敛）
 ├── params.rs               参数集与校验（F.1：七项固定顺序匹配；module_flags 上限）
 ├── identity.rs             P2P 占位令牌哈希（4.1.1：HMAC-SHA3-256 角色标签）
@@ -91,7 +91,7 @@ zt-dsp-rs --role listen --port 37291 --psk-env
 | `--silent-hold` | `15` | 严格静默挂起时长（秒） |
 | `--rate-limit` | `0`（关闭） | 监听侧连接速率限制（次/秒，规则 P0-6） |
 
-PSK 注入优先级（附录 E.4）：`--psk-file`（推荐）> `--psk-env` > `--psk`（不安全）。
+PSK 注入优先级：`--psk-file`（推荐）> `--psk-env` > `--psk`（不安全）。
 拒绝公开默认值与低熵密钥（熵 < 3.5 bits/byte）。
 
 ## 版本说明
@@ -107,7 +107,7 @@ PSK 注入优先级（附录 E.4）：`--psk-file`（推荐）> `--psk-env` > `-
 ## 测试
 
 ```bash
-cargo test                 # 49 项单元 + 14 项集成 = 63 项全绿
+cargo test
 ```
 
 覆盖：版本契约、参数 JSON 逐字节（120B）、RFC 5869 官方向量、派生公式、
