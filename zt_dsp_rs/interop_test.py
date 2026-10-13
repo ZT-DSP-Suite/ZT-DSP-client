@@ -22,6 +22,7 @@ import os
 import secrets
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -53,9 +54,28 @@ def find_rust_bin(arg):
 
 
 def spawn(cmd, **kw):
-    return subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, text=True,
-                            encoding="utf-8", errors="replace", bufsize=1, **kw)
+    """Spawn a child and drain its output on a background thread.
+
+    The thread matters: with a pipe and no reader, the child blocks once the OS pipe
+    buffer fills, and our side cannot see the readiness marker. Threads are used rather
+    than fcntl/O_NONBLOCK because this harness must also run on Windows.
+    """
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, text=True,
+                         encoding="utf-8", errors="replace", bufsize=1, **kw)
+    p._ztbuf = ""
+
+    def _pump():
+        try:
+            for line in iter(p.stdout.readline, ""):
+                p._ztbuf += line
+        except Exception:
+            pass
+
+    t = threading.Thread(target=_pump, daemon=True)
+    t.start()
+    p._ztthread = t
+    return p
 
 
 def key_lines(t):
@@ -68,31 +88,72 @@ def key_lines(t):
     return "\n".join(keep[-12:]) or "    (no key output)"
 
 
-def run_scenario(name, listen_cmd, connect_cmd, wait_before_connect=1.5,
-                 verbose=False, exchange=True):
+def wait_for(procs, needle, timeout=30.0, poll=0.05):
+    """Wait until `needle` appears in every named process's output.
+
+    Fixed `time.sleep()` is the textbook cause of a flaky CI test: it is either too
+    short on a loaded runner (handshake has not finished yet) or wasteful on a fast
+    one. Polling for the actual milestone makes the test both faster and deterministic
+    in the sense that matters -- it waits for the state, not for a guessed duration.
+
+    Returns True if all processes reached the milestone within `timeout`.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if all(needle in _drain(p) for p in procs):
+            return True
+        if any(p.poll() is not None for p in procs):
+            # A process exited; one last read decides whether it said the magic words.
+            return all(needle in _drain(p) for p in procs)
+        time.sleep(poll)
+    return False
+
+
+def _drain(proc):
+    """Everything the child has emitted so far (read by the background pump thread)."""
+    return getattr(proc, "_ztbuf", "")
+
+
+def run_scenario(name, listen_cmd, connect_cmd, verbose=False, exchange=True):
     print(f"\n=== {name} ===")
     la = spawn(listen_cmd)
-    time.sleep(wait_before_connect)
+    # Wait for the listener to actually bind instead of sleeping a guessed interval.
+    if not wait_for([la], "Listening", timeout=20.0):
+        la.kill()
+        print("[!] listener never reported readiness")
     ca = spawn(connect_cmd)
+    ok = False
     try:
         if exchange:
-            time.sleep(2.5)  # leave time for the handshake
+            # The milestone is the handshake completing on both sides, not a timer.
+            ok = wait_for([la, ca], "Handshake complete", timeout=40.0)
+            if not ok:
+                print("[!] handshake did not complete within 40 s on both sides")
             assert ca.stdin and la.stdin
             ca.stdin.write(MSG_RS_TO_PY + "\n")
             ca.stdin.flush()
-            time.sleep(0.5)
+            # Give the peer a moment to consume, but only as a floor under polling.
+            wait_for([la], MSG_RS_TO_PY, timeout=5.0)
             la.stdin.write(MSG_PY_TO_RS + "\n")
             la.stdin.flush()
-            time.sleep(1.5)
+            wait_for([ca], MSG_PY_TO_RS, timeout=5.0)
             la.stdin.write("/quit\n")
             ca.stdin.write("/quit\n")
             la.stdin.flush()
             ca.stdin.flush()
-        lo = la.communicate(timeout=40)[0]
-        co = ca.communicate(timeout=40)[0]
+        # The pump thread owns stdout, so communicate() only closes stdin and reaps.
+        # Everything we assert on has already been accumulated in _ztbuf.
+        la.communicate(timeout=40)
+        ca.communicate(timeout=40)
+        la._ztthread.join(timeout=2)
+        ca._ztthread.join(timeout=2)
+        lo = _drain(la)
+        co = _drain(ca)
     except subprocess.TimeoutExpired:
         la.kill(); ca.kill()
-        lo = la.communicate()[0]; co = ca.communicate()[0]
+        la.communicate(); ca.communicate()
+        lo = _drain(la)
+        co = _drain(ca)
         print("[timeout] process did not exit within 40 s (force-killed)")
     if verbose:
         print("--- listener full output ---")
@@ -103,7 +164,8 @@ def run_scenario(name, listen_cmd, connect_cmd, wait_before_connect=1.5,
     print(key_lines(lo))
     print("--- connector key output ---")
     print(key_lines(co))
-    return (lo or "") + "\n" + (co or "")
+    # Return the two streams separately so the caller can assert per side.
+    return lo or "", co or ""
 
 
 # =============================================================================
@@ -130,11 +192,24 @@ def suite_interop(rust_bin, port):
         ("A (Python listens ← Rust connects)", py_cmd("listen", port), rust_cmd("connect", port), 0),
         ("B (Rust listens ← Python connects)", rust_cmd("listen", port + 1), py_cmd("connect", port + 1), 0),
     ]:
-        out = run_scenario(name, lcmd, ccmd)
-        passed = ("Handshake complete" in out
-                  and MSG_RS_TO_PY in out
-                  and MSG_PY_TO_RS in out)
+        lo, co = run_scenario(name, lcmd, ccmd)
+        # Per-side assertions. Concatenating both outputs and searching the result
+        # would pass even if one side died after the handshake, since the other
+        # side's echo still carries the marker.
+        passed = (
+            "Handshake complete" in lo
+            and "Handshake complete" in co
+            # Each message must be echoed by the *other* side, i.e. appear in the
+            # listener's output when Rust sent it and vice versa.
+            and MSG_RS_TO_PY in lo
+            and MSG_PY_TO_RS in co
+        )
         print(f">> Result: {'[OK] pass: handshake + bidirectional message exchange' if passed else '[!] fail'}")
+        if not passed:
+            print("    listener saw handshake=%s msg=%s" % (
+                "Handshake complete" in lo, MSG_RS_TO_PY in lo))
+            print("    connector saw handshake=%s msg=%s" % (
+                "Handshake complete" in co, MSG_PY_TO_RS in co))
         ok = ok and passed
         time.sleep(1)
 
