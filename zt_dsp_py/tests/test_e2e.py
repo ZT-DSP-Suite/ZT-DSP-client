@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""End-to-end test: full real-TCP two-end flow + CLI contract (the automated version of the local two-instance experience in Appendix E.5)."""
+"""End-to-end test: full real-TCP two-end flow + CLI contract (the automated version of the local two-instance experience in the README quick start)."""
 import socket
 import subprocess
 import sys
@@ -106,7 +106,7 @@ def test_psk_mismatch_over_tcp_no_crash() -> None:
 
 
 # =============================================================================
-# CLI contract (Appendix E.3)
+# CLI contract (README main parameters)
 # =============================================================================
 
 def test_cli_version() -> None:

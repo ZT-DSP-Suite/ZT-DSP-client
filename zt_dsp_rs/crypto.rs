@@ -65,7 +65,7 @@ pub fn hmac_sha3(key: &[u8], message: &[u8]) -> [u8; 32] {
     arr
 }
 
-/// Entropy check; intercepts obviously weak PSKs (Appendix E.4: blocks only visibly weak keys).
+/// Entropy check; intercepts obviously weak PSKs (Master Guide Appendix B: blocks only visibly weak keys).
 pub fn check_entropy(data: &[u8], min_bits: f64) -> Result<()> {
     if data.is_empty() {
         return Err(Error::param("data is empty"));

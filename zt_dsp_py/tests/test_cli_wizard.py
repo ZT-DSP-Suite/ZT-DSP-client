@@ -1,4 +1,4 @@
-"""Wizard tests -- Master Guide 1.0.0, Appendix E.2, Mode 1 (interactive wizard)."""
+"""Wizard tests -- official-client README quick start (interactive wizard)."""
 
 from __future__ import annotations
 

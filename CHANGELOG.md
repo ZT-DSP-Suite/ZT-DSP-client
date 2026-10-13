@@ -41,6 +41,17 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Fixed
 
+- **20 source references pointed at appendix letters that no longer exist.** The docs repo
+  commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
+  had moved into the client README, but 20 docstrings and comments across `cli.py`,
+  `crypto.py`, `cli.rs`, `crypto.rs`, `integration_tests.rs` and three test modules still
+  cited "Appendix E" / E.2 / E.3 / E.4 / E.5 -- including `cli.py:148`, a string printed to
+  the user. The existing docs-to-code checks compare constants and values, not
+  cross-references, so nothing caught it. All 20 now point at the location that actually
+  holds the material (client README, or Master Guide Appendix B for the PSK rules).
+- Added `test_doc_refs.py`, which parses the appendix headings out of the spec and fails on
+  any cited letter that is absent, so this class of defect cannot return silently. It skips
+  when the docs repo is not checked out (this repo's own CI).
 - `CryptoSuite.hkdf` accepted only `str` for `info`, so the Python implementation
   **could not express RFC 5869's binary-info test vectors** and could not validate its
   own HKDF against the RFC. It now accepts `str` or `bytes`, matching the Rust signature

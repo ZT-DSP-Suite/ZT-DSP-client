@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Minimal command-line interface (direct-CLI subset of Master Guide 1.0.0, Appendix E).
+"""Minimal command-line interface (official-client guide: see the ZT-DSP-client README).
 
 Design boundary (this version builds the protocol itself only):
-- Provides `--role listen/connect` direct CLI, the Appendix E.2 interactive wizard, and `--version`;
+- Provides `--role listen/connect` direct CLI, the interactive wizard (README quick start), and `--version`;
 - Running with no arguments starts the wizard on a terminal; when stdin or stdout is
   redirected (pipes, CI) it prints usage instead, so automation never blocks on a prompt;
-- PSK injection priority (Appendix E.4): --psk-file (recommended, 0600) > --psk-env > --psk
+- PSK injection priority (README main parameters): --psk-file (recommended, 0600) > --psk-env > --psk
   (plain text on the command line, visible in the process list, temporary tests only);
 - Extension modules (TCA/AORS/Ocean Mode, etc.) stay out of scope for this release.
 """
@@ -57,7 +57,7 @@ def psk_to_hex(psk: bytes) -> str:
 
 def normalize_psk(psk_input: str) -> bytes:
     """Normalize the user-provided PSK: exactly 32 bytes, 64-character hex or standard Base64.
-    Rejects the public default value and weak keys with too-low entropy (Appendix E.4)."""
+    Rejects the public default value and weak keys with too-low entropy (README security notes)."""
     s = psk_input.strip()
     if not s or s == _FORBIDDEN_DEFAULT_PSK:
         raise ValueError(
@@ -133,7 +133,7 @@ def _wizard_int(prompt: str, label: str, default: int, ok, hint: str,
 
 
 def run_wizard(input_fn=None, print_fn=None):
-    """Interactive wizard -- Master Guide 1.0.0, Appendix E.2, Mode 1 (recommended for beginners).
+    """Interactive wizard -- official-client README quick start (recommended for beginners).
 
     Four steps: role -> address/port -> PSK -> protocol parameters. Every step accepts
     Enter to take the default. Input and output are injectable, so the wizard is testable
@@ -145,7 +145,7 @@ def run_wizard(input_fn=None, print_fn=None):
         print_fn = print
 
     try:
-        print_fn('ZT-DSP interactive wizard (Master Guide 1.0.0, Appendix E.2)')
+        print_fn('ZT-DSP interactive wizard (see the ZT-DSP-client README quick start)')
         print_fn()
 
         # Step 1 -- role
@@ -228,7 +228,7 @@ PSK security recommendations:
   2. Then --psk-env (environment variable ZT_DSP_PSK)
   3. Last resort --psk (command line, insecure, visible in the process list)
 
-Running without arguments on a terminal starts the interactive wizard (Appendix E.2);
+Running without arguments on a terminal starts the interactive wizard (README quick start);
 with input or output redirected, this usage is printed instead. Extension modules
 (TCA/AORS/Ocean Mode, etc.) are not within the scope of this minimal release.
 """)
@@ -326,7 +326,7 @@ def main() -> None:
     if ns.silent_hold <= 0:
         parser.error("silent_hold must be a positive number")
 
-    # --- PSK injection (Appendix E.4 priority) ---
+    # --- PSK injection (README priority order) ---
     psk_bytes: Optional[bytes] = wizard["psk_bytes"] if wizard else None
     if ns.psk_file:
         try:

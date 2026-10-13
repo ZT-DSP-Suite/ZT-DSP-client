@@ -87,7 +87,7 @@ def hmac_sha3(key: bytes, message: bytes) -> bytes:
 
 
 def check_entropy(data: bytes, min_bits: float = 3.5) -> None:
-    """Entropy check; catches obviously weak PSK (Appendix E.4: can
+    """Entropy check; catches obviously weak PSK (Master Guide Appendix B parameter reference: can
     only catch obviously weak keys)."""
     counts = Counter(data)
     length = len(data)

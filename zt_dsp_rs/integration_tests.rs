@@ -58,7 +58,7 @@ mod integration_tests {
     }
 
     // =========================================================================
-    // Real TCP bidirectional flow (library-level equivalent of the local dual-instance setup in Appendix E.5)
+    // Real TCP bidirectional flow (library-level equivalent of the README dual-instance quick start)
     // =========================================================================
 
     #[test]
@@ -143,7 +143,7 @@ mod integration_tests {
     }
 
     // =========================================================================
-    // CLI contract (Appendix E / README docs-code naming rules).
+    // CLI contract (README docs-code naming rules).
     // Assertions target the parser and library functions directly (the end-to-end binary smoke test is covered by interop_test.py).
     // =========================================================================
 

@@ -1,10 +1,10 @@
-//! Minimal command-line interface (command-line direct-connection subset plus base-platform subcommands, per Master Guide 1.0.0 Appendix E).
+//! Minimal command-line interface (command-line direct-connection subset plus base-platform subcommands; see the official-client README).
 //!
 //! Design boundaries:
 //! - `--role listen/connect` direct command-line connection and `--version`;
 //! - `bench` subcommand: handshake / throughput / crypto-primitive benchmarks (the base platform's main capability);
 //! - `pskgen` subcommand: generate a 256-bit high-entropy PSK (hex output, for the E.5 local dual-instance trial);
-//! - PSK injection priority (Appendix E.4): --psk-file (recommended, 0600) > --psk-env > --psk
+//! - PSK injection priority (README main parameters): --psk-file (recommended, 0600) > --psk-env > --psk
 //!   (plaintext on the command line, visible in the process list; for temporary testing only).
 //!
 //! Hardening over the Python reference implementation (Master Guide 1.0.0):
@@ -106,7 +106,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    /// Whether any PSK injection method was provided (Appendix E.4: at least one of the three).
+    /// Whether any PSK injection method was provided (README: at least one of the three).
     pub fn has_any_psk(&self) -> bool {
         self.psk_file.is_some() || self.psk_env || self.psk.is_some()
     }
@@ -136,7 +136,7 @@ pub fn generate_psk() -> Result<Vec<u8>> {
 }
 
 /// Normalize user-supplied PSK input: exactly 32 bytes, as 64-char hex or standard Base64.
-/// Reject public defaults and weak keys with too little entropy (Appendix E.4).
+/// Reject public defaults and weak keys with too little entropy (Master Guide Appendix B: parameter reference).
 pub fn normalize_psk(psk_input: &str) -> Result<Vec<u8>> {
     let s = psk_input.trim();
     if s.is_empty() || s == FORBIDDEN_DEFAULT_PSK {
@@ -314,7 +314,7 @@ fn run_main_flow(cli: &Cli) -> i32 {
         return 2;
     }
 
-    // --- PSK injection (Appendix E.4 priority) ---
+    // --- PSK injection (README priority order) ---
     let psk_bytes: Vec<u8> = if let Some(path) = &cli.psk_file {
         match load_psk_from_file(path) {
             Ok(p) => p,
