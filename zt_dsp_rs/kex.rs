@@ -41,6 +41,18 @@ impl EphemeralSecret {
         x25519_dalek::x25519(self.scalar, BASEPOINT)
     }
 
+    /// Constructs an ephemeral secret from a caller-supplied scalar.
+    ///
+    /// **Only for known-answer tests.** RFC 7748 supplies fixed scalars, and the shared
+    /// test-vector file replays them; [`EphemeralSecret::generate`] is random by
+    /// construction and cannot reproduce them. Production code must use `generate()` —
+    /// handing in a chosen scalar would be a catastrophic key-reuse bug, hence the
+    /// `test_` prefix and the `#[cfg(test)]` gate.
+    #[cfg(test)]
+    pub(crate) fn from_scalar_for_test(scalar: [u8; 32]) -> Self {
+        EphemeralSecret { scalar }
+    }
+
     /// Computes the shared secret. Failure criteria: see the module docs; on success returns the 32B shared secret.
     pub fn shared_secret(&self, peer_public_bytes: &[u8]) -> Result<[u8; 32]> {
         if peer_public_bytes.len() != X25519_PUB_LEN {

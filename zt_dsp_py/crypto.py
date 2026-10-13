@@ -123,16 +123,25 @@ class CryptoSuite:
     # ------------------------------------------------------------------
     # HKDF / HMAC
     # ------------------------------------------------------------------
-    def hkdf(self, ikm: bytes, info: str, length_bits: int,
+    def hkdf(self, ikm: bytes, info: Union[str, bytes], length_bits: int,
              salt: Optional[bytes] = None) -> bytes:
         """HKDF (RFC 5869). Note that salt is a **standalone salt
         parameter**, not material concatenated into the IKM (General
-        Directive, Section 4.2.2)."""
+        Directive, Section 4.2.2).
+
+        `info` accepts str or bytes. The protocol's own context labels
+        (INFO_MK / INFO_EK / INFO_SID / INFO_EK_ROTATE) are ASCII, so they
+        are passed as str; RFC 5869's own test vectors use **binary** info,
+        so raw bytes must be accepted too. The Rust side takes &[u8]
+        unconditionally — keeping both signatures binary-safe is what lets a
+        single shared test-vectors file drive both implementations.
+        """
+        info_bytes = info.encode("utf-8") if isinstance(info, str) else bytes(info)
         hkdf = HKDF(
             algorithm=self._hash_cls(),
             length=length_bits // 8,
             salt=salt,
-            info=info.encode("utf-8"),
+            info=info_bytes,
         )
         return hkdf.derive(ikm)
 
