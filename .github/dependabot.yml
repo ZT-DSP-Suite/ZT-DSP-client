@@ -1,0 +1,31 @@
+# Keep dependencies patched. One entry per ecosystem present in the repository.
+#
+# The pip directory is `/zt_dsp_py`, NOT `/zt_dsp`: the package was renamed and the
+# manifest moved inside the package directory during the 1.0.0 rebuild. A stale
+# directory here is silently useless -- Dependabot reports success while scanning
+# a path that does not exist. Verified against zt_dsp_py/pyproject.toml.
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /zt_dsp_py
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, python]
+
+  - package-ecosystem: cargo
+    directory: /zt_dsp_rs
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, rust]
+
+  # CI actions are pinned to commit SHAs (see ci.yml header), so Dependabot updating
+  # the version comment matters as much as the SHA itself.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, ci]

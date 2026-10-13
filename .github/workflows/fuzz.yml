@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Fuzzing needs the nightly toolchain, so it is a separate workflow.
+  schedule:
+    - cron: "31 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: Fuzz frame parsers (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [python-frames, rust-frames]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Run fuzzer
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/rs-target
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.target }}" = "rust-frames" ]; then
+            # cargo-fuzz requires nightly.
+            rustup toolchain install nightly --profile minimal
+            cargo +nightly install cargo-fuzz
+            cargo +nightly fuzz run fuzz_targets/frames -- -max_total_time=600
+          else
+            # atheris drives the Python parser; coverage-guided, same corpus.
+            python -m pip install --upgrade pip
+            python -m pip install atheris
+            python -m pip install -e ./zt_dsp_py
+            python fuzz_targets/fuzz_frames.py
+          fi
+
+      - name: Upload crash artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: fuzz-artifacts-${{ matrix.target }}
+          path: |
+            fuzz_targets/artifacts
+            zt_dsp_rs/fuzz/artifacts
+          if-no-files-found: ignore
