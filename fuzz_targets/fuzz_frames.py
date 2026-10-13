@@ -17,6 +17,7 @@
 import socket
 import struct
 import sys
+import time
 import warnings
 
 import atheris
@@ -30,7 +31,7 @@ with atheris.instrument_imports():
         read_confirm,
         read_data_header,
         read_pub_key,
-        read_phase_one,
+        unpack_phase_one,
     )
 
 # Documented, expected rejections. Everything else is a bug.
@@ -44,6 +45,10 @@ EXPECTED = (
 
 # Bounded so a pathological input cannot exhaust memory during a long fuzz run.
 MAX_INPUT = 64 * 1024
+
+# A fuzz run has no peer, so the readers would otherwise block on an empty stream.
+# Short, but long enough that a legitimate frame is never cut off mid-read.
+DEADLINE_SECONDS = 0.25
 
 
 def _feed(data):
@@ -61,22 +66,34 @@ def _feed(data):
     return writer, reader
 
 
-def _run_one(reader, fn):
+def _run_one(reader, fn, deadline):
     """Invoke a reader and swallow only the documented rejection types."""
     try:
-        fn(reader)
+        fn(reader, deadline)
     except EXPECTED:
         pass
+
+
+# The four untrusted-input entry points. Python spells the Phase 1 reader
+# `unpack_phase_one` where Rust spells it `read_phase_one` -- the same wire path.
+#
+# Every one of them takes a `deadline` (a monotonic time point, per Appendix H.3).
+# `read_pub_key` and `read_confirm` require it positionally; the other two merely
+# default it. It is supplied here because a fuzz harness that omits it is a harness
+# that dies on its first call instead of exercising anything.
+READERS = (unpack_phase_one, read_pub_key, read_confirm, read_data_header)
 
 
 def TestOneInput(data):
     if len(data) > MAX_INPUT:
         data = data[:MAX_INPUT]
 
-    for fn in (read_phase_one, read_pub_key, read_confirm, read_data_header):
+    deadline = time.monotonic() + DEADLINE_SECONDS
+
+    for fn in READERS:
         writer, reader = _feed(data)
         try:
-            _run_one(reader, fn)
+            _run_one(reader, fn, deadline)
         finally:
             for s in (writer, reader):
                 try:
