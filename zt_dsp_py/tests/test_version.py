@@ -1,31 +1,59 @@
 # -*- coding: utf-8 -*-
-"""Version contract tests (docs / code dual version numbers; see the "Naming Rules" section of the root README)."""
+"""Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
 from zt_dsp_py.version import (
+    APPLIES_TO_DOC_VERSIONS,
+    CLIENT_VERSIONS,
     CODE_VERSION,
     DOCS_VERSION,
     FOLLOWS_DOC,
     FOLLOWS_DOC_PATH,
     IMPLEMENTATION_ID,
     LANGUAGE_PREFIX,
+    ROLE,
+    SERVER_VERSIONS,
     format_version,
 )
 
 
 def test_docs_version_declaration() -> None:
-    # docs version: the document's own revision number; it does not take part in network communication
+    # total-guide version: the document's own revision number; it does not take part in network communication
     assert DOCS_VERSION == "1.0.0"
 
 
-def test_code_version_implementation_id() -> None:
-    # code version: implementation and protocol behavior version, ZT-DSP_<language prefix>-<major.minor.revision>
+def test_implementation_id_is_a_client_version() -> None:
+    # this repository is the client implementation; `PY` is its prefix
     assert LANGUAGE_PREFIX == "PY"
     assert CODE_VERSION == "1.0.0"
     assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0"
     assert IMPLEMENTATION_ID.endswith(f"-{CODE_VERSION}")
 
 
+def test_role_declaration() -> None:
+    assert ROLE == "client"
+
+
+def test_client_versions_include_self() -> None:
+    # every client version of this kind, and this implementation must be one of them
+    assert CLIENT_VERSIONS == ("ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0")
+    assert IMPLEMENTATION_ID in CLIENT_VERSIONS
+
+
+def test_server_versions_declared_separately() -> None:
+    # server versions are a separate carrier, not folded into the client list
+    assert SERVER_VERSIONS == ("ZT-DSP_SV-1.0.0",)
+    assert IMPLEMENTATION_ID not in SERVER_VERSIONS
+
+
+def test_applies_to_is_many_to_many() -> None:
+    # a tuple, because one implementation may apply to several total-guide versions,
+    # and several implementations may apply to one total-guide version
+    assert isinstance(APPLIES_TO_DOC_VERSIONS, tuple)
+    assert APPLIES_TO_DOC_VERSIONS == ("1.0.0",)
+    assert DOCS_VERSION in APPLIES_TO_DOC_VERSIONS
+
+
 def test_follows_doc_declaration() -> None:
-    # Bidirectional declaration on the code side: which document this implementation follows (the doc-to-code correspondence is not bound by version numbers)
+    # Bidirectional declaration on the code side: which document this implementation applies to
     assert FOLLOWS_DOC == "ZT-DSP Protocol Master Guide"
     assert FOLLOWS_DOC_PATH == "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md"
 
@@ -39,5 +67,5 @@ def test_no_protocol_identifier_constant() -> None:
 
 
 def test_format_version_contract() -> None:
-    # Two segments: the code-version implementation ID and the docs version
+    # Two segments: this implementation's client/server version identifier, then the total-guide version
     assert format_version() == "ZT-DSP_PY-1.0.0 (docs 1.0.0)"

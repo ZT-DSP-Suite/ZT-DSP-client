@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """ZT-DSP - Zero Trust Dynamic Synchronization Protocol.
 
-Reference implementation (code version 1.0.0, implementation ID ZT-DSP_PY-1.0.0,
-following the "ZT-DSP Protocol Master Guide" of docs version 1.0.0).
+Reference implementation (client version ZT-DSP_PY-1.0.0, applying to the
+"ZT-DSP Protocol Master Guide", total-guide version 1.0.0).
 
 Programming usage:
 
