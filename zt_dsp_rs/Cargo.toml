@@ -1,8 +1,8 @@
 [package]
 name = "zt-dsp-rs"
-version = "1.1.0"
+version = "1.0.0"
 edition = "2021"
-description = "ZT-DSP_RS-1.1.0 — official Rust implementation of the ZT-DSP protocol (follows the ZT-DSP Protocol Master Guide, docs 1.1.0)"
+description = "ZT-DSP_RS-1.0.0 — official Rust implementation of the ZT-DSP protocol (follows the ZT-DSP Protocol Master Guide, docs 1.0.0)"
 license = "MIT OR Apache-2.0"
 
 # The crate is both a library and a binary. The library target is what makes the

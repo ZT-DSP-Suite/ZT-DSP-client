@@ -7,7 +7,7 @@
 //! - PSK injection priority (README main parameters): --psk-file (recommended, 0600) > --psk-env > --psk
 //!   (plaintext on the command line, visible in the process list; for temporary testing only).
 //!
-//! Hardening over the Python reference implementation (Master Guide 1.1.0):
+//! Hardening over the Python reference implementation (Master Guide 1.0.0):
 //! - Untrusted values of `--psk-env`/`--psk` are **never** opened as file paths —
 //!   even if they happen to be existing paths they are treated as literals; only `--psk-file` reads a file;
 //! - Reading the PSK file strips the UTF-8 BOM;
@@ -396,7 +396,7 @@ mod tests {
     #[test]
     fn version_output_via_clap() {
         // --version three-part output
-        assert!(format_version().starts_with("ZT-DSP_RS-1.1.0"));
+        assert!(format_version().starts_with("ZT-DSP_RS-1.0.0"));
     }
 
     #[test]

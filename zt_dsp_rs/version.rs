@@ -2,11 +2,11 @@
 //!
 //! Word-for-word aligned with the Python reference implementation `zt_dsp_py/version.py`:
 //!
-//! - **total-guide version (docs version)**: `1.1.0`, used only for the revision count of the Master Guide
+//! - **total-guide version (docs version)**: `1.0.0`, used only for the revision count of the Master Guide
 //!   document itself; it does not participate in network communication;
-//! - **client version**: `ZT-DSP_<prefix>-<major.minor.patch>`; this implementation is `ZT-DSP_RS-1.1.0`
+//! - **client version**: `ZT-DSP_<prefix>-<major.minor.patch>`; this implementation is `ZT-DSP_RS-1.0.0`
 //!   (language prefix RS = Rust);
-//! - **server version**: the same shape, for example `ZT-DSP_SV-1.1.0` (repository `ZT-DSP-server`,
+//! - **server version**: the same shape, for example `ZT-DSP_SV-1.0.0` (repository `ZT-DSP-server`,
 //!   currently a placeholder); `SV` is a role prefix rather than a language prefix;
 //! - The relation between them is **many-to-many**: several implementations of the same kind whose protocol
 //!   behaviour has not changed apply to the same total-guide version without any new declaration, and one
@@ -33,13 +33,13 @@
 pub const FOLLOWS_DOC: &str = "ZT-DSP Protocol Master Guide";
 
 /// Code-side bidirectional declaration: the path of the followed document.
-pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP_1.1.0_Master_Guide.md";
+pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md";
 
 /// Total-guide versions this implementation applies to (many-to-many: may hold several).
-pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.1.0"];
+pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0"];
 
 /// docs version (document revision number, does not participate in network communication).
-pub const DOCS_VERSION: &str = "1.1.0";
+pub const DOCS_VERSION: &str = "1.0.0";
 
 /// Role of this implementation: "client" or "server".
 pub const ROLE: &str = "client";
@@ -48,16 +48,16 @@ pub const ROLE: &str = "client";
 pub const LANGUAGE_PREFIX: &str = "RS";
 
 /// implementation version: the numeric part of a client / server version.
-pub const CODE_VERSION: &str = "1.1.0";
+pub const CODE_VERSION: &str = "1.0.0";
 
-/// Implementation identifier `ZT-DSP_RS-1.1.0`.
-pub const IMPLEMENTATION_ID: &str = concat!("ZT-DSP_", "RS", "-", "1.1.0");
+/// Implementation identifier `ZT-DSP_RS-1.0.0`.
+pub const IMPLEMENTATION_ID: &str = concat!("ZT-DSP_", "RS", "-", "1.0.0");
 
 /// All client versions of this kind, applicable to the same total-guide versions.
-pub const CLIENT_VERSIONS: &[&str] = &["ZT-DSP_PY-1.1.0", "ZT-DSP_RS-1.1.0"];
+pub const CLIENT_VERSIONS: &[&str] = &["ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0"];
 
 /// Server versions applicable to the same total-guide versions (placeholder, not implemented).
-pub const SERVER_VERSIONS: &[&str] = &["ZT-DSP_SV-1.1.0"];
+pub const SERVER_VERSIONS: &[&str] = &["ZT-DSP_SV-1.0.0"];
 
 /// Single-line output version string for the CLI `--version`.
 ///
@@ -72,26 +72,26 @@ mod tests {
 
     #[test]
     fn version_contract() {
-        assert_eq!(IMPLEMENTATION_ID, "ZT-DSP_RS-1.1.0");
-        assert_eq!(DOCS_VERSION, "1.1.0");
-        assert_eq!(CODE_VERSION, "1.1.0");
+        assert_eq!(IMPLEMENTATION_ID, "ZT-DSP_RS-1.0.0");
+        assert_eq!(DOCS_VERSION, "1.0.0");
+        assert_eq!(CODE_VERSION, "1.0.0");
         assert_eq!(LANGUAGE_PREFIX, "RS");
         assert_eq!(ROLE, "client");
         assert_eq!(FOLLOWS_DOC, "ZT-DSP Protocol Master Guide");
-        assert_eq!(FOLLOWS_DOC_PATH, "ZT-DSP-docs/en/spec/ZT-DSP_1.1.0_Master_Guide.md");
+        assert_eq!(FOLLOWS_DOC_PATH, "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md");
     }
 
     #[test]
     fn applicability_is_many_to_many() {
-        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.1.0"]);
+        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.0.0"]);
         assert!(APPLIES_TO_DOC_VERSIONS.contains(&DOCS_VERSION));
         assert!(CLIENT_VERSIONS.contains(&IMPLEMENTATION_ID));
         assert!(!SERVER_VERSIONS.contains(&IMPLEMENTATION_ID));
-        assert_eq!(SERVER_VERSIONS, &["ZT-DSP_SV-1.1.0"]);
+        assert_eq!(SERVER_VERSIONS, &["ZT-DSP_SV-1.0.0"]);
     }
 
     #[test]
     fn format_version_two_segments() {
-        assert_eq!(format_version(), "ZT-DSP_RS-1.1.0 (docs 1.1.0)");
+        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.0)");
     }
 }

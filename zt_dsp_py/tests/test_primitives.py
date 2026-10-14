@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from zt_dsp_py.crypto import hmac_sha3
 from zt_dsp_py.errors import ZTDSPParamError
 from zt_dsp_py.identity import derive_p2p_identity
-from zt_dsp_py.params import PROTO_VERSION, ZTDSPParams
+from zt_dsp_py.params import ZTDSPParams
 
 
 # =============================================================================
@@ -19,14 +19,13 @@ def test_guide_defaults_and_wire_json() -> None:
     assert (params.random_len, params.random_rate, params.window,
             params.key_len, params.hash_name, params.aead_name) == \
         (256, 1024, 60, 256, "SHA3-256", "AES-256-GCM")
-    # F.1: under default parameters the parameter JSON is exactly 136 bytes, and
-    # byte-for-byte equal to the official layout. Since 1.1.0 it carries a mandatory
-    # "proto" field -- its absence is the downgrade block, not an optional extra.
+    # F.1: under default parameters the parameter JSON is exactly 120 bytes,
+    # and byte-for-byte equal to the official layout (no version / protocol-identifier fields)
     expected = (b'{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,'
-                b'"module_flags":{},"proto":"1.1.0","random_len":256,'
-                b'"random_rate":1024,"window":60}')
+                b'"module_flags":{},"random_len":256,"random_rate":1024,'
+                b'"window":60}')
     assert params.to_json() == expected
-    assert len(params.to_json()) == 136
+    assert len(params.to_json()) == 120
 
 
 def test_bad_length_and_deep_flags_fail() -> None:
@@ -35,9 +34,7 @@ def test_bad_length_and_deep_flags_fail() -> None:
     with pytest.raises(ZTDSPParamError):
         ZTDSPParams(random_len=4608)         # exceeds the 512B nonce ceiling
     with pytest.raises(ZTDSPParamError):
-        ZTDSPParams(key_len=100)             # not a multiple of 8 / below the 256-bit floor
-    with pytest.raises(ZTDSPParamError):
-        ZTDSPParams(key_len=128)             # 1.1.0 policy floor: refuse to negotiate < 256
+        ZTDSPParams(key_len=100)             # only 128/192/256 allowed
     with pytest.raises(ZTDSPParamError):
         ZTDSPParams(window=0)
     with pytest.raises(ZTDSPParamError):
@@ -71,7 +68,7 @@ def test_from_wire_converges_errors() -> None:
         ZTDSPParams.from_wire({"random_len": "not-an-int"})
     with pytest.raises(ZTDSPParamError):
         ZTDSPParams.from_wire({"key_len": 999})
-    ok = ZTDSPParams.from_wire({"proto": PROTO_VERSION, "random_len": 512, "window": 45})
+    ok = ZTDSPParams.from_wire({"random_len": 512, "window": 45})
     assert ok.random_len == 512 and ok.window == 45
 
 
@@ -80,9 +77,9 @@ def test_match_fixed_order() -> None:
     b = ZTDSPParams()
     assert a.match_error(b) is None
     # when multiple items differ, report the first one (fixed order, random_len first)
-    c = ZTDSPParams(random_len=512, key_len=512, window=30)
+    c = ZTDSPParams(random_len=512, key_len=128, window=30)
     assert a.match_error(c) == "random_len mismatch"
-    d = ZTDSPParams(key_len=512, window=30)
+    d = ZTDSPParams(key_len=128, window=30)
     assert a.match_error(d) == "key_len mismatch"
     e = ZTDSPParams(module_flags={"x": 1})
     assert a.match_error(e) == "module_flags mismatch"
