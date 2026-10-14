@@ -57,6 +57,44 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   own HKDF against the RFC. It now accepts `str` or `bytes`, matching the Rust signature
   (`&[u8]`) and RFC 5869.
 
+## [1.1.0] - 2026-10-14
+
+### Added
+
+- **Protocol version negotiation on the wire.** The parameter JSON now carries a mandatory
+  `proto` field. It rides inside the Phase 1 frame, hence into the handshake transcript,
+  hence under the Phase 3 confirmation tags: a rewritten or stripped version fails the
+  handshake instead of being guessed at. A peer that sends no `proto` (1.0.0 or earlier) is
+  refused outright — that refusal is the downgrade block, and there is no code path that
+  quietly continues on an older protocol. `proto_version` is also the first item in the
+  F.1 parameter comparison.
+- **256-bit policy floor for negotiated session keys.** `key_len` below 256 is rejected for
+  peer-supplied values as well as local ones, closing the hole where the cleartext
+  negotiated parameters could be rewritten down to 128 bits.
+- `test_version_negotiation.py` pins all of the above, including the exact bytes a 1.0.0 peer
+  sends as a fixture, so the downgrade block is tested rather than asserted in prose.
+
+### Changed
+
+- Parameter JSON: 120 bytes -> 136 bytes under the default parameters; Phase 1 frame 228 ->
+  244 bytes. Both numbers were published in the specification and are updated there too.
+- `version.py` / `version.rs`: the documented "the handshake frames carry no version string"
+  decision is superseded for Phase 1 (the parameter JSON). The Phase 4 AAD still carries no
+  version — it exists for routing and authentication and a version there buys nothing.
+- Client version constants moved to 1.1.0 (`ZT-DSP_PY-1.1.0` / `ZT-DSP_RS-1.1.0`), and the
+  specification file is renamed `ZT-DSP_1.1.0_*`.
+- `test_doc_refs.py`: catches source comments that cite an appendix letter which no longer
+  exists (20 such dangling citations were found and fixed in this cycle).
+
+### Not changed (deliberately)
+
+- The data-plane ratchet, the key schedule and the payload layout are untouched, so the KAT
+  vectors are unchanged and 1.1.0 peers interoperate with each other exactly as 1.0.0 did.
+- Post-compromise security (a DH ratchet) and root/chain/message key separation are **not**
+  in 1.1.0. The data-plane ratchet is still a purely symmetric hash chain, so a compromised
+  session key stays compromised for the life of that session. This is recorded in the
+  specification and tracked as open work; 1.1.0 fixes the version plane and the downgrade
+  surface, not the ratchet structure.
 ## [1.0.0]
 
 - Initial protocol implementation, following ZT-DSP Protocol Master Guide 1.0.0.

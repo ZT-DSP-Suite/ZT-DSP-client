@@ -5,15 +5,15 @@ This project does not use a single abstract "code version". It has **three kinds
 versioned carrier**, and the relation between them is many-to-many:
 
 total-guide version (docs version)
-    The revision number of the Master Guide itself, written as `docs 1.0.0`.
+    The revision number of the Master Guide itself, written as `docs 1.1.0`.
     Used only for the revision counting of the document; it takes no part in network communication.
 
 client version
     A client-side implementation, identified as `ZT-DSP_<prefix>-<major.minor.revision>`,
-    for example `ZT-DSP_PY-1.0.0` (Python) or `ZT-DSP_RS-1.0.0` (Rust).
+    for example `ZT-DSP_PY-1.1.0` (Python) or `ZT-DSP_RS-1.1.0` (Rust).
 
 server version
-    A server-side implementation, identified the same way, for example `ZT-DSP_SV-1.0.0`
+    A server-side implementation, identified the same way, for example `ZT-DSP_SV-1.1.0`
     (repository `ZT-DSP-server`, currently a placeholder with no implementation yet).
 
 Applicability (many-to-many)
@@ -36,8 +36,9 @@ The correspondence between documentation and code is maintained via a **bidirect
     - Code side: declares "which documents this implementation applies to" -- see the
       FOLLOWS_DOC / FOLLOWS_DOC_PATH / APPLIES_TO_DOC_VERSIONS constants below
 
-Handshake frames **carry no protocol-identifier constants**: the Phase 1 parameter JSON and the Phase 4 AAD
-contain no version string. Whether the peer is compatible is reflected by the Phase 3 confirmation-label check.
+Handshake frames carry the negotiated protocol version in exactly one place: the Phase 1 parameter JSON
+(`proto`, mandatory since 1.1.0 -- a peer that omits it is refused, never guessed at). The Phase 4 AAD still
+contains no version string: it exists for routing and authentication, and a version there buys nothing.
 
 Hard-coding version strings anywhere is forbidden; this module is the single source of truth.
 """
@@ -47,13 +48,13 @@ Hard-coding version strings anywhere is forbidden; this module is the single sou
 # It does NOT resolve inside this repo -- this repo ships no copy of the protocol text.
 # Once published, read it from the ZT-DSP-docs repository on GitHub.
 FOLLOWS_DOC: str = "ZT-DSP Protocol Master Guide"
-FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md"
+FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP_1.1.0_Master_Guide.md"
 
 # --- Total-guide versions this implementation applies to (many-to-many: may hold several) ---
-APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0",)
+APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.1.0",)
 
 # --- total-guide version (document revision number; takes no part in network communication) ---
-DOCS_VERSION: str = "1.0.0"
+DOCS_VERSION: str = "1.1.0"
 
 # --- Role of this implementation: "client" or "server" ---
 ROLE: str = "client"
@@ -62,15 +63,15 @@ ROLE: str = "client"
 LANGUAGE_PREFIX: str = "PY"
 
 # --- implementation version: the numeric part of a client / server version ---
-CODE_VERSION: str = "1.0.0"
+CODE_VERSION: str = "1.1.0"
 
 IMPLEMENTATION_ID: str = f"ZT-DSP_{LANGUAGE_PREFIX}-{CODE_VERSION}"
 
 # --- All client versions of this kind, applicable to the same total-guide versions ---
-CLIENT_VERSIONS: tuple[str, ...] = ("ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0")
+CLIENT_VERSIONS: tuple[str, ...] = ("ZT-DSP_PY-1.1.0", "ZT-DSP_RS-1.1.0")
 
 # --- Server versions applicable to the same total-guide versions (placeholder, not implemented) ---
-SERVER_VERSIONS: tuple[str, ...] = ("ZT-DSP_SV-1.0.0",)
+SERVER_VERSIONS: tuple[str, ...] = ("ZT-DSP_SV-1.1.0",)
 
 
 def format_version() -> str:

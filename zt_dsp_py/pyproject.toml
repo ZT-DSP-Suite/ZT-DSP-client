@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zt-dsp-py"
-version = "1.0.0"
-description = "ZT-DSP — Zero Trust Dynamic Synchronization Protocol (code 1.0.0; follows the ZT-DSP Protocol Master Guide, docs 1.0.0)"
+version = "1.1.0"
+description = "ZT-DSP — Zero Trust Dynamic Synchronization Protocol (code 1.1.0; follows the ZT-DSP Protocol Master Guide, docs 1.1.0)"
 requires-python = ">=3.10"
 license = { text = "MIT OR Apache-2.0" }
 dependencies = ["cryptography"]

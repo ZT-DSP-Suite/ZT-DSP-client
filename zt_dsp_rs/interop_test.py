@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ZT-DSP_RS-1.0.0 cross-language interop verification (single file).
+"""ZT-DSP_RS-1.1.0 cross-language interop verification (single file).
 
 All scenarios bind to the 127.0.0.1 loopback only. Suites:
 
-  [interop]  with ZT-DSP_PY-1.0.0 (the current Python reference implementation, conforming to docs 1.0.0)
+  [interop]  with ZT-DSP_PY-1.1.0 (the current Python reference implementation, conforming to docs 1.1.0)
     A. Python listens (responder) ← Rust connects (initiator)   → expected: handshake + bidirectional message exchange
     B. Rust listens (responder)   ← Python connects (initiator) → expected: handshake + bidirectional message exchange
 
@@ -214,8 +214,8 @@ def suite_interop(rust_bin, port):
         time.sleep(1)
 
     if ok:
-        print("\n[[ok]] interop suite passed: ZT-DSP_RS-1.0.0 and ZT-DSP_PY-1.0.0 interoperate on the wire"
-              "(both conforming to docs 1.0.0)")
+        print("\n[[ok]] interop suite passed: ZT-DSP_RS-1.1.0 and ZT-DSP_PY-1.1.0 interoperate on the wire"
+              "(both conforming to docs 1.1.0)")
     else:
         print("\n[!] interop suite has failing scenarios")
     return ok

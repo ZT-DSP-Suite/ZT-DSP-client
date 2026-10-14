@@ -100,7 +100,7 @@ PSK 注入优先级：`--psk-file`（推荐）> `--psk-env` > `--psk`（不安�
 |----|----|
 | 实现标识 | `ZT-DSP_RS-1.0.0`（语言前缀 RS，见仓库根 README 命名规则体系） |
 | docs 版本 | `1.0.0`（本实现所遵循的总指导修订号） |
-| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP_1.0.0_总指导.md` |
+| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP_1.1.0_总指导.md` |
 
 `--version` 输出（与 Python 实现同格式）：`ZT-DSP_RS-1.0.0 (docs 1.0.0)`
 

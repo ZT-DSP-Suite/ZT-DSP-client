@@ -150,10 +150,10 @@ mod integration_tests {
     #[test]
     fn cli_version_contract() {
         // Two-part --version output contract: implementation identifier + docs version
-        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.0)");
+        assert_eq!(format_version(), "ZT-DSP_RS-1.1.0 (docs 1.1.0)");
         let v = format_version();
-        assert!(v.contains("ZT-DSP_RS-1.0.0"));
-        assert!(v.contains("docs 1.0.0"));
+        assert!(v.contains("ZT-DSP_RS-1.1.0"));
+        assert!(v.contains("docs 1.1.0"));
     }
 
     #[test]

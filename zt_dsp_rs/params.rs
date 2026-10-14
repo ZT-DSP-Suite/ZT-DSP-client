@@ -2,8 +2,12 @@
 //!
 //! All parameters can be freely declared by the server operator in their own library; both
 //! communicating parties must match exactly before access. On-the-wire structure of the parameter JSON: keys in lexicographic order, compact separators, UTF-8
-//! (F.1 — exactly 120 bytes under default parameters). The parameter JSON carries **no version or protocol
-//! identifier fields at all**: the documentation-to-code correspondence is maintained by a bidirectional declaration, not written into on-the-wire data.
+//! (F.1 — exactly 136 bytes under default parameters).
+//!
+//! Version handling (1.1.0): the parameter JSON carries a mandatory `proto` field. The Phase 1 frame — including
+//! this field — is part of the handshake transcript, so the negotiated version is covered by the Phase 3
+//! confirmation tags. A 1.0.0 peer sends no `proto` and is refused outright rather than guessed at: that refusal is
+//! the downgrade block, and no code path silently continues on an older protocol.
 //!
 //! All type/value errors of peer-controllable input (`from_value`) are uniformly converged into
 //! [`Error::Param`] - panics or the escape of other exceptions is absolutely forbidden (Appendix H.4).
@@ -17,7 +21,15 @@ pub const RANDOM_LEN: u64 = 256; // Connection nonce length (bits, multiple of 8
 pub const RANDOM_RATE: u64 = 1024; // Random generation rate (counts/sec)
 pub const WINDOW: u64 = 60; // Negotiation window (seconds; both sides must agree; not the timestamp window)
 pub const TIME_WINDOW: u64 = 30; // Timestamp window (seconds, per-peer configurable)
-pub const KEY_LEN: u64 = 256; // Session key length (bits, 128/192/256 only)
+pub const KEY_LEN: u64 = 256; // Session key length (bits; 1.1.0 floor: must not be below MIN_KEY_BITS)
+// --- Version negotiation and security floor (1.1.0) ---
+/// Protocol version spoken by this build.
+pub const PROTO_VERSION: &str = "1.1.0";
+/// No silent fallback: a version outside this list is rejected instead of being treated as the default.
+pub const SUPPORTED_PROTO_VERSIONS: &[&str] = &["1.1.0"];
+/// Policy floor: never negotiate below a 256-bit session key.
+pub const MIN_KEY_BITS: u64 = 256;
+
 pub const HASH_NAME: &str = "SHA3-256";
 pub const AEAD_NAME: &str = "AES-256-GCM";
 
@@ -89,6 +101,7 @@ pub fn validate_module_flags(flags: &Value) -> Result<()> {
 /// ZT-DSP protocol parameter set. Validated on construction (equivalent to Python `__post_init__`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Params {
+    pub proto_version: String,
     pub random_len: u64,
     pub random_rate: u64,
     pub window: u64,
@@ -122,6 +135,7 @@ impl Params {
         module_flags: Value,
     ) -> Result<Self> {
         let p = Params {
+            proto_version: PROTO_VERSION.to_string(),
             random_len,
             random_rate,
             window,
@@ -143,8 +157,22 @@ impl Params {
                 "random_len/8 must not exceed the connection nonce cap {MAX_NONCE} bytes"
             )));
         }
-        if !matches!(self.key_len, 128 | 192 | 256) {
-            return Err(Error::param("key_len supports 128/192/256 only"));
+        if !SUPPORTED_PROTO_VERSIONS.contains(&self.proto_version.as_str()) {
+            return Err(Error::param(format!(
+                "unsupported protocol version {:?}; this build speaks {:?} -- refusing to downgrade",
+                self.proto_version, SUPPORTED_PROTO_VERSIONS
+            )));
+        }
+        if self.key_len % 8 != 0 {
+            return Err(Error::param("key_len must be a multiple of 8"));
+        }
+        // Policy floor. Peer-supplied values reach us through from_value(), which validates the same way,
+        // so an offered 128-bit key is rejected here too.
+        if self.key_len < MIN_KEY_BITS {
+            return Err(Error::param(format!(
+                "key_len must be at least {MIN_KEY_BITS} bits; refusing to negotiate a {}-bit session key",
+                self.key_len
+            )));
         }
         if self.window == 0 {
             return Err(Error::param("window must be a positive integer"));
@@ -157,9 +185,11 @@ impl Params {
     }
 
     /// On-the-wire key/value pairs of the parameter JSON (key order guaranteed by serde_json BTreeMap lexicographic order).
-    /// Contains no version / protocol identifier fields — no version string appears anywhere in the on-the-wire data.
+    /// `proto` is mandatory: the negotiated version travels on the wire and, through the Phase 1 frame, into the
+    /// handshake transcript.
     fn to_wire(&self) -> Value {
         let mut m = Map::new();
+        m.insert("proto".into(), Value::String(self.proto_version.clone()));
         m.insert("random_len".into(), Value::from(self.random_len));
         m.insert("random_rate".into(), Value::from(self.random_rate));
         m.insert("window".into(), Value::from(self.window));
@@ -170,7 +200,7 @@ impl Params {
         Value::Object(m)
     }
 
-    /// Compact JSON bytes (keys lexicographic, no whitespace, UTF-8). 120 bytes under default parameters.
+    /// Compact JSON bytes (keys lexicographic, no whitespace, UTF-8). 136 bytes under default parameters.
     pub fn to_json(&self) -> Result<Vec<u8>> {
         let wire = self.to_wire();
         let s = serde_json::to_vec(&wire)
@@ -198,7 +228,18 @@ impl Params {
             }
             None => Value::Object(Map::new()),
         };
+        // A pre-1.1 peer sends no version field. Guessing one here is exactly the downgrade this field exists to
+        // prevent, so refuse and say why.
+        let proto_version = match obj.get("proto") {
+            Some(v) => coerce_string(Some(v), PROTO_VERSION)?,
+            None => {
+                return Err(Error::param(format!(
+                    "peer sent no proto version field (pre-1.1 peer); refusing to downgrade from {PROTO_VERSION}"
+                )))
+            }
+        };
         let p = Params {
+            proto_version,
             random_len: coerce_u64(obj.get("random_len"), RANDOM_LEN, "random_len")?,
             random_rate: coerce_u64(obj.get("random_rate"), RANDOM_RATE, "random_rate")?,
             window: coerce_u64(obj.get("window"), WINDOW, "window")?,
@@ -211,9 +252,12 @@ impl Params {
         Ok(p)
     }
 
-    /// Seven-item match check (F.1: fixed order; stop at the first mismatch).
+    /// Eight-item match check (F.1: fixed order; stop at the first mismatch).
     /// Returns the reason of the first mismatch; returns `None` when all are equal.
     pub fn match_error(&self, peer: &Params) -> Option<String> {
+        if peer.proto_version != self.proto_version {
+            return Some("proto_version mismatch".into());
+        }
         if peer.random_len != self.random_len {
             return Some("random_len mismatch".into());
         }
@@ -330,18 +374,27 @@ mod tests {
             (p.random_len, p.random_rate, p.window, p.key_len, p.hash_name.as_str(), p.aead_name.as_str()),
             (256, 1024, 60, 256, "SHA3-256", "AES-256-GCM")
         );
-        // F.1: under default parameters the parameter JSON is exactly 120 bytes, byte-for-byte equal to the official layout
-        let expected: &[u8] = br#"{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,"module_flags":{},"random_len":256,"random_rate":1024,"window":60}"#;
+        // F.1: under default parameters the parameter JSON is exactly 136 bytes, byte-for-byte equal to the official
+        // layout. Since 1.1.0 it carries a mandatory "proto" field -- its absence is the downgrade block.
+        let expected: &[u8] = br#"{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,"module_flags":{},"proto":"1.1.0","random_len":256,"random_rate":1024,"window":60}"#;
         let got = p.to_json().unwrap();
         assert_eq!(got, expected);
-        assert_eq!(got.len(), 120);
+        assert_eq!(got.len(), 136);
     }
 
     #[test]
     fn bad_values_fail() {
         assert!(Params::build(255, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // not a multiple of 8
         assert!(Params::build(4608, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // exceeds the nonce cap
-        assert!(Params::build(256, 1024, 60, 100, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // bad key_len
+        assert!(Params::build(256, 1024, 60, 100, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // not a multiple of 8
+        // 1.1.0 policy floor: 128-bit session keys are refused, both locally and as peer-supplied values
+        assert!(Params::build(256, 1024, 60, 128, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err());
+        let mut legacy = Params::new().unwrap().to_wire();
+        legacy.as_object_mut().unwrap().remove("proto");
+        assert!(Params::from_value(&legacy).is_err()); // pre-1.1 peer, refused not downgraded
+        let mut wrong = Params::new().unwrap().to_wire();
+        wrong["proto"] = Value::String("9.9.9".into());
+        assert!(Params::from_value(&wrong).is_err()); // unknown version, no fallback
         assert!(Params::build(256, 1024, 0, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // zero window
         assert!(Params::build(256, 0, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // zero rate
     }
@@ -391,7 +444,7 @@ mod tests {
         let v: Value = serde_json::from_str(r#"{"key_len": 999}"#).unwrap();
         assert!(Params::from_value(&v).is_err());
         // Numeric string convergence (aligned with Python int() behavior)
-        let v: Value = serde_json::from_str(r#"{"random_len": "512", "window": 45}"#).unwrap();
+        let v: Value = serde_json::from_str(r#"{"proto": "1.1.0", "random_len": "512", "window": 45}"#).unwrap();
         let ok = Params::from_value(&v).unwrap();
         assert_eq!(ok.random_len, 512);
         assert_eq!(ok.window, 45);
@@ -403,10 +456,15 @@ mod tests {
         let b = Params::new().unwrap();
         assert_eq!(a.match_error(&b), None);
         // When several items are changed at once, only the first is reported (fixed order: random_len takes priority)
-        let c = Params::build(512, 1024, 30, 128, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
+        let c = Params::build(512, 1024, 30, 512, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
         assert_eq!(a.match_error(&c).as_deref(), Some("random_len mismatch"));
-        let d = Params::build(256, 1024, 30, 128, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
+        let d = Params::build(256, 1024, 30, 512, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
         assert_eq!(a.match_error(&d).as_deref(), Some("key_len mismatch"));
+        // Version takes priority over every other item (F.1 fixed order: proto first)
+        let mut other = Params::new().unwrap();
+        other.random_len = 512;
+        other.proto_version = "1.0.0".into();
+        assert_eq!(a.match_error(&other).as_deref(), Some("proto_version mismatch"));
         let mut flags = Map::new();
         flags.insert("x".into(), Value::from(1));
         let e = Params::build(256, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(flags)).unwrap();
