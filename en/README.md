@@ -26,7 +26,7 @@ An open, zero trust, end-to-end encrypted communication protocol with official P
 This implementation conforms to "ZT-DSP Protocol Master Guide"; the path is given by FOLLOWS_DOC_PATH in zt_dsp_py/version.py:
 
 ```
-ZT-DSP-docs (sibling repo) > en/spec/ZT-DSP-1.0.0-Master_Guide.mdZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md
+ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md
 ```
 
 Documentation and code are **not bound by version numbers**: the document side declares "which settings of the code this document governs", and the code side declares "which document this implementation follows".
