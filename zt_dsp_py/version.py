@@ -47,7 +47,7 @@ Hard-coding version strings anywhere is forbidden; this module is the single sou
 # It does NOT resolve inside this repo -- this repo ships no copy of the protocol text.
 # Once published, read it from the ZT-DSP-docs repository on GitHub.
 FOLLOWS_DOC: str = "ZT-DSP Protocol Master Guide"
-FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md"
+FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md"
 
 # --- Total-guide versions this implementation applies to (many-to-many: may hold several) ---
 APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0",)

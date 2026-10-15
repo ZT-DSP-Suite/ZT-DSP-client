@@ -100,7 +100,7 @@ Public default values and low-entropy keys are rejected (entropy < 3.5 bits/byte
 |----|----|
 | Implementation identifier | `ZT-DSP_RS-1.0.0` (language prefix RS, see the naming convention system in the repository root README) |
 | docs version | `1.0.0` (revision of the master guidance followed by this implementation) |
-| Followed document | *ZT-DSP Protocol Master Guidance*, path `ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md` |
+| Followed document | *ZT-DSP Protocol Master Guidance*, path `ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md` |
 
 `--version` output (same format as the Python implementation): `ZT-DSP_RS-1.0.0 (docs 1.0.0)`
 

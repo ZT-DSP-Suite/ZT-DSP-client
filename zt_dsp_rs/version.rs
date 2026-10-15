@@ -33,7 +33,7 @@
 pub const FOLLOWS_DOC: &str = "ZT-DSP Protocol Master Guide";
 
 /// Code-side bidirectional declaration: the path of the followed document.
-pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md";
+pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md";
 
 /// Total-guide versions this implementation applies to (many-to-many: may hold several).
 pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0"];
@@ -78,7 +78,7 @@ mod tests {
         assert_eq!(LANGUAGE_PREFIX, "RS");
         assert_eq!(ROLE, "client");
         assert_eq!(FOLLOWS_DOC, "ZT-DSP Protocol Master Guide");
-        assert_eq!(FOLLOWS_DOC_PATH, "ZT-DSP-docs/en/spec/ZT-DSP_1.0.0_Master_Guide.md");
+        assert_eq!(FOLLOWS_DOC_PATH, "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md");
     }
 
     #[test]
