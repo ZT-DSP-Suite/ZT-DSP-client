@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Encryption session tests: round-trip send/recv, replay rejection, AAD tampering, out-of-window ratchet, padding, desync (Appendix F.5/G)."""
 import socket
 import struct

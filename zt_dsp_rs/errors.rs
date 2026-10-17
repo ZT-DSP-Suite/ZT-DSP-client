@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! Protocol-layer error system (a Rust-typed consolidation of Master Guide 1.0.0, Appendix H.5).
 //!
 //! The exception tree of the Python reference implementation maps one-to-one onto this enum:

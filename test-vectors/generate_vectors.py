@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """ZT-DSP 跨实现共享测试向量 —— **生成器**。
 
 这个文件**不参与 CI**。它只在两种时候跑：

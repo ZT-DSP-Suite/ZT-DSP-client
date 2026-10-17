@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """帧读取器的敌意输入回归 —— 也就是 fuzz 目标的**前提**，在这里变成一次性测试。
 
 fuzz/fuzz_frames.py 需要 atheris（要单独装、跑得慢），不适合当每次提交的

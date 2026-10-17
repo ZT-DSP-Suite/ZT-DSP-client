@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 # ZT-DSP frame parser fuzz target (Python / atheris).
 #
 # Mirror of fuzz/frames.rs: the same four untrusted-input entry points, driven

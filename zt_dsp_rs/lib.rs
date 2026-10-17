@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! ZT-DSP_RS-1.0.0 — library entry point.
 //!
 //! The crate root is also the binary entry point (`zt-dsp-rs.rs`), which is the

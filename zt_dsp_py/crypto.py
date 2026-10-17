@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Cryptographic primitives layer (Master Guide 1.0.0 Section 4.2 /
 Appendices F.3-F.5).
 

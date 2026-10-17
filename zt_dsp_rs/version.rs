@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! Version contract (single source of truth).
 //!
 //! Word-for-word aligned with the Python reference implementation `zt_dsp_py/version.py`:

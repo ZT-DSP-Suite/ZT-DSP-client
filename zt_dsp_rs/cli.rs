@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! Minimal command-line interface (command-line direct-connection subset plus base-platform subcommands; see the official-client README).
 //!
 //! Design boundaries:

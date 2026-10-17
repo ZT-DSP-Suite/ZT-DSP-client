@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! Encrypted data session (Master Guide 1.0.0 §4.2.4/4.2.5 / Appendix F.5 / Appendix G).
 //!
 //! Core invariants:

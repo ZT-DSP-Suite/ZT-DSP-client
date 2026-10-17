@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """P2P placeholder Token Hash (Master Guide 1.0.0, Section 4.1.1, "P2P direct placeholder path without TCA").
 
 When no TCA token is present, both sides derive a placeholder address via PSK,

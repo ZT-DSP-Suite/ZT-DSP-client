@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
 from zt_dsp_py.version import (
     APPLIES_TO_DOC_VERSIONS,

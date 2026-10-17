@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! On-wire frame codec (Master Guide 1.0.0, Appendix F).
 //!
 //! Four frame types (F.1/F.3/F.4/F.5), all Big-Endian, Length-Prefix mode, no magic

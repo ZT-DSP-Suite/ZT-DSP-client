@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Protocol parameter set (Master Guide 1.0.0, Appendix B / F.1).
 
 Every parameter may be declared freely by the server operator in their

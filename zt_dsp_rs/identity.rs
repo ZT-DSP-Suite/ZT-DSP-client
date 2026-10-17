@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! P2P placeholder token hash (Master Guide 1.0.0, section 4.1.1, "P2P direct-connection placeholder path without TCA").
 //!
 //! Without a TCA token, both sides derive placeholder door numbers from the PSK, ensuring that the Phase 1 identity_blob and

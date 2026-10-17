@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Cross-document reference checks: every appendix letter cited in code must exist in the spec.
 
 Context: commit 6e1d425 of ZT-DSP-docs ("Prune stale appendices") removed appendices A / D / E,

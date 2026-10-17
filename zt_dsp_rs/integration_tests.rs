@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 // =============================================================================
 // Integration tests: real TCP bidirectional flow, CLI contract, defensive-rule regression
 // (historic PoC scenarios must be "unbreakable"). The end-to-end binary smoke test is covered by interop_test.py.

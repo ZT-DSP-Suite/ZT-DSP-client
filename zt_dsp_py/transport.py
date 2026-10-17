@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Transport and session runners (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
 
 Provides:

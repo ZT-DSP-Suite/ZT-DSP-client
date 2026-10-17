@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """ZT-DSP_RS-1.0.0 cross-language interop verification (single file).
 
 All scenarios bind to the 127.0.0.1 loopback only. Suites:

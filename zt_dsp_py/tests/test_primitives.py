@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Protocol primitive tests: parameter validation, P2P identity derivation, key derivation formulas (Appendix F.1 / 4.2.2 / 4.2.3)."""
 import pytest
 from cryptography.hazmat.primitives import hashes

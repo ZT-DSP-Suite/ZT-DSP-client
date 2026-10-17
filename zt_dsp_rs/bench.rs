@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! Benchmark tests (main capability of the benchmark platform).
 //!
 //! Three benchmark groups, all run over the local loopback:

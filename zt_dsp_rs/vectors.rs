@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! ZT-DSP 共享测试向量 —— Rust 侧消费者。
 //!
 //! 读的是 `ZT-DSP-client/test-vectors/vectors.json`，与 `zt_dsp_py/tests/test_vectors.py`

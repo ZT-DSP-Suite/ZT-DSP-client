@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Frame codec tests (Appendix F: cap pre-validation, total-deadline read, nonce/AAD construction)."""
 import socket
 import struct

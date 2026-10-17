@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """ZT-DSP 共享测试向量 —— Python 侧消费者。
 
 `test-vectors/vectors.json` 由**两侧共同**读取，不是 Python 的自证：

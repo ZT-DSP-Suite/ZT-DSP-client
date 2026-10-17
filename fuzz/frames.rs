@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 //! ZT-DSP frame parser fuzz target (Rust / cargo-fuzz).
 //
 // The frame readers take a `&mut TcpStream`, because that is what they really consume

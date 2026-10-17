@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Render JUnit and coverage results into a GitHub Actions job summary.
 
 Used by .github/workflows/ci.yml. Writes to $GITHUB_STEP_SUMMARY when that variable is

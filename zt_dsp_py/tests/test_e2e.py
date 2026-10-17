@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """End-to-end test: full real-TCP two-end flow + CLI contract (the automated version of the local two-instance experience in the README quick start)."""
 import socket
 import subprocess
