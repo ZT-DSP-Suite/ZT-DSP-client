@@ -40,8 +40,7 @@ pub const FMT_PADDING: u8 = 0x01;
 pub const RECV_CHUNK: usize = 8192;
 
 /// Minimum Phase-four payload = ts(8) + fmt(1) + dst(32) + src(32) + next_seed(32) (Heartbeat packet)
-pub const MIN_PAYLOAD_LEN: usize =
-    TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN * 2 + NEXT_SEED_LEN; // 105
+pub const MIN_PAYLOAD_LEN: usize = TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN * 2 + NEXT_SEED_LEN; // 105
 
 /// Force-close the socket, ignoring all errors (after a half-packet timeout frame sync is already broken — the only way out).
 pub fn force_close_socket(sock: &TcpStream) {
@@ -99,7 +98,9 @@ pub fn read_exact_deadline(
             match sock.read(&mut buf[offset..]) {
                 Ok(0) => {
                     force_close_socket(sock);
-                    return Err(Error::connection_closed("connection closed by peer before the read completed"));
+                    return Err(Error::connection_closed(
+                        "connection closed by peer before the read completed",
+                    ));
                 }
                 Ok(n) => offset += n,
                 Err(e) if is_timeout_kind(&e) => {
@@ -375,7 +376,8 @@ mod tests {
         let (left, right) = pair();
         use std::io::Write;
         let mut left = left;
-        left.write_all(&(MAX_PARAM_JSON as u32 + 1).to_be_bytes()).unwrap();
+        left.write_all(&(MAX_PARAM_JSON as u32 + 1).to_be_bytes())
+            .unwrap();
         let mut right = right;
         let err = read_phase_one(&mut right, None).unwrap_err();
         assert!(matches!(err, Error::Protocol(_)));
@@ -395,7 +397,15 @@ mod tests {
 
         let resp = pack_responder_key(&pk).unwrap();
         assert_eq!(resp.len(), 36);
-        assert_eq!(resp, 32u32.to_be_bytes().iter().chain(pk.iter()).cloned().collect::<Vec<u8>>());
+        assert_eq!(
+            resp,
+            32u32
+                .to_be_bytes()
+                .iter()
+                .chain(pk.iter())
+                .cloned()
+                .collect::<Vec<u8>>()
+        );
     }
 
     #[test]
@@ -434,7 +444,8 @@ mod tests {
         use std::io::Write;
         left.write_all(&[b's'; 32]).unwrap();
         left.write_all(&0u64.to_be_bytes()).unwrap();
-        left.write_all(&(MAX_CIPHERTEXT as u32 + 1).to_be_bytes()).unwrap();
+        left.write_all(&(MAX_CIPHERTEXT as u32 + 1).to_be_bytes())
+            .unwrap();
         let mut right = right;
         assert!(read_data_header(&mut right, None).is_err());
     }
@@ -469,10 +480,19 @@ mod tests {
         left.write_all(b"a").unwrap(); // send only 1 byte; 2 bytes need to be read
         let started = Instant::now();
         let mut buf = [0u8; 2];
-        let err = read_exact_deadline(&mut right, &mut buf, "test", Some(started + Duration::from_millis(200))).unwrap_err();
+        let err = read_exact_deadline(
+            &mut right,
+            &mut buf,
+            "test",
+            Some(started + Duration::from_millis(200)),
+        )
+        .unwrap_err();
         let elapsed = started.elapsed();
         assert!(matches!(err, Error::Timeout(_)));
-        assert!(elapsed < Duration::from_secs(1), "well below the 2s+2s of per-byte re-timing; actual {elapsed:?}");
+        assert!(
+            elapsed < Duration::from_secs(1),
+            "well below the 2s+2s of per-byte re-timing; actual {elapsed:?}"
+        );
     }
 
     #[test]

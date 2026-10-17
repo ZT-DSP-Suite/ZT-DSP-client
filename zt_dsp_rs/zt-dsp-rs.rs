@@ -10,4 +10,3 @@
 fn main() {
     zt_dsp_rs::cli::main();
 }
-

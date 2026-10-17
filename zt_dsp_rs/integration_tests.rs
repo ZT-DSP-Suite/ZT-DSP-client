@@ -68,9 +68,14 @@ mod integration_tests {
         b.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
 
         // Bidirectional messages
-        sa.send_packet(&mut a, "message from Rust initiator".as_bytes()).unwrap();
-        assert_eq!(sb.recv_packet(&mut b).unwrap(), "message from Rust initiator".as_bytes());
-        sb.send_packet(&mut b, "response from responder".as_bytes()).unwrap();
+        sa.send_packet(&mut a, "message from Rust initiator".as_bytes())
+            .unwrap();
+        assert_eq!(
+            sb.recv_packet(&mut b).unwrap(),
+            "message from Rust initiator".as_bytes()
+        );
+        sb.send_packet(&mut b, "response from responder".as_bytes())
+            .unwrap();
         assert_eq!(sa.recv_packet(&mut a).unwrap(), b"response from responder");
 
         // Heartbeat (empty payload), both directions
@@ -136,7 +141,9 @@ mod integration_tests {
             Duration::from_secs(5),
         )
         .unwrap();
-        let m1 = init.perform_handshake(&mut client.try_clone().unwrap()).unwrap();
+        let m1 = init
+            .perform_handshake(&mut client.try_clone().unwrap())
+            .unwrap();
         let m2 = server.join().unwrap().unwrap();
         assert_eq!(m1.session_id, m2.session_id);
         assert_eq!(m1.send_ek, m2.recv_ek);
@@ -165,7 +172,10 @@ mod integration_tests {
         // Here we assert that after a successful parse all three PSK fields are empty (i.e. the application layer will necessarily reject).
         let cli = Cli::try_parse_from(["zt-dsp-rs", "--role", "listen", "--port", "37291"])
             .expect("the parameters themselves are valid");
-        assert!(!cli.has_any_psk(), "no PSK injection method was provided; the application layer must reject");
+        assert!(
+            !cli.has_any_psk(),
+            "no PSK injection method was provided; the application layer must reject"
+        );
     }
 
     #[test]
@@ -360,4 +370,3 @@ mod integration_tests {
         }
     }
 }
-

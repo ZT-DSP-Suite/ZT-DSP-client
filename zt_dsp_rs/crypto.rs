@@ -14,7 +14,7 @@
 //! - `salt=None` → RFC default all-zero salt (consistent with Python
 //!   `HKDF(salt=None)`);
 //! - salt is an **independent salt parameter**, not material
-//!   concatenated into IKM (Master Guide 1.0.0, Section 4.2.2, 
+//!   concatenated into IKM (Master Guide 1.0.0, Section 4.2.2,
 //!   correction item).
 //!
 //! Security notes:
@@ -44,7 +44,8 @@ pub const GCM_NONCE_LEN: usize = 12;
 /// Cryptographically secure random bytes.
 pub fn secure_random(n: usize) -> Result<Vec<u8>> {
     let mut buf = vec![0u8; n];
-    getrandom::getrandom(&mut buf).map_err(|e| Error::crypto(format!("random source failure: {e}")))?;
+    getrandom::getrandom(&mut buf)
+        .map_err(|e| Error::crypto(format!("random source failure: {e}")))?;
     Ok(buf)
 }
 
@@ -254,7 +255,10 @@ pub fn aead_encrypt(key: &[u8], nonce: &[u8], plaintext: &[u8], aad: &[u8]) -> R
     use aes_gcm::aead::{Aead, KeyInit, Payload};
     use aes_gcm::{Aes128Gcm, Aes256Gcm, AesGcm, Nonce};
     let nonce = Nonce::from_slice(nonce); // 12B
-    let payload = Payload { msg: plaintext, aad };
+    let payload = Payload {
+        msg: plaintext,
+        aad,
+    };
     match key.len() {
         16 => {
             let c = Aes128Gcm::new_from_slice(key)
@@ -284,7 +288,10 @@ pub fn aead_decrypt(key: &[u8], nonce: &[u8], ciphertext: &[u8], aad: &[u8]) -> 
     use aes_gcm::aead::{Aead, KeyInit, Payload};
     use aes_gcm::{Aes128Gcm, Aes256Gcm, AesGcm, Nonce};
     let nonce = Nonce::from_slice(nonce);
-    let payload = Payload { msg: ciphertext, aad };
+    let payload = Payload {
+        msg: ciphertext,
+        aad,
+    };
     let inner = || -> std::result::Result<Vec<u8>, aes_gcm::Error> {
         match key.len() {
             16 => Aes128Gcm::new_from_slice(key)

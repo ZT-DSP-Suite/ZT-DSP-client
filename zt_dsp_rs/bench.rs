@@ -1,17 +1,9 @@
 //! Benchmark tests (main capability of the benchmark platform).
 //!
 //! Three benchmark groups, all run over the local loopback:
-//! 1. `handshake` — end-to-end latency of the full four-phase handshake
-//!    (X25519 + 5x HKDF + 3x HMAC +
-//!    frame encode/decode + all verification paths), reporting mean/P50/P95
-//!    and handshakes per second;
-//! 2. `throughput` — one-way data throughput of an established session
-//!    (including per-packet ratchet rotation + AES-GCM
-//!    + timestamp verification), i.e. the reachable throughput of the real
-//!    protocol path;
-//! 3. `primitives` — cryptographic primitive micro-benchmarks: X25519 key
-//!    generation / shared secret, HKDF,
-//!    HMAC-SHA3-256, AES-256-GCM, SHA3-256.
+//! 1. `handshake`: end-to-end latency of the full four-phase handshake, covering X25519, 5x HKDF, 3x HMAC, frame encode/decode and all verification paths, reporting mean/P50/P95 and handshakes per second;
+//! 2. `throughput`: one-way data throughput of an established session, including per-packet ratchet rotation, AES-GCM and timestamp verification, i.e. the reachable throughput of the real protocol path;
+//! 3. `primitives`: cryptographic primitive micro-benchmarks for X25519 key generation and shared secret, HKDF, HMAC-SHA3-256, AES-256-GCM and SHA3-256.
 //!
 //! Results serve as performance baselines for cross-language implementations
 //! (ZT-DSP_PY / ZT-DSP_RS / ...).
@@ -54,25 +46,48 @@ fn pair() -> (TcpStream, TcpStream) {
 }
 
 fn bench_handshake(rounds: usize) {
-    println!("\n=== Handshake benchmark (full four-phase, loopback TCP, {} rounds) ===", rounds);
+    println!(
+        "\n=== Handshake benchmark (full four-phase, loopback TCP, {} rounds) ===",
+        rounds
+    );
     let psk = vec![0x5Au8; 32];
     let params = Params::new().expect("default params");
     let mut samples: Vec<Duration> = Vec::with_capacity(rounds);
     for i in 0..rounds {
         let (mut a, b) = pair();
-        let mut init =
-            HandshakePeer::new(psk.clone(), params.clone(), Role::Initiator, None, 0.0,
-                TIME_WINDOW, Duration::from_millis(100), Duration::from_secs(10))
-                .expect("peer");
-        let mut resp = HandshakePeer::new(psk.clone(), params.clone(), Role::Responder, None, 0.0,
-                TIME_WINDOW, Duration::from_millis(100), Duration::from_secs(10))
-                .expect("peer");
+        let mut init = HandshakePeer::new(
+            psk.clone(),
+            params.clone(),
+            Role::Initiator,
+            None,
+            0.0,
+            TIME_WINDOW,
+            Duration::from_millis(100),
+            Duration::from_secs(10),
+        )
+        .expect("peer");
+        let mut resp = HandshakePeer::new(
+            psk.clone(),
+            params.clone(),
+            Role::Responder,
+            None,
+            0.0,
+            TIME_WINDOW,
+            Duration::from_millis(100),
+            Duration::from_secs(10),
+        )
+        .expect("peer");
         let started = Instant::now();
         let h = std::thread::spawn(move || init.perform_handshake(&mut a));
         let mut b2 = b.try_clone().expect("clone stream for handshake");
-        let m2 = resp.perform_handshake(&mut b2).expect("responder handshake");
+        let m2 = resp
+            .perform_handshake(&mut b2)
+            .expect("responder handshake");
         let m1 = h.join().expect("join").expect("initiator handshake");
-        assert_eq!(m1.session_id, m2.session_id, "round {i} session IDs should match");
+        assert_eq!(
+            m1.session_id, m2.session_id,
+            "round {i} session IDs should match"
+        );
         samples.push(started.elapsed());
         drop(SecureSession::new(m1));
         drop(SecureSession::new(m2));
@@ -83,7 +98,12 @@ fn bench_handshake(rounds: usize) {
     let p50 = percentile(&sorted, 0.50);
     let p95 = percentile(&sorted, 0.95);
     let per_sec = samples.len() as f64 / sorted.iter().sum::<Duration>().as_secs_f64();
-    println!("  Mean: {}  P50: {}  P95: {}", fmt_us(mean), fmt_us(p50), fmt_us(p95));
+    println!(
+        "  Mean: {}  P50: {}  P95: {}",
+        fmt_us(mean),
+        fmt_us(p50),
+        fmt_us(p95)
+    );
     println!("  Throughput: {:.1} handshakes/s", per_sec);
 }
 
@@ -95,12 +115,28 @@ fn bench_throughput(mib: usize, packet_payload: usize) {
     let psk = vec![0x33u8; 32];
     let params = Params::new().expect("default params");
     let (mut a, b) = pair();
-    let mut init = HandshakePeer::new(psk.clone(), params.clone(), Role::Initiator, None, 0.0,
-            TIME_WINDOW, Duration::from_millis(100), Duration::from_secs(10))
-            .expect("peer");
-    let mut resp = HandshakePeer::new(psk, params, Role::Responder, None, 0.0,
-            TIME_WINDOW, Duration::from_millis(100), Duration::from_secs(10))
-            .expect("peer");
+    let mut init = HandshakePeer::new(
+        psk.clone(),
+        params.clone(),
+        Role::Initiator,
+        None,
+        0.0,
+        TIME_WINDOW,
+        Duration::from_millis(100),
+        Duration::from_secs(10),
+    )
+    .expect("peer");
+    let mut resp = HandshakePeer::new(
+        psk,
+        params,
+        Role::Responder,
+        None,
+        0.0,
+        TIME_WINDOW,
+        Duration::from_millis(100),
+        Duration::from_secs(10),
+    )
+    .expect("peer");
     let (m1, m2) = {
         // The handshake thread uses a handle clone of b (same socket); b is kept as the receiver
         let mut b_hs = b.try_clone().expect("clone stream for handshake");
@@ -255,7 +291,10 @@ fn bench_primitives(iters: usize) {
 
 /// Benchmark entry point.
 pub fn run_benchmarks(handshakes: usize, throughput_mib: usize, primitive_iters: usize) {
-    println!("{} benchmark platform (loopback TCP, default params)", crate::version::format_version());
+    println!(
+        "{} benchmark platform (loopback TCP, default params)",
+        crate::version::format_version()
+    );
     bench_handshake(handshakes.max(5));
     bench_throughput(throughput_mib.max(1), 16384);
     bench_primitives(primitive_iters.max(100));

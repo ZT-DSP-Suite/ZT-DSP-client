@@ -164,7 +164,9 @@ impl ChatSession {
         };
         let hb_handle = ChatHandle {
             session: session.clone(),
-            stream: stream.try_clone().expect("clone stream for heartbeat thread"),
+            stream: stream
+                .try_clone()
+                .expect("clone stream for heartbeat thread"),
             running: running.clone(),
             print_lock: print_lock.clone(),
         };
@@ -319,9 +321,7 @@ pub fn run_listen(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
         let socket = Socket::new(Domain::for_address(addr), Type::STREAM, Some(Protocol::TCP))
             .map_err(Error::Io)?;
         let _ = socket.set_reuse_address(true);
-        socket
-            .bind(&addr.into())
-            .map_err(Error::Io)?;
+        socket.bind(&addr.into()).map_err(Error::Io)?;
         socket.listen(1).map_err(Error::Io)?;
         TcpListener::from(socket)
     };
@@ -436,7 +436,10 @@ pub fn run_connect(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
                     std::thread::sleep(Duration::from_secs_f64(cfg.retry_interval));
                     continue;
                 }
-                println!("\n[!] Connection failed, max retries ({0}) reached", cfg.retry_count);
+                println!(
+                    "\n[!] Connection failed, max retries ({0}) reached",
+                    cfg.retry_count
+                );
                 println!("    Last error: {e}");
                 return Err(Error::Io(e));
             }
@@ -479,7 +482,9 @@ pub fn run_connect(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
             }
             Err(e) => {
                 println!("\n[!] Handshake failed: {e}");
-                println!("    Possible causes: PSK mismatch / parameter mismatch / network tampering");
+                println!(
+                    "    Possible causes: PSK mismatch / parameter mismatch / network tampering"
+                );
                 force_close_socket(&conn);
                 return Err(e);
             }

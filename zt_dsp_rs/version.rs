@@ -78,7 +78,10 @@ mod tests {
         assert_eq!(LANGUAGE_PREFIX, "RS");
         assert_eq!(ROLE, "client");
         assert_eq!(FOLLOWS_DOC, "ZT-DSP Protocol Master Guide");
-        assert_eq!(FOLLOWS_DOC_PATH, "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md");
+        assert_eq!(
+            FOLLOWS_DOC_PATH,
+            "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md"
+        );
     }
 
     #[test]

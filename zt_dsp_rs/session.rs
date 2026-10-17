@@ -28,7 +28,7 @@ use crate::frames::{
     FMT_LEN, FMT_NO_PADDING, FMT_PADDING, MIN_PAYLOAD_LEN, PAD_LEN_FIELD, SESSION_ID_LEN,
     TIMESTAMP_LEN, TOKEN_HASH_LEN,
 };
-use crate::handshake::{INFO_EK_ROTATE, SessionMaterial};
+use crate::handshake::{SessionMaterial, INFO_EK_ROTATE};
 use crate::params::{MAX_PAD, MAX_PLAINTEXT};
 
 #[derive(Debug)]
@@ -114,12 +114,14 @@ impl SecureSession {
     /// irreversibly out of sync (the key has advanced); reconnect only (Appendix H.4).
     pub fn send_packet(&self, sock: &mut TcpStream, plaintext: &[u8]) -> Result<()> {
         let _guard = self.send_lock.lock().unwrap();
-        //  -  State advance (completed before encryption)  - 
+        //  -  State advance (completed before encryption)  -
         // next_seed is generated only once: it drives the local ratchet advance and is also carried in the packet to the peer
         let (mut ek_snapshot, seq, sid_snapshot, mut next_seed) = {
             let mut st = self.state.lock().unwrap();
             if st.closed || st.send_ek.is_none() || st.session_id.is_none() {
-                return Err(Error::session("session is irreversibly desynchronized or not established; reconnect required"));
+                return Err(Error::session(
+                    "session is irreversibly desynchronized or not established; reconnect required",
+                ));
             }
             if plaintext.len() > MAX_PLAINTEXT {
                 return Err(Error::protocol(format!(
@@ -133,12 +135,9 @@ impl SecureSession {
             let next_seed = secure_random(NEXT_SEED_LEN)?;
             let mut ikm = ek_snapshot.clone();
             ikm.extend_from_slice(&next_seed);
-            let new_ek = self.suite.hkdf(
-                &ikm,
-                None,
-                INFO_EK_ROTATE,
-                self.params.key_len as usize,
-            )?;
+            let new_ek =
+                self.suite
+                    .hkdf(&ikm, None, INFO_EK_ROTATE, self.params.key_len as usize)?;
             ikm.zeroize();
             if let Some(mut old) = st.send_ek.take() {
                 old.zeroize();
@@ -149,7 +148,7 @@ impl SecureSession {
         };
 
         //  -  Build internal payload (pre-encryption): ts(8) ‖ fmt(1) ‖ dst(32) ‖ src(32)
-        //    ‖ user plaintext ‖ [random padding ‖ pad_len(2)] ‖ next_seed(32)  - 
+        //    ‖ user plaintext ‖ [random padding ‖ pad_len(2)] ‖ next_seed(32)  -
         let mut payload = Vec::with_capacity(MIN_PAYLOAD_LEN + plaintext.len());
         payload.extend_from_slice(&now_ms().to_be_bytes());
         let fmt = if self.padding.is_some() {
@@ -195,7 +194,7 @@ impl SecureSession {
         // Wipe the key snapshot immediately after use (Appendix H.6: do not leave non-wipeable on-heap key copies)
         ek_snapshot.zeroize();
 
-        //  -  Timing jitter: pure local send behavior, does not change the wire bytes (Appendix G.3)  - 
+        //  -  Timing jitter: pure local send behavior, does not change the wire bytes (Appendix G.3)  -
         if self.jitter > 0.0 {
             let d: f64 = OsRng.gen_range(0.0..self.jitter);
             std::thread::sleep(Duration::from_secs_f64(d));
@@ -203,7 +202,9 @@ impl SecureSession {
         // Send failure = session irreversibly out of sync (key has advanced, reconnect only)
         if let Err(e) = sock.write_all(&packet) {
             self.wipe();
-            return Err(Error::session(format!("send failed; session irreversibly desynchronized: {e}")));
+            return Err(Error::session(format!(
+                "send failed; session irreversibly desynchronized: {e}"
+            )));
         }
         let _ = sock.flush();
         Ok(())
@@ -247,7 +248,9 @@ impl SecureSession {
         let (ek_snapshot, sid_local) = {
             let st = self.state.lock().unwrap();
             if st.closed || st.recv_ek.is_none() || st.session_id.is_none() {
-                return Err(Error::session("session is irreversibly desynchronized or not established; reconnect required"));
+                return Err(Error::session(
+                    "session is irreversibly desynchronized or not established; reconnect required",
+                ));
             }
             // Step 1: strictly increasing seq (initial seq_recv of None = Python's -1)
             if let Some(last) = st.seq_recv {
@@ -263,7 +266,9 @@ impl SecureSession {
             if st.session_id != Some(session_id) {
                 drop(st);
                 self.wipe();
-                return Err(Error::security("session ID mismatch; packet dropped (cross-talk or stale session)"));
+                return Err(Error::security(
+                    "session ID mismatch; packet dropped (cross-talk or stale session)",
+                ));
             }
             (
                 st.recv_ek.clone().expect("checked above"),
@@ -298,12 +303,16 @@ impl SecureSession {
     fn validate_payload(&self, mut payload: Vec<u8>, seq: u64) -> Result<Vec<u8>> {
         // Step 4: minimum payload length (105B, heartbeat-packet size)
         if payload.len() < MIN_PAYLOAD_LEN {
-            return Err(Error::protocol("payload too short to extract the inner structure"));
+            return Err(Error::protocol(
+                "payload too short to extract the inner structure",
+            ));
         }
         // Step 5: payload format marker
         let fmt = payload[TIMESTAMP_LEN];
         if fmt != FMT_NO_PADDING && fmt != FMT_PADDING {
-            return Err(Error::security(format!("unknown payload format marker: {fmt:#04x}")));
+            return Err(Error::security(format!(
+                "unknown payload format marker: {fmt:#04x}"
+            )));
         }
         // Step 6: structural length self-consistency (prevents out-of-bounds / negative slicing; pad_len is stored
         // in the last 34-33 bytes of the payload, just before the trailing next_seed)
@@ -311,10 +320,11 @@ impl SecureSession {
         let mut tail = NEXT_SEED_LEN;
         if fmt == FMT_PADDING {
             let pad_start = payload.len() - NEXT_SEED_LEN - PAD_LEN_FIELD;
-            let pad_len =
-                u16::from_be_bytes([payload[pad_start], payload[pad_start + 1]]) as usize;
+            let pad_len = u16::from_be_bytes([payload[pad_start], payload[pad_start + 1]]) as usize;
             if pad_len > MAX_PAD {
-                return Err(Error::protocol(format!("padding length exceeds limit: {pad_len}")));
+                return Err(Error::protocol(format!(
+                    "padding length exceeds limit: {pad_len}"
+                )));
             }
             tail += PAD_LEN_FIELD + pad_len;
         }
@@ -325,10 +335,14 @@ impl SecureSession {
         let dst_hash = &payload[TIMESTAMP_LEN + FMT_LEN..TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN];
         let src_hash = &payload[TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN..header_end];
         if dst_hash != self.local_hash {
-            return Err(Error::security("destination token hash mismatch (cross-talk or traffic reflection)"));
+            return Err(Error::security(
+                "destination token hash mismatch (cross-talk or traffic reflection)",
+            ));
         }
         if src_hash != self.peer_hash {
-            return Err(Error::security("source token hash mismatch (identity spoofing)"));
+            return Err(Error::security(
+                "source token hash mismatch (identity spoofing)",
+            ));
         }
         // Ratchet rotation + sequence-number advance (must complete before step 8 — out-of-window packets also advance)
         let next_seed: [u8; NEXT_SEED_LEN] = payload[payload.len() - NEXT_SEED_LEN..]
@@ -338,9 +352,9 @@ impl SecureSession {
             let mut st = self.state.lock().unwrap();
             let mut ikm = st.recv_ek.as_ref().expect("checked above").clone();
             ikm.extend_from_slice(&next_seed);
-            let new_ek = self
-                .suite
-                .hkdf(&ikm, None, INFO_EK_ROTATE, self.params.key_len as usize)?;
+            let new_ek =
+                self.suite
+                    .hkdf(&ikm, None, INFO_EK_ROTATE, self.params.key_len as usize)?;
             ikm.zeroize();
             if let Some(mut old) = st.recv_ek.take() {
                 old.zeroize();
@@ -480,7 +494,7 @@ mod tests {
         let (sa, sb, mut a, mut b) = make_sessions(None);
         sa.send_packet(&mut a, b"m1").unwrap();
         assert_eq!(sb.recv_packet(&mut b).unwrap(), b"m1");
-// Construct a seq-regression packet (seq=0 equals last=0): the seq check happens before GCM -> replay error
+        // Construct a seq-regression packet (seq=0 equals last=0): the seq check happens before GCM -> replay error
         let sid = sa.state.lock().unwrap().session_id.unwrap();
         let mut packet = Vec::new();
         packet.extend_from_slice(&sid);
@@ -592,7 +606,10 @@ mod tests {
         a.write_all(&packet).unwrap();
         // Receiver side: out-of-window → return empty plaintext (heartbeat semantics); state advances, no termination
         let got = sb.recv_packet(&mut b).unwrap();
-        assert!(got.is_empty(), "out-of-window packet should yield empty plaintext");
+        assert!(
+            got.is_empty(),
+            "out-of-window packet should yield empty plaintext"
+        );
         assert!(sb.last_recv_drop().is_some());
         // Ratchet has advanced: the old key cannot decrypt the next packet — send one more normal packet to verify interop
         sa.send_packet(&mut a, b"after-stale").unwrap();

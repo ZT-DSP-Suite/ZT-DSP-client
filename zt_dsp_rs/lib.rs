@@ -13,30 +13,30 @@
 //!
 //! Module layout is unchanged and stays flat; only the target type is added.
 
-#[path = "version.rs"]
-pub mod version;
-#[path = "errors.rs"]
-pub mod errors;
-#[path = "params.rs"]
-pub mod params;
-#[path = "identity.rs"]
-pub mod identity;
+#[path = "bench.rs"]
+pub mod bench;
+#[path = "cli.rs"]
+pub mod cli;
 #[path = "crypto.rs"]
 pub mod crypto;
-#[path = "kex.rs"]
-pub mod kex;
+#[path = "errors.rs"]
+pub mod errors;
 #[path = "frames.rs"]
 pub mod frames;
 #[path = "handshake.rs"]
 pub mod handshake;
+#[path = "identity.rs"]
+pub mod identity;
+#[path = "kex.rs"]
+pub mod kex;
+#[path = "params.rs"]
+pub mod params;
 #[path = "session.rs"]
 pub mod session;
 #[path = "transport.rs"]
 pub mod transport;
-#[path = "cli.rs"]
-pub mod cli;
-#[path = "bench.rs"]
-pub mod bench;
+#[path = "version.rs"]
+pub mod version;
 
 // Shared known-answer vectors. Test-only: this module reads test-vectors/vectors.json,
 // which is a repository asset, not a runtime dependency. Gating it keeps the release

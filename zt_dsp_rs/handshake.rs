@@ -53,10 +53,7 @@ pub const SESSION_ID_LEN: usize = 32;
 
 /// Frame-level error set (Appendix H.4: the responder goes silent on frame-level errors).
 fn is_frame_error(e: &Error) -> bool {
-    matches!(
-        e,
-        Error::Protocol(_) | Error::Timeout(_) | Error::Io(_)
-    )
+    matches!(e, Error::Protocol(_) | Error::Timeout(_) | Error::Io(_))
 }
 
 // =============================================================================
@@ -141,7 +138,9 @@ impl HandshakePeer {
         }
         if let Some((pmin, pmax)) = padding {
             if pmin > pmax || pmax > 2048 {
-                return Err(Error::param("padding range is invalid: 0 <= min <= max <= 2048"));
+                return Err(Error::param(
+                    "padding range is invalid: 0 <= min <= max <= 2048",
+                ));
             }
         }
         if jitter < 0.0 {
@@ -204,7 +203,7 @@ impl HandshakePeer {
                     if e.kind() == std::io::ErrorKind::WouldBlock
                         || e.kind() == std::io::ErrorKind::TimedOut =>
                 {
-                    continue // keep waiting within the chunk timeout, until the overall deadline
+                    continue; // keep waiting within the chunk timeout, until the overall deadline
                 }
                 Err(_) => break,
             }
@@ -235,11 +234,17 @@ impl HandshakePeer {
     /// The salt is not transmitted with the frame (the peer only checks the length and does not recompute the nonce).
     /// Public so that tests and tooling can drive it offline (the Python side is likewise an independently callable step).
     pub fn build_local_frame(&mut self) -> Result<()> {
-        let psk = self.psk.as_ref().ok_or_else(|| Error::session("PSK has been wiped"))?;
+        let psk = self
+            .psk
+            .as_ref()
+            .ok_or_else(|| Error::session("PSK has been wiped"))?;
         let nonce_salt = secure_random(SESSION_SALT_LEN)?;
-        let local_nonce =
-            self.suite
-                .hkdf(psk, Some(&nonce_salt), INFO_NONCE, self.params.random_len as usize)?;
+        let local_nonce = self.suite.hkdf(
+            psk,
+            Some(&nonce_salt),
+            INFO_NONCE,
+            self.params.random_len as usize,
+        )?;
         if local_nonce.len() * 8 != self.params.random_len as usize {
             return Err(Error::protocol(format!(
                 "join nonce length does not match the declared random_len: {} != {}",
@@ -385,7 +390,9 @@ impl HandshakePeer {
                 Ok(d) => d,
                 Err(e) => {
                     self.silent_drop(sock, &format!("Phase 2 key agreement failed: {e}"));
-                    return Err(Error::silent_drop(format!("Phase 2 key agreement failed: {e}")));
+                    return Err(Error::silent_drop(format!(
+                        "Phase 2 key agreement failed: {e}"
+                    )));
                 }
             };
             self.send_all(sock, &pack_responder_key(&pub_bytes)?)?;
@@ -395,12 +402,17 @@ impl HandshakePeer {
         // MK = HKDF-SHA3-256(IKM = PSK ‖ DH, salt = session_salt,
         //                    info = "ZT-DSP-MK-v3", L = key_len)
         // session_salt is HKDF's salt parameter, not material concatenated into the IKM (common-mistake correction)
-        let psk = self.psk.as_ref().ok_or_else(|| Error::session("PSK has been wiped"))?;
+        let psk = self
+            .psk
+            .as_ref()
+            .ok_or_else(|| Error::session("PSK has been wiped"))?;
         let salt = self.session_salt.as_ref().expect("session salt set");
         let mut ikm = Vec::with_capacity(64);
         ikm.extend_from_slice(psk);
         ikm.extend_from_slice(&dh);
-        let mk = self.suite.hkdf(&ikm, Some(salt), INFO_MK, self.params.key_len as usize)?;
+        let mk = self
+            .suite
+            .hkdf(&ikm, Some(salt), INFO_MK, self.params.key_len as usize)?;
         ikm.zeroize();
         dh.zeroize();
         self.mk = Some(mk);
@@ -470,16 +482,16 @@ impl HandshakePeer {
         ikm_send.extend_from_slice(&mk);
         ikm_send.extend_from_slice(&anchor);
         ikm_send.push(role_byte);
-        let ek_send =
-            self.suite
-                .hkdf(&ikm_send, None, INFO_EK, self.params.key_len as usize)?;
+        let ek_send = self
+            .suite
+            .hkdf(&ikm_send, None, INFO_EK, self.params.key_len as usize)?;
         ikm_send.clear();
         ikm_send.extend_from_slice(&mk);
         ikm_send.extend_from_slice(&anchor);
         ikm_send.push(peer_role_byte);
-        let ek_recv =
-            self.suite
-                .hkdf(&ikm_send, None, INFO_EK, self.params.key_len as usize)?;
+        let ek_recv = self
+            .suite
+            .hkdf(&ikm_send, None, INFO_EK, self.params.key_len as usize)?;
         ikm_send.zeroize();
         self.ek_send = Some(ek_send);
         self.ek_recv = Some(ek_recv);
@@ -498,7 +510,7 @@ impl HandshakePeer {
         msg.extend_from_slice(&transcript);
         let expected_peer_tag = self.suite.hmac(&mk, &msg)?;
         msg.zeroize();
-    // Wipe local copies immediately after use (Appendix H.6: leave no un-wipeable heap copies)
+        // Wipe local copies immediately after use (Appendix H.6: leave no un-wipeable heap copies)
         let mut mk = mk;
         mk.zeroize();
         let mut anchor = anchor;
@@ -526,7 +538,9 @@ impl HandshakePeer {
 
         if peer_tag.len() != CONFIRM_TAG_LEN {
             self.wipe();
-            return Err(Error::security("anchor confirmation failed - confirmation tag length is abnormal"));
+            return Err(Error::security(
+                "anchor confirmation failed - confirmation tag length is abnormal",
+            ));
         }
         if !constant_time_eq(&expected_peer_tag, &peer_tag) {
             self.wipe();
@@ -794,9 +808,15 @@ mod tests {
         let _ = left.set_read_timeout(Some(Duration::from_millis(800)));
         let mut buf = [0u8; 4096];
         let received = left.read(&mut buf);
-        assert!(t.join().unwrap(), "the responder should enter strict silence");
+        assert!(
+            t.join().unwrap(),
+            "the responder should enter strict silence"
+        );
         match received {
-            Ok(n) => assert_eq!(n, 0, "low-order-point silence must not send the Phase 2 response frame"),
+            Ok(n) => assert_eq!(
+                n, 0,
+                "low-order-point silence must not send the Phase 2 response frame"
+            ),
             Err(_) => {}
         }
     }

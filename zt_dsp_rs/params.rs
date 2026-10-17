@@ -135,8 +135,10 @@ impl Params {
     }
 
     fn validate(&self) -> Result<()> {
-        if self.random_len == 0 || self.random_len % 8 != 0 {
-            return Err(Error::param("random_len must be a positive integer and a multiple of 8"));
+        if self.random_len == 0 || !self.random_len.is_multiple_of(8) {
+            return Err(Error::param(
+                "random_len must be a positive integer and a multiple of 8",
+            ));
         }
         if self.random_len / 8 > MAX_NONCE as u64 {
             return Err(Error::param(format!(
@@ -207,7 +209,8 @@ impl Params {
             aead_name: coerce_string(obj.get("aead"), AEAD_NAME)?,
             module_flags: flags,
         };
-        p.validate().map_err(|e| Error::param(format!("peer parameters invalid: {}", plain(&e))))?;
+        p.validate()
+            .map_err(|e| Error::param(format!("peer parameters invalid: {}", plain(&e))))?;
         Ok(p)
     }
 
@@ -327,7 +330,14 @@ mod tests {
     fn guide_defaults_and_wire_json() {
         let p = Params::new().unwrap();
         assert_eq!(
-            (p.random_len, p.random_rate, p.window, p.key_len, p.hash_name.as_str(), p.aead_name.as_str()),
+            (
+                p.random_len,
+                p.random_rate,
+                p.window,
+                p.key_len,
+                p.hash_name.as_str(),
+                p.aead_name.as_str()
+            ),
             (256, 1024, 60, 256, "SHA3-256", "AES-256-GCM")
         );
         // F.1: under default parameters the parameter JSON is exactly 120 bytes, byte-for-byte equal to the official layout
@@ -339,11 +349,56 @@ mod tests {
 
     #[test]
     fn bad_values_fail() {
-        assert!(Params::build(255, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // not a multiple of 8
-        assert!(Params::build(4608, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // exceeds the nonce cap
-        assert!(Params::build(256, 1024, 60, 100, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // bad key_len
-        assert!(Params::build(256, 1024, 0, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // zero window
-        assert!(Params::build(256, 0, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).is_err()); // zero rate
+        assert!(Params::build(
+            255,
+            1024,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new())
+        )
+        .is_err()); // not a multiple of 8
+        assert!(Params::build(
+            4608,
+            1024,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new())
+        )
+        .is_err()); // exceeds the nonce cap
+        assert!(Params::build(
+            256,
+            1024,
+            60,
+            100,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new())
+        )
+        .is_err()); // bad key_len
+        assert!(Params::build(
+            256,
+            1024,
+            0,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new())
+        )
+        .is_err()); // zero window
+        assert!(Params::build(
+            256,
+            0,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new())
+        )
+        .is_err()); // zero rate
     }
 
     #[test]
@@ -361,8 +416,13 @@ mod tests {
         let mut root = Map::new();
         root.insert("deep".into(), deep);
         assert!(Params::build(
-            256, 1024, 60, 256,
-            "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(root)
+            256,
+            1024,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(root)
         )
         .is_err());
 
@@ -372,8 +432,13 @@ mod tests {
             wide.insert(format!("k{i}"), Value::from(i));
         }
         assert!(Params::build(
-            256, 1024, 60, 256,
-            "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(wide)
+            256,
+            1024,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(wide)
         )
         .is_err());
     }
@@ -385,8 +450,7 @@ mod tests {
             let v: Value = serde_json::from_str(bad).unwrap();
             assert!(Params::from_value(&v).is_err(), "should reject {bad}");
         }
-        let v: Value =
-            serde_json::from_str(r#"{"random_len": "not-an-int"}"#).unwrap();
+        let v: Value = serde_json::from_str(r#"{"random_len": "not-an-int"}"#).unwrap();
         assert!(Params::from_value(&v).is_err());
         let v: Value = serde_json::from_str(r#"{"key_len": 999}"#).unwrap();
         assert!(Params::from_value(&v).is_err());
@@ -403,13 +467,40 @@ mod tests {
         let b = Params::new().unwrap();
         assert_eq!(a.match_error(&b), None);
         // When several items are changed at once, only the first is reported (fixed order: random_len takes priority)
-        let c = Params::build(512, 1024, 30, 128, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
+        let c = Params::build(
+            512,
+            1024,
+            30,
+            128,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new()),
+        )
+        .unwrap();
         assert_eq!(a.match_error(&c).as_deref(), Some("random_len mismatch"));
-        let d = Params::build(256, 1024, 30, 128, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(Map::new())).unwrap();
+        let d = Params::build(
+            256,
+            1024,
+            30,
+            128,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(Map::new()),
+        )
+        .unwrap();
         assert_eq!(a.match_error(&d).as_deref(), Some("key_len mismatch"));
         let mut flags = Map::new();
         flags.insert("x".into(), Value::from(1));
-        let e = Params::build(256, 1024, 60, 256, "SHA3-256".into(), "AES-256-GCM".into(), Value::Object(flags)).unwrap();
+        let e = Params::build(
+            256,
+            1024,
+            60,
+            256,
+            "SHA3-256".into(),
+            "AES-256-GCM".into(),
+            Value::Object(flags),
+        )
+        .unwrap();
         assert_eq!(a.match_error(&e).as_deref(), Some("module_flags mismatch"));
     }
 }

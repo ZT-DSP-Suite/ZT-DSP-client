@@ -22,12 +22,13 @@ use zeroize::Zeroize;
 
 use crate::crypto::{check_entropy, secure_random};
 use crate::errors::{Error, Result};
-use crate::params::{MAX_NONCE, 
-    AEAD_NAME, HASH_NAME, KEY_LEN, MAX_PAD, RANDOM_LEN, RANDOM_RATE, TIME_WINDOW, WINDOW, Params,
+use crate::params::{
+    Params, AEAD_NAME, HASH_NAME, KEY_LEN, MAX_NONCE, MAX_PAD, RANDOM_LEN, RANDOM_RATE,
+    TIME_WINDOW, WINDOW,
 };
 use crate::transport::{
-    run_session, DEFAULT_CONNECT_RETRY_COUNT, DEFAULT_CONNECT_RETRY_INTERVAL,
-    DEFAULT_HOST_CONNECT, DEFAULT_HOST_LISTEN, DEFAULT_PORT, SessionConfig,
+    run_session, SessionConfig, DEFAULT_CONNECT_RETRY_COUNT, DEFAULT_CONNECT_RETRY_INTERVAL,
+    DEFAULT_HOST_CONNECT, DEFAULT_HOST_LISTEN, DEFAULT_PORT,
 };
 use crate::version::{CODE_VERSION, FOLLOWS_DOC};
 
@@ -267,7 +268,7 @@ fn run_main_flow(cli: &Cli) -> i32 {
     });
 
     // --- Parameter range validation (invalid values never reach the protocol layer) ---
-    if cli.random_len == 0 || cli.random_len % 8 != 0 {
+    if cli.random_len == 0 || !cli.random_len.is_multiple_of(8) {
         eprintln!("[!] random_len must be a positive integer and a multiple of 8");
         return 2;
     }
@@ -370,7 +371,7 @@ fn run_main_flow(cli: &Cli) -> i32 {
         psk: psk_bytes,
         params,
         time_window: cli.time_window,
-        padding: cli.padding_min.zip(cli.padding_max).map(|(a, b)| (a, b)),
+        padding: cli.padding_min.zip(cli.padding_max),
         jitter: cli.jitter,
         silent_hold: Duration::from_secs_f64(cli.silent_hold),
         handshake_timeout: crate::handshake::HANDSHAKE_TIMEOUT,
@@ -434,6 +435,9 @@ mod tests {
         // to parse rather than read the file); a tainted-path implementation would read the dir value and succeed
         let this_file = env!("CARGO_MANIFEST_DIR");
         let err = normalize_psk(this_file);
-        assert!(err.is_err(), "A path string must not be treated as a valid PSK");
+        assert!(
+            err.is_err(),
+            "A path string must not be treated as a valid PSK"
+        );
     }
 }
