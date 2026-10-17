@@ -68,6 +68,11 @@ jobs:
         with:
           name: exe
           path: dist
+      - name: Attach license texts and third-party notices
+        run: |
+          # The wheel and sdist already carry LICENSE; the one-file executable does not.
+          # Ship the license texts and third-party notices alongside every release asset.
+          cp LICENSE LICENSING.md THIRD-PARTY-NOTICES.md dist/
       - name: Create the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
