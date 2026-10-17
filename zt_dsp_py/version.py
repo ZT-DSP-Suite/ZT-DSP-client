@@ -29,8 +29,8 @@ Applicability (many-to-many)
 Hardware support (TPM and HWID)
     This implementation contains **no** code that writes, reads or modifies a Trusted Platform Module
     or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the
-    caller; keeping them secret is the caller's responsibility. Binding them to a TPM/HWID is a
-    protocol-level goal **planned for a later version**. This statement is re-issued with every release;
+    caller; keeping them secret is the caller's responsibility. Binding them to a TPM/HWID was an earlier design goal; it is now **deprecated and will be removed in a
+    later revision**. This statement is re-issued with every release;
     the authoritative statement is the TPM/HWID support declaration in Master Guide section 4.1.4.
 
 The correspondence between documentation and code is maintained via a **bidirectional declaration**, not bound by version numbers:
