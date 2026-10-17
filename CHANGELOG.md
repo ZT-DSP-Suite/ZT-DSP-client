@@ -18,7 +18,7 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   handshake. The vectors pin RFC 5869 (HKDF), RFC 7748 (X25519), the full ZT-DSP
   derivation chain (PSK‖DH → MK → anchor → session_id → directional EK → ratchet), the
   wire format, and a deterministic AEAD ciphertext.
-- Fuzz targets for the frame parsers (`fuzz_targets/`, atheris + cargo-fuzz), run weekly
+- Fuzz targets for the frame parsers (`fuzz/`, atheris + cargo-fuzz), run weekly
   by `.github/workflows/fuzz.yml`. The frame readers consume attacker-controlled length
   prefixes; they now have continuous coverage instead of hand-written cases only.
 - Library target for the Rust crate (`zt_dsp_rs`), so the protocol can be depended on

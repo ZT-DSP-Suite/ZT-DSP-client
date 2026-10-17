@@ -10,7 +10,7 @@
 // denial-of-service in the handshake path.
 //
 // Corpus/repro:
-//   cargo +nightly fuzz run frames -- fuzz_targets/artifacts/frames/crash-<hash>
+//   cargo +nightly fuzz run frames -- fuzz/artifacts/frames/crash-<hash>
 
 #![no_main]
 

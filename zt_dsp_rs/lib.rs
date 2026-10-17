@@ -8,7 +8,7 @@
 //! Why that matters: before this target existed, `zt-dsp-rs` could only ever be run as
 //! a binary. A third party could not depend on the protocol implementation, and
 //! integration tests could not `use` it (a `tests/` directory cannot see a bin-only
-//! crate). The fuzz target in `fuzz_targets/frames.rs` depends on this target for the
+//! crate). The fuzz target in `fuzz/frames.rs` depends on this target for the
 //! same reason.
 //!
 //! Module layout is unchanged and stays flat; only the target type is added.

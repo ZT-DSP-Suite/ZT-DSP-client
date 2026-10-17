@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """帧读取器的敌意输入回归 —— 也就是 fuzz 目标的**前提**，在这里变成一次性测试。
 
-fuzz_targets/fuzz_frames.py 需要 atheris（要单独装、跑得慢），不适合当每次提交的
+fuzz/fuzz_frames.py 需要 atheris（要单独装、跑得慢），不适合当每次提交的
 门禁。但它成立的前提是「这四个入口可以被 fuzz 目标那样调用，且敌意输入只会得到
 协议文档化过的拒绝」。前提本身应该每次都验。
 
@@ -111,7 +111,7 @@ def test_fuzz_target_imports_its_own_symbols():
     """fuzz 目标引用的名字必须真的存在。它没被 CI 跑，所以 import 坏了没人会发现。"""
     import ast
     import pathlib
-    path = pathlib.Path(__file__).resolve().parents[2] / "fuzz_targets" / "fuzz_frames.py"
+    path = pathlib.Path(__file__).resolve().parents[2] / "fuzz" / "fuzz_frames.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     imported = set()
     for node in ast.walk(tree):

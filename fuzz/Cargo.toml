@@ -22,7 +22,7 @@ path = "../zt_dsp_rs"
 
 [[bin]]
 name = "frames"
-path = ".."
+path = "frames.rs"
 test = false
 doc = false
 bench = false

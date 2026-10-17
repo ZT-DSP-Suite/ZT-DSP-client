@@ -38,13 +38,13 @@ jobs:
             # cargo-fuzz requires nightly.
             rustup toolchain install nightly --profile minimal
             cargo +nightly install cargo-fuzz
-            cargo +nightly fuzz run fuzz_targets/frames -- -max_total_time=600
+            cargo +nightly fuzz run frames -- -max_total_time=600
           else
             # atheris drives the Python parser; coverage-guided, same corpus.
             python -m pip install --upgrade pip
             python -m pip install atheris
             python -m pip install -e ./zt_dsp_py
-            python fuzz_targets/fuzz_frames.py
+            python fuzz/fuzz_frames.py
           fi
 
       - name: Upload crash artifacts
@@ -53,6 +53,5 @@ jobs:
         with:
           name: fuzz-artifacts-${{ matrix.target }}
           path: |
-            fuzz_targets/artifacts
-            zt_dsp_rs/fuzz/artifacts
+            fuzz/artifacts
           if-no-files-found: ignore

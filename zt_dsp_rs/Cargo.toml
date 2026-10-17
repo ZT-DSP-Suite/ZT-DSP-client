@@ -6,7 +6,7 @@ description = "ZT-DSP_RS-1.0.0 — official Rust implementation of the ZT-DSP pr
 license = "MIT OR Apache-2.0"
 
 # The crate is both a library and a binary. The library target is what makes the
-# protocol usable as a dependency and lets fuzz_targets/ (cargo-fuzz needs `use
+# protocol usable as a dependency and lets fuzz/ (cargo-fuzz needs `use
 # <crate>::...`) link against it; the binary target is the CLI.
 [lib]
 name = "zt_dsp_rs"

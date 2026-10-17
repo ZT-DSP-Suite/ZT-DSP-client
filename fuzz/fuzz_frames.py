@@ -1,6 +1,6 @@
 # ZT-DSP frame parser fuzz target (Python / atheris).
 #
-# Mirror of fuzz_targets/frames.rs: the same four untrusted-input entry points, driven
+# Mirror of fuzz/frames.rs: the same four untrusted-input entry points, driven
 # through a socket pair so the harness exercises the real socket-reading code rather
 # than a re-implementation that could silently drift from it.
 #
@@ -12,7 +12,7 @@
 #
 # Run:
 #   python -m pip install atheris
-#   python fuzz_targets/fuzz_frames.py
+#   python fuzz/fuzz_frames.py
 
 import socket
 import struct
