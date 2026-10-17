@@ -1,5 +1,13 @@
 # ZT-DSP (Client Edition)
 
+## 这里有什么
+
+Python and Rust implementations, test vectors, and the licence set.
+
+## 按什么找
+
+Build with the DEV-GUIDE in ZT-DSP-docs; judge conformance with its CONFORMANCE-GUIDE.
+
 **中文** ｜ [English](en/README.md)
 
 > ZT-DSP — Zero Trust Dynamic Synchronization Protocol. This repository is the **client (reference) implementation**.

@@ -1,5 +1,13 @@
 # ZT-DSP
 
+## 这里有什么
+
+The English implementation notes and Rust details.
+
+## 按什么找
+
+Build and verification steps are in the DEV-GUIDE under ZT-DSP-docs.
+
 **Zero Trust Dynamic Synchronization Protocol** — official development languages **Python and Rust**; official implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.0**)
 
 An open, zero trust, end-to-end encrypted communication protocol with official Python and Rust implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.

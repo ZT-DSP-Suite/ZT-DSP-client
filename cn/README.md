@@ -1,5 +1,13 @@
 # ZT-DSP
 
+## 这里有什么
+
+中文实现说明与 Rust 实现细节。
+
+## 按什么找
+
+构建与验证步骤见 ZT-DSP-docs 的 DEV-GUIDE。
+
 **Zero Trust Dynamic Synchronization Protocol** — 官方开发语言 **Python 与 Rust**；官方实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.0**）
 
 一个开放、零信任、端到端加密的通信协议与 Python、Rust 官方实现。基于 **PSK + X25519 + AES-256-GCM + 每包棘轮**，提供四阶段握手与全双工加密通信。
