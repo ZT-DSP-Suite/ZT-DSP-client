@@ -43,7 +43,7 @@ from .transport import (
     DEFAULT_PORT,
     run_session,
 )
-from .version import CODE_VERSION, FOLLOWS_DOC, format_version
+from .version import CODE_VERSION, DOCS_VERSION, FOLLOWS_DOC, format_version
 
 PSK_LEN: int = 32
 _FORBIDDEN_DEFAULT_PSK: str = "zt-dsp-default-psk-32bytes-long!!"
@@ -234,6 +234,11 @@ PSK security recommendations:
 Running without arguments on a terminal starts the interactive wizard (README quick start);
 with input or output redirected, this usage is printed instead. Extension modules
 (TCA/AORS/Ocean Mode, etc.) are not within the scope of this minimal release.
+
+License:
+  AGPL-3.0-or-later, or a commercial license — see LICENSING.md
+  Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+  Source: https://github.com/ZT-DSP-Suite/ZT-DSP-docs
 """)
     parser.add_argument("--role", choices=["listen", "connect"], default=None,
                         help="Role: listen=listener (responder), connect=connector (initiator)")
@@ -265,7 +270,35 @@ with input or output redirected, this usage is printed instead. Extension module
     parser.add_argument("--silent-hold", type=float, default=15.0,
                         help="Strict silent hold duration in seconds (default 15)")
     parser.add_argument("--version", action="version", version=format_version())
+    parser.add_argument("--no-banner", action="store_true",
+                        help="Do not print the startup banner (also via ZT_DSP_NO_BANNER)")
     return parser
+
+
+_BANNER_RULE = "\u2500" * 52
+
+
+def _render_banner() -> str:
+    """The startup banner. Two lines of text and one rule, nothing larger."""
+    return (
+        f"ZT-DSP \u00b7 {CODE_VERSION} (docs {DOCS_VERSION})\n"
+        f"{_BANNER_RULE}\n"
+        "Zero Trust Dynamic Synchronization Protocol \u00b7 AGPL-3.0-or-later"
+    )
+
+
+def _emit_banner(stream):
+    """Write the banner to stream, degrading to ASCII when the console cannot encode it."""
+    try:
+        stream.write(_render_banner() + "\n\n")
+        stream.flush()
+    except (UnicodeEncodeError, OSError):
+        stream.write(
+            f"ZT-DSP - {CODE_VERSION} (docs {DOCS_VERSION})\n"
+            + "-" * 52
+            + "\nZero Trust Dynamic Synchronization Protocol - AGPL-3.0-or-later\n\n"
+        )
+        stream.flush()
 
 
 def main() -> None:
@@ -288,6 +321,8 @@ def main() -> None:
             # Non-interactive context (pipe, CI, IDE runner): print usage instead of hanging.
             parser.print_help()
             return
+        if not ns.no_banner and not os.environ.get("ZT_DSP_NO_BANNER"):
+            _emit_banner(sys.stderr)
         wizard = run_wizard()
         if wizard is None:
             print("[!] Wizard aborted; no session started.", file=sys.stderr)

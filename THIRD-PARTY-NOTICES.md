@@ -58,6 +58,19 @@ The Windows one-file executable bundles these packages. BSD-3-Clause requires th
 its copyright notice, conditions and disclaimer accompany binary distributions —
 that is what this file is for.
 
+## Patent grants, not patent holdings
+
+Apache-2.0 section 3 grants a patent licence from each contributor. MIT and BSD-3-Clause
+contain no patent clause at all. Of the dependencies above:
+
+- **No express patent grant**: `x25519-dalek`, `subtle`, `curve25519-dalek` (BSD-3-Clause);
+  `cffi` (MIT-0); `memchr` (Unlicense OR MIT).
+- **Express patent grant when the Apache-2.0 branch is chosen**: every crate listed as
+  `MIT OR Apache-2.0`, plus `cryptography` (`Apache-2.0 OR BSD-3-Clause`).
+
+This section records who promised what. It makes no statement about whether any patent
+is actually held by anyone.
+
 ## Test vectors
 
 `test-vectors/vectors.json` contains known-answer vectors reproduced from:
