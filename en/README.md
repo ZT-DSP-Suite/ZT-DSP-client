@@ -34,7 +34,7 @@ An open, zero trust, end-to-end encrypted communication protocol with official P
 This implementation conforms to "ZT-DSP Protocol Master Guide"; the path is given by FOLLOWS_DOC_PATH in zt_dsp_py/version.py:
 
 ```
-ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md
+ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md
 ```
 
 Documentation and code are **not bound by version numbers**: the document side declares "which settings of the code this document governs", and the code side declares "which document this implementation follows".
@@ -135,7 +135,7 @@ and a real two-sided TCP flow.
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
 | server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
 | implementation ID | ZT-DSP_PY-1.0.0 (prefix PY) |
-| followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md |
+| followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md |
 
 ### Naming Convention System (docs / code · required reading for takeover / fork)
 
@@ -146,7 +146,7 @@ and a real two-sided TCP flow.
 | Item | Rule |
 |----|------|
 | format | 1.0.x (major.minor.revision) |
-| carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.0-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
+| carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.1-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
 | current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
@@ -186,7 +186,7 @@ So adding a Python patch release (\ZT-DSP_PY-1.0.1\, unchanged protocol behaviou
 
 Since handshake frames carry no version string, peer compatibility is not judged by version numbers. The correspondence between documentation and code is maintained by **bidirectional declarations**:
 
-- **Documentation side**: the header of spec/ZT-DSP-1.0.0-Master_Guide.md declares "this document defines the protocol behavior and tunable parameters on the code side".
+- **Documentation side**: the header of spec/ZT-DSP-1.0.1-Master_Guide.md declares "this document defines the protocol behavior and tunable parameters on the code side".
 - **Code side**: FOLLOWS_DOC / FOLLOWS_DOC_PATH in zt_dsp_py/version.py declare which document this implementation follows.
 
 If the two ends follow inconsistent specifications, the handshake fails at the **phase 3 confirmation label**.

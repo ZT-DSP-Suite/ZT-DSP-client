@@ -58,7 +58,7 @@ def test_applies_to_is_many_to_many() -> None:
 def test_follows_doc_declaration() -> None:
     # Bidirectional declaration on the code side: which document this implementation applies to
     assert FOLLOWS_DOC == "ZT-DSP Protocol Master Guide"
-    assert FOLLOWS_DOC_PATH == "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md"
+    assert FOLLOWS_DOC_PATH == "ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md"
 
 
 def test_no_protocol_identifier_constant() -> None:

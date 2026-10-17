@@ -32,7 +32,7 @@
 本实现遵循《ZT-DSP 协议总指导》，路径见 `zt_dsp_py/version.py` 的 `FOLLOWS_DOC_PATH`：
 
 ```
-ZT-DSP-docs/cn/spec/ZT-DSP-1.0.0-总指导.md
+ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 ```
 
 文档与代码**不靠版本号绑定**：文档侧声明"本文档管 code 的哪些设置"，代码侧声明"本实现遵循哪份文档"。
@@ -135,7 +135,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 客户端版本 | `ZT-DSP_PY-1.0.0`（本仓库 Python）、`ZT-DSP_RS-1.0.0`（本仓库 Rust） |
 | 服务器版本 | `ZT-DSP_SV-1.0.0`（仓库 `ZT-DSP-server`，占位，尚未实现） |
 | 实现标识 | `ZT-DSP_PY-1.0.0`（前缀 `PY`） |
-| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP-1.0.0-总指导.md` |
+| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md` |
 
 ### 命名规则体系（docs / code · 接管 / Fork 必读）
 
@@ -146,7 +146,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 项 | 规定 |
 |----|------|
 | 格式 | `1.0.x`（主.次.修订） |
-| 载体 | 总指导文档（独立文档仓库 `ZT-DSP-docs` 中的 `cn/spec/ZT-DSP-1.0.0-总指导.md`） |
+| 载体 | 总指导文档（独立文档仓库 `ZT-DSP-docs` 中的 `cn/spec/ZT-DSP-1.0.1-总指导.md`） |
 | 现行值 | `1.0.0` |
 | 修订位递增 | 澄清、勘误、可读性改进——不改变任何线上行为定义 |
 | 次位递增 | 新增附录或可选章节——不改变线上行为定义 |

@@ -62,16 +62,20 @@ def secure_random(n: int) -> bytes:
     return secrets.token_bytes(n)
 
 
-def secure_zero(buf: Optional[Union[bytearray, memoryview]]) -> None:
-    """Securely zero a memory buffer (best effort; OpenSSL-internal
-    memory is not controllable from the Python layer)."""
+def secure_zero(buf: Optional[Union[bytearray, memoryview]]) -> bool:
+    """Zero a mutable buffer in place and report whether it worked.
+
+    Returns False for immutable objects such as ``bytes``: those cannot be
+    zeroed from Python, so the caller must not assume the copy is gone.
+    A failure to zero is never swallowed silently.
+    """
     if buf is None:
-        return
-    try:
-        for i in range(len(buf)):
-            buf[i] = 0
-    except Exception:
-        pass
+        return True
+    if not isinstance(buf, (bytearray, memoryview)):
+        return False
+    for i in range(len(buf)):
+        buf[i] = 0
+    return True
 
 
 def constant_time_compare(a: bytes, b: bytes) -> bool:

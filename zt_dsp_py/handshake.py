@@ -29,7 +29,22 @@ from __future__ import annotations
 
 import json
 import socket
+import os
 import sys
+
+
+_DEBUG = os.environ.get("ZT_DSP_DEBUG") == "1"
+
+
+def _diag(msg: str) -> None:
+    """Diagnostics stay local and stay silent unless explicitly enabled.
+
+    A drop path that prints by default is distinguishable from a normal path
+    by anyone watching stderr, which defeats the silent-drop property.
+    """
+    if _DEBUG:
+        print(msg, file=sys.stderr)
+
 import time
 from dataclasses import dataclass
 from typing import Optional, Tuple
@@ -187,13 +202,13 @@ class HandshakePeer:
         try:
             old_timeout = sock.gettimeout()
         except OSError:
-            print(f"[Silent Drop] {reason} (connection already closed)", file=sys.stderr)
+            _diag(f"[Silent Drop] {reason} (connection already closed)")
             return
         try:
             try:
                 sock.settimeout(self.silent_hold)
             except OSError:
-                print(f"[Silent Drop] {reason} (connection already closed)", file=sys.stderr)
+                _diag(f"[Silent Drop] {reason} (connection already closed)")
                 return
             try:
                 while True:
@@ -211,7 +226,7 @@ class HandshakePeer:
                 sock.settimeout(old_timeout)
             except OSError:
                 pass
-        print(f"[Silent Drop] {reason} (no data sent to peer)", file=sys.stderr)
+        _diag(f"[Silent Drop] {reason} (no data sent to peer)")
 
     def _drop_or_raise(self, sock: socket.socket, reason: str) -> None:
         """Responder failure path: after a strict silent hold, raise SilentDropError
