@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,8 @@ name = "zt-dsp-py"
 version = "1.0.0"
 description = "ZT-DSP — Zero Trust Dynamic Synchronization Protocol (code 1.0.0; follows the ZT-DSP Protocol Master Guide, docs 1.0.0)"
 requires-python = ">=3.10"
-license = { text = "MIT OR Apache-2.0" }
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 dependencies = ["cryptography"]
 
 [project.optional-dependencies]

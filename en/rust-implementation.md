@@ -163,4 +163,4 @@ idempotent cleanup) is semantically consistent with the Python reference impleme
 
 ## License
 
-MIT OR Apache-2.0 dual license — see [LICENSE-MIT](../LICENSE-MIT) and [LICENSE-APACHE](../LICENSE-APACHE) at the repository root.
+**AGPL-3.0-or-later**, or a **commercial license** by separate arrangement — see [LICENSING.md](../LICENSING.md) and [LICENSE](../LICENSE) at the repository root.

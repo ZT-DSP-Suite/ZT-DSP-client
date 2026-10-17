@@ -82,4 +82,4 @@ cargo build --release
 
 ## License
 
-Licensed under **MIT** and **Apache-2.0**; you may choose either. See `LICENSE`, `LICENSE-MIT`, `LICENSE-APACHE`.
+Licensed under **GNU AGPL-3.0-or-later**, or under a **commercial license** by separate arrangement. See [LICENSING.md](LICENSING.md) and [LICENSE](LICENSE).

@@ -198,4 +198,4 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 
 ## License
 
-MIT OR Apache-2.0 dual license — see [LICENSE-MIT](../LICENSE-MIT) and [LICENSE-APACHE](../LICENSE-APACHE), pick one. The protocol specification is permanently open source; it takes in no funding and forms no commercial entity.
+**AGPL-3.0-or-later**, or a **commercial license** by separate arrangement. See [LICENSING.md](../LICENSING.md) and [LICENSE](../LICENSE). The protocol specification is permanently open source.

@@ -198,4 +198,4 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 
 ## 许可
 
-MIT OR Apache-2.0 双许可 — 见 [LICENSE-MIT](../LICENSE-MIT) 与 [LICENSE-APACHE](../LICENSE-APACHE)，二者择一。协议规范永久开源，不吸纳资金、不形成商业实体。
+**AGPL-3.0-or-later** 开源授权，或另行约定的**商业授权**，二者择一。见 [LICENSING.md](../LICENSING.md) 与 [LICENSE](../LICENSE)。协议规范永久开源。

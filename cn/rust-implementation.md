@@ -163,4 +163,4 @@ python interop_test.py --rust-bin <zt-dsp-rs 可执行路径>   # PY↔RS 互通
 
 ## 许可
 
-MIT OR Apache-2.0 双许可 — 见仓库根 [LICENSE-MIT](../LICENSE-MIT) 与 [LICENSE-APACHE](../LICENSE-APACHE)。
+**AGPL-3.0-or-later** 或另行约定的**商业授权** — 见仓库根 [LICENSING.md](../LICENSING.md) 与 [LICENSE](../LICENSE)。
