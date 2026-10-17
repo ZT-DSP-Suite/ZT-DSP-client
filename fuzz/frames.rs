@@ -1,4 +1,4 @@
-# ZT-DSP frame parser fuzz target (Rust / cargo-fuzz).
+//! ZT-DSP frame parser fuzz target (Rust / cargo-fuzz).
 //
 // The frame readers take a `&mut TcpStream`, because that is what they really consume
 // on the wire. Fuzzing them therefore means feeding bytes through a socket pair rather
