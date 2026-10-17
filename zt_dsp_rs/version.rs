@@ -39,10 +39,10 @@ pub const FOLLOWS_DOC: &str = "ZT-DSP Protocol Master Guide";
 pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md";
 
 /// Total-guide versions this implementation applies to (many-to-many: may hold several).
-pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0"];
+pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0", "1.0.1"];
 
 /// docs version (document revision number, does not participate in network communication).
-pub const DOCS_VERSION: &str = "1.0.0";
+pub const DOCS_VERSION: &str = "1.0.1";
 
 /// Role of this implementation: "client" or "server".
 pub const ROLE: &str = "client";
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn version_contract() {
         assert_eq!(IMPLEMENTATION_ID, "ZT-DSP_RS-1.0.0");
-        assert_eq!(DOCS_VERSION, "1.0.0");
+        assert_eq!(DOCS_VERSION, "1.0.1");
         assert_eq!(CODE_VERSION, "1.0.0");
         assert_eq!(LANGUAGE_PREFIX, "RS");
         assert_eq!(ROLE, "client");
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn applicability_is_many_to_many() {
-        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.0.0"]);
+        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.0.0", "1.0.1"]);
         assert!(APPLIES_TO_DOC_VERSIONS.contains(&DOCS_VERSION));
         assert!(CLIENT_VERSIONS.contains(&IMPLEMENTATION_ID));
         assert!(!SERVER_VERSIONS.contains(&IMPLEMENTATION_ID));
@@ -98,6 +98,6 @@ mod tests {
 
     #[test]
     fn format_version_two_segments() {
-        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.0)");
+        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.1)");
     }
 }

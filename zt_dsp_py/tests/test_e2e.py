@@ -118,7 +118,7 @@ def test_cli_version() -> None:
         cwd=REPO_ROOT, text=True, capture_output=True, check=True,
         encoding="utf-8")
     assert proc.stdout.strip() == format_version()
-    expected = "ZT-DSP_PY-1.0.0 (docs 1.0.0)"
+    expected = "ZT-DSP_PY-1.0.0 (docs 1.0.1)"
     assert proc.stdout.strip() == expected
 
 

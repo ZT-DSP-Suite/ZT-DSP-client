@@ -53,10 +53,10 @@ FOLLOWS_DOC: str = "ZT-DSP Protocol Master Guide"
 FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.0-Master_Guide.md"
 
 # --- Total-guide versions this implementation applies to (many-to-many: may hold several) ---
-APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0",)
+APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0", "1.0.1")
 
 # --- total-guide version (document revision number; takes no part in network communication) ---
-DOCS_VERSION: str = "1.0.0"
+DOCS_VERSION: str = "1.0.1"
 
 # --- Role of this implementation: "client" or "server" ---
 ROLE: str = "client"

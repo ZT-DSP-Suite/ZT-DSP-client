@@ -19,8 +19,8 @@ from zt_dsp_py.version import (
 
 
 def test_docs_version_declaration() -> None:
-    # total-guide version: the document's own revision number; it does not take part in network communication
-    assert DOCS_VERSION == "1.0.0"
+    # document version: the specification text's own revision; it does not take part in network communication
+    assert DOCS_VERSION == "1.0.1"
 
 
 def test_implementation_id_is_a_client_version() -> None:
@@ -51,7 +51,7 @@ def test_applies_to_is_many_to_many() -> None:
     # a tuple, because one implementation may apply to several total-guide versions,
     # and several implementations may apply to one total-guide version
     assert isinstance(APPLIES_TO_DOC_VERSIONS, tuple)
-    assert APPLIES_TO_DOC_VERSIONS == ("1.0.0",)
+    assert APPLIES_TO_DOC_VERSIONS == ("1.0.0", "1.0.1")
     assert DOCS_VERSION in APPLIES_TO_DOC_VERSIONS
 
 
@@ -71,4 +71,4 @@ def test_no_protocol_identifier_constant() -> None:
 
 def test_format_version_contract() -> None:
     # Two segments: this implementation's client/server version identifier, then the total-guide version
-    assert format_version() == "ZT-DSP_PY-1.0.0 (docs 1.0.0)"
+    assert format_version() == "ZT-DSP_PY-1.0.0 (docs 1.0.1)"
