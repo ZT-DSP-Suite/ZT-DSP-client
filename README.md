@@ -20,7 +20,7 @@ Build with the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main
 > caller (`--psk-file`, `--psk-env`, `--psk`); keeping them secret is the caller's responsibility.
 > Binding keys to a TPM/HWID is a protocol-level design goal that is **planned for a later version**.
 >
-> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
+> This statement is re-issued with every release; the governing statement is the TPM/HWID
 > support declaration in Master Guide section 4.1.4. For the current release it reads:
 > write TPM — not supported; write HWID — not supported; read or modify TPM/HWID — not supported.
 
