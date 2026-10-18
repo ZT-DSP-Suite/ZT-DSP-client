@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite contributors
 
@@ -31,27 +30,24 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import hmac
 import json
 import logging
 import os
-import secrets
 import select
 import signal
 import socket
-import struct
 import sys
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from zt_dsp_py.errors import (
     ZTDSPParamError,
     ZTDSPProtocolError,
     ZTDSPTimeoutError,
 )
-from zt_dsp_py.frames import force_close_socket, unpack_phase_one
+from zt_dsp_py.frames import unpack_phase_one
 from zt_dsp_py.params import ZTDSPParams, validate_module_flags
 
 from . import version
@@ -112,7 +108,7 @@ class ServerConfig:
     """Everything the server needs, resolved once at startup."""
 
     profile: str = "beginner"
-    listen: Tuple[str, int] = ("127.0.0.1", 9931)
+    listen: tuple[str, int] = ("127.0.0.1", 9931)
     max_connections: int = 512
     per_ip_limit: int = 8
     handshake_timeout: float = 15.0
@@ -122,8 +118,8 @@ class ServerConfig:
     offline: OfflineConfig = field(default_factory=OfflineConfig)
     group: GroupConfig = field(default_factory=GroupConfig)
     directory: DirectoryConfig = field(default_factory=DirectoryConfig)
-    control_listen: Optional[Tuple[str, int]] = None
-    control_token: Optional[bytes] = None
+    control_listen: tuple[str, int] | None = None
+    control_token: bytes | None = None
 
     def validate(self) -> None:
         """Reject a configuration that would misbehave, instead of clamping it.
@@ -145,16 +141,21 @@ class ServerConfig:
         if self.buffer_bytes <= 0:
             raise ServerConfigError("buffer_bytes must be greater than zero")
         if self.offline.enabled:
-            for name in ("max_payload", "max_recipients", "max_per_recipient", "ttl_secs"):
+            for name in (
+                "max_payload",
+                "max_recipients",
+                "max_per_recipient",
+                "ttl_secs",
+            ):
                 if getattr(self.offline, name) <= 0:
                     raise ServerConfigError(
-                        "offline.%s must be greater than zero when offline is enabled" % name
+                        f"offline.{name} must be greater than zero when offline is enabled"
                     )
         if self.group.enabled:
             for name in ("max_payload", "max_groups", "ttl_secs"):
                 if getattr(self.group, name) <= 0:
                     raise ServerConfigError(
-                        "group.%s must be greater than zero when group is enabled" % name
+                        f"group.{name} must be greater than zero when group is enabled"
                     )
         if self.directory.enabled and self.directory.ttl_secs <= 0:
             raise ServerConfigError(
@@ -166,7 +167,7 @@ class ServerConfig:
             )
 
 
-PROFILES: Dict[str, Dict[str, Any]] = {
+PROFILES: dict[str, dict[str, Any]] = {
     "beginner": {
         "label": "B2-a beginner",
         "max_connections": 256,
@@ -193,14 +194,16 @@ PROFILES: Dict[str, Dict[str, Any]] = {
 
 def config_for_profile(
     name: str,
-    listen: Tuple[str, int],
-    control_listen: Optional[Tuple[str, int]] = None,
-    control_token: Optional[bytes] = None,
+    listen: tuple[str, int],
+    control_listen: tuple[str, int] | None = None,
+    control_token: bytes | None = None,
 ) -> ServerConfig:
     """Build the configuration of one Appendix B.2 profile."""
     if name not in PROFILES:
         raise ServerConfigError(
-            "unknown profile %r; expected one of %s" % (name, ", ".join(sorted(PROFILES)))
+            "unknown profile {!r}; expected one of {}".format(
+                name, ", ".join(sorted(PROFILES))
+            )
         )
     p = PROFILES[name]
     return ServerConfig(
@@ -246,7 +249,7 @@ def validate_param_set(param_raw: bytes) -> ZTDSPParams:
         missing = sorted(REQUIRED_PARAMS - keys)
         extra = sorted(keys - REQUIRED_PARAMS)
         raise ParamSetError(
-            "parameter set mismatch (missing=%s, unexpected=%s)" % (missing, extra)
+            f"parameter set mismatch (missing={missing}, unexpected={extra})"
         )
 
     # from_wire already enforces the type rules, that random_len is a positive
@@ -265,7 +268,7 @@ def validate_param_set(param_raw: bytes) -> ZTDSPParams:
     return params
 
 
-def split_identity(identity: bytes) -> Tuple[bytes, bytes]:
+def split_identity(identity: bytes) -> tuple[bytes, bytes]:
     """Split the identity announcement into (src token hash, dst token hash).
 
     The announcement is 64 bytes: the source token hash followed by the
@@ -273,7 +276,7 @@ def split_identity(identity: bytes) -> Tuple[bytes, bytes]:
     """
     if len(identity) != IDENTITY_LEN:
         raise ParamSetError(
-            "identity announcement must be %d bytes, got %d" % (IDENTITY_LEN, len(identity))
+            f"identity announcement must be {IDENTITY_LEN} bytes, got {len(identity)}"
         )
     src = identity[:TOKEN_HASH_LEN]
     dst = identity[TOKEN_HASH_LEN:]
@@ -294,17 +297,28 @@ def _token_label(token: bytes) -> str:
 class Waiter:
     """One peer waiting in the lobby for its counterpart."""
 
-    __slots__ = ("src", "dst", "sock", "frame", "event", "done", "peer_frame", "outcome")
+    __slots__ = (
+        "done",
+        "dst",
+        "event",
+        "frame",
+        "outcome",
+        "peer_frame",
+        "sock",
+        "src",
+    )
 
-    def __init__(self, src: bytes, dst: bytes, sock: socket.socket, frame: bytes) -> None:
+    def __init__(
+        self, src: bytes, dst: bytes, sock: socket.socket, frame: bytes
+    ) -> None:
         self.src = src
         self.dst = dst
         self.sock = sock
         self.frame = frame
         self.event = threading.Event()
         self.done = threading.Event()
-        self.peer_frame: Optional[bytes] = None
-        self.outcome: Optional[str] = None
+        self.peer_frame: bytes | None = None
+        self.outcome: str | None = None
 
 
 class Lobby:
@@ -319,9 +333,9 @@ class Lobby:
     def __init__(self, timeout: float) -> None:
         self._timeout = timeout
         self._lock = threading.Lock()
-        self._waiters: Dict[Tuple[bytes, bytes], List[Waiter]] = {}
+        self._waiters: dict[tuple[bytes, bytes], list[Waiter]] = {}
 
-    def join(self, waiter: Waiter) -> Optional[Waiter]:
+    def join(self, waiter: Waiter) -> Waiter | None:
         """Register a peer. Returns the counterpart if this completes a pair."""
         with self._lock:
             bucket = self._waiters.get((waiter.dst, waiter.src))
@@ -383,7 +397,7 @@ def silent_drop(sock: socket.socket, seconds: float) -> None:
             data = sock.recv(DRAIN_CHUNK)
             if not data:
                 break
-    except (socket.timeout, OSError):
+    except (TimeoutError, OSError):
         pass
 
 
@@ -426,7 +440,7 @@ class ServerState:
     def __init__(self, cfg: ServerConfig) -> None:
         self.cfg = cfg
         self._lock = threading.Lock()
-        self._per_ip: Dict[str, int] = {}
+        self._per_ip: dict[str, int] = {}
         self.active_connections = 0
         self.active_pairs = 0
         self.rejected = 0
@@ -464,7 +478,7 @@ class ServerState:
         with self._lock:
             self.rejected += 1
 
-    def snapshot(self) -> Dict[str, int]:
+    def snapshot(self) -> dict[str, int]:
         with self._lock:
             return {
                 "active_connections": self.active_connections,
@@ -582,7 +596,7 @@ class Server:
         self.cfg = cfg
         self.lobby = Lobby(cfg.lobby_timeout)
         self.state = ServerState(cfg)
-        self._sock: Optional[socket.socket] = None
+        self._sock: socket.socket | None = None
         self._stop = threading.Event()
 
     def bind(self) -> socket.socket:
@@ -599,7 +613,7 @@ class Server:
         while not self._stop.is_set():
             try:
                 conn, peer = self._sock.accept()
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except OSError:
                 if self._stop.is_set():
@@ -661,7 +675,7 @@ class OfflineStore:
     def __init__(self, cfg: OfflineConfig) -> None:
         self.cfg = cfg
         self._lock = threading.Lock()
-        self._boxes: Dict[str, List[Tuple[float, bytes]]] = {}
+        self._boxes: dict[str, list[tuple[float, bytes]]] = {}
 
     def push(self, recipient: str, payload: bytes) -> int:
         if not self.cfg.enabled:
@@ -669,7 +683,7 @@ class OfflineStore:
         if len(payload) > self.cfg.max_payload:
             raise ControlError(
                 "payload_too_large",
-                "payload exceeds the %d byte limit" % self.cfg.max_payload,
+                f"payload exceeds the {self.cfg.max_payload} byte limit",
             )
         now = time.time()
         with self._lock:
@@ -680,7 +694,7 @@ class OfflineStore:
             self._evict_locked(now)
             return len(box)
 
-    def pull(self, recipient: str) -> List[bytes]:
+    def pull(self, recipient: str) -> list[bytes]:
         if not self.cfg.enabled:
             raise ControlError("disabled", "the offline store is not enabled")
         now = time.time()
@@ -705,11 +719,11 @@ class OfflineStore:
 class Group:
     """One group: a bounded member set and a log with per-member cursors."""
 
-    def __init__(self, name: str, members: List[str], ttl_secs: int) -> None:
+    def __init__(self, name: str, members: list[str], ttl_secs: int) -> None:
         self.name = name
         self.members = set(members)
-        self.log: List[Tuple[float, str, bytes]] = []
-        self.cursors: Dict[str, int] = {m: 0 for m in members}
+        self.log: list[tuple[float, str, bytes]] = []
+        self.cursors: dict[str, int] = {m: 0 for m in members}
         self.created = time.time()
         self.ttl_secs = ttl_secs
 
@@ -720,17 +734,18 @@ class Groups:
     def __init__(self, cfg: GroupConfig) -> None:
         self.cfg = cfg
         self._lock = threading.Lock()
-        self._groups: Dict[str, Group] = {}
+        self._groups: dict[str, Group] = {}
 
-    def create(self, name: str, members: List[str]) -> None:
+    def create(self, name: str, members: list[str]) -> None:
         if not self.cfg.enabled:
             raise ControlError("disabled", "groups are not enabled")
         with self._lock:
             if name in self._groups:
-                raise ControlError("already_exists", "group %r already exists" % name)
+                raise ControlError("already_exists", f"group {name!r} already exists")
             if len(self._groups) >= self.cfg.max_groups:
                 raise ControlError(
-                    "group_limit", "the server already holds %d groups" % self.cfg.max_groups
+                    "group_limit",
+                    f"the server already holds {self.cfg.max_groups} groups",
                 )
             self._groups[name] = Group(name, members, self.cfg.ttl_secs)
 
@@ -740,7 +755,7 @@ class Groups:
         if len(payload) > self.cfg.max_payload:
             raise ControlError(
                 "payload_too_large",
-                "payload exceeds the %d byte limit" % self.cfg.max_payload,
+                f"payload exceeds the {self.cfg.max_payload} byte limit",
             )
         with self._lock:
             group = self._groups.get(name)
@@ -749,11 +764,13 @@ class Groups:
             if sender not in group.members:
                 # A dedicated code, so that the answer does not reveal whether
                 # the group exists to somebody who is not a member.
-                raise ControlError("not_a_member", "sender is not a member of the group")
+                raise ControlError(
+                    "not_a_member", "sender is not a member of the group"
+                )
             group.log.append((time.time(), sender, payload))
             return len(group.log)
 
-    def pull(self, name: str, member: str) -> List[bytes]:
+    def pull(self, name: str, member: str) -> list[bytes]:
         if not self.cfg.enabled:
             raise ControlError("disabled", "groups are not enabled")
         with self._lock:
@@ -761,7 +778,9 @@ class Groups:
             if group is None:
                 raise ControlError("not_found", "no such group")
             if member not in group.members:
-                raise ControlError("not_a_member", "member is not a member of the group")
+                raise ControlError(
+                    "not_a_member", "member is not a member of the group"
+                )
             start = group.cursors.get(member, 0)
             out = [payload for _, _, payload in group.log[start:]]
             group.cursors[member] = len(group.log)
@@ -776,59 +795,63 @@ class ControlState:
         self.groups = Groups(cfg.group)
         self.directory_enabled = cfg.directory.enabled
 
-    def dispatch(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    def dispatch(self, request: dict[str, Any]) -> dict[str, Any]:
         """Run one request and return the response body."""
         op = request.get("op")
         if not isinstance(op, str):
             raise ControlError("bad_request", "op is missing or not a string")
         handler = _CONTROL_OPS.get(op)
         if handler is None:
-            raise ControlError("unknown_op", "unknown op %r" % op)
+            raise ControlError("unknown_op", f"unknown op {op!r}")
         return handler(self, request)
 
     # -- individual operations -------------------------------------------
 
-    def _op_offline_push(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_offline_push(self, req: dict[str, Any]) -> dict[str, Any]:
         recipient = _need_str(req, "recipient")
         payload = _need_b64(req, "payload")
         return {"queued": self.offline.push(recipient, payload)}
 
-    def _op_offline_pull(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_offline_pull(self, req: dict[str, Any]) -> dict[str, Any]:
         recipient = _need_str(req, "recipient")
         import base64
 
         return {
             "messages": [
-                base64.b64encode(p).decode("ascii") for p in self.offline.pull(recipient)
+                base64.b64encode(p).decode("ascii")
+                for p in self.offline.pull(recipient)
             ]
         }
 
-    def _op_group_create(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_group_create(self, req: dict[str, Any]) -> dict[str, Any]:
         name = _need_str(req, "name")
         members = req.get("members")
-        if not isinstance(members, list) or not all(isinstance(m, str) for m in members):
+        if not isinstance(members, list) or not all(
+            isinstance(m, str) for m in members
+        ):
             raise ControlError("bad_request", "members must be a list of strings")
         self.groups.create(name, members)
         return {"name": name, "members": len(members)}
 
-    def _op_group_send(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_group_send(self, req: dict[str, Any]) -> dict[str, Any]:
         name = _need_str(req, "name")
         sender = _need_str(req, "sender")
         payload = _need_b64(req, "payload")
         return {"entries": self.groups.send(name, sender, payload)}
 
-    def _op_group_pull(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_group_pull(self, req: dict[str, Any]) -> dict[str, Any]:
         name = _need_str(req, "name")
         member = _need_str(req, "member")
         import base64
 
         return {
             "messages": [
-                base64.b64encode(p).decode("ascii") for p in self.groups.pull(name, member)
+                base64.b64encode(p).decode("ascii")
+                for p in self.groups.pull(name, member)
             ]
         }
 
-    def _op_directory_lookup(self, req: Dict[str, Any]) -> Dict[str, Any]:
+    def _op_directory_lookup(self, req: dict[str, Any]) -> dict[str, Any]:
         # The identity directory records when a token hash appeared.  That is
         # pairing metadata, and the specification forbids recording pairing
         # metadata, so this operation is refused unless the operator has
@@ -851,23 +874,23 @@ _CONTROL_OPS = {
 }
 
 
-def _need_str(req: Dict[str, Any], key: str) -> str:
+def _need_str(req: dict[str, Any], key: str) -> str:
     value = req.get(key)
     if not isinstance(value, str) or not value:
-        raise ControlError("bad_request", "%s must be a non-empty string" % key)
+        raise ControlError("bad_request", f"{key} must be a non-empty string")
     return value
 
 
-def _need_b64(req: Dict[str, Any], key: str) -> bytes:
+def _need_b64(req: dict[str, Any], key: str) -> bytes:
     import base64
 
     value = req.get(key)
     if not isinstance(value, str):
-        raise ControlError("bad_request", "%s must be a base64 string" % key)
+        raise ControlError("bad_request", f"{key} must be a base64 string")
     try:
         return base64.b64decode(value, validate=True)
     except Exception as exc:
-        raise ControlError("bad_request", "%s is not valid base64" % key) from exc
+        raise ControlError("bad_request", f"{key} is not valid base64") from exc
 
 
 CONTROL_MAX_LINE = 2 * 1024 * 1024
@@ -904,7 +927,7 @@ class ControlServer:
     def __init__(self, cfg: ServerConfig) -> None:
         self.cfg = cfg
         self.state = ControlState(cfg)
-        self._sock: Optional[socket.socket] = None
+        self._sock: socket.socket | None = None
         self._stop = threading.Event()
         self._conns = 0
         self._conns_lock = threading.Lock()
@@ -924,7 +947,7 @@ class ControlServer:
         while not self._stop.is_set():
             try:
                 conn, peer = self._sock.accept()
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except OSError:
                 if self._stop.is_set():
@@ -961,7 +984,7 @@ class ControlServer:
         while True:
             try:
                 chunk = conn.recv(4096)
-            except socket.timeout:
+            except TimeoutError:
                 return
             except OSError:
                 return
@@ -1012,8 +1035,10 @@ class ControlServer:
                 self._send(conn, {"ok": True, "data": data})
 
     @staticmethod
-    def _send(conn: socket.socket, body: Dict[str, Any]) -> None:
-        line = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    def _send(conn: socket.socket, body: dict[str, Any]) -> None:
+        line = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode(
+            "utf-8"
+        )
         try:
             conn.sendall(line + b"\n")
         except OSError:
@@ -1026,16 +1051,16 @@ class ControlServer:
                 self._sock.close()
 
 
-def _parse_addr(text: str, what: str) -> Tuple[str, int]:
+def _parse_addr(text: str, what: str) -> tuple[str, int]:
     host, _, port = text.rpartition(":")
     if not host or not port:
-        raise ServerConfigError("%s must be given as host:port" % what)
+        raise ServerConfigError(f"{what} must be given as host:port")
     try:
         port_number = int(port)
     except ValueError:
-        raise ServerConfigError("%s port must be a number" % what) from None
+        raise ServerConfigError(f"{what} port must be a number") from None
     if not (0 < port_number < 65536):
-        raise ServerConfigError("%s port must be in 1..65535" % what)
+        raise ServerConfigError(f"{what} port must be in 1..65535")
     return (host, port_number)
 
 
@@ -1056,7 +1081,7 @@ def _read_token(value: str) -> bytes:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=version.PROGRAM_NAME,
-        description="ZT-DSP %s server: pair peers, then relay bytes." % version.DOCUMENT_REVISION,
+        description=f"ZT-DSP {version.DOCUMENT_REVISION} server: pair peers, then relay bytes.",
     )
     parser.add_argument(
         "--version",
@@ -1092,7 +1117,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     logging.basicConfig(
         level=getattr(logging, args.log_level.upper()),
@@ -1112,12 +1137,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         cfg.validate()
     except ServerConfigError as exc:
-        print("configuration error: %s" % exc, file=sys.stderr)
+        print(f"configuration error: {exc}", file=sys.stderr)
         return 2
 
-    print("ZT-DSP %s" % version.format_version(), file=sys.stderr)
+    print(f"ZT-DSP {version.format_version()}", file=sys.stderr)
     print(
-        "profile %s (%s)" % (cfg.profile, PROFILES[cfg.profile]["label"]),
+        "profile {} ({})".format(cfg.profile, PROFILES[cfg.profile]["label"]),
         file=sys.stderr,
     )
     if cfg.directory.enabled:
@@ -1131,27 +1156,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         server.bind()
     except OSError as exc:
-        print("cannot listen on %s:%d: %s" % (listen[0], listen[1], exc), file=sys.stderr)
+        print(f"cannot listen on {listen[0]}:{listen[1]}: {exc}", file=sys.stderr)
         return 2
 
-    control: Optional[ControlServer] = None
+    control: ControlServer | None = None
     if control_listen is not None:
         control = ControlServer(cfg)
         try:
             control.bind()
         except OSError as exc:
             print(
-                "cannot listen on %s:%d: %s" % (control_listen[0], control_listen[1], exc),
+                f"cannot listen on {control_listen[0]}:{control_listen[1]}: {exc}",
                 file=sys.stderr,
             )
             return 2
         threading.Thread(target=control.serve_forever, daemon=True).start()
         print(
-            "control plane on %s:%d" % (control_listen[0], control_listen[1]),
+            f"control plane on {control_listen[0]}:{control_listen[1]}",
             file=sys.stderr,
         )
 
-    print("listening on %s:%d" % (listen[0], listen[1]), file=sys.stderr)
+    print(f"listening on {listen[0]}:{listen[1]}", file=sys.stderr)
 
     def _shutdown(_signum: int, _frame: Any) -> None:
         server.stop()

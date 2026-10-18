@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite contributors
 
@@ -45,7 +44,7 @@ CLIENT_VERSIONS = ["ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0"]
 SERVER_VERSIONS = ["ZT-DSP_SV-1.0.0"]
 
 #: The identifier of this implementation, e.g. ZT-DSP_SV-1.0.0.
-IMPLEMENTATION_ID = "ZT-DSP_%s-%s" % (LANGUAGE_PREFIX, CODE_VERSION)
+IMPLEMENTATION_ID = f"ZT-DSP_{LANGUAGE_PREFIX}-{CODE_VERSION}"
 
 #: Name of the executable / entry point.
 PROGRAM_NAME = "zt-dsp-server"
@@ -53,7 +52,7 @@ PROGRAM_NAME = "zt-dsp-server"
 
 def format_version() -> str:
     """Single-line version string used by --version and the startup banner."""
-    return "%s (docs %s)" % (IMPLEMENTATION_ID, DOCUMENT_REVISION)
+    return f"{IMPLEMENTATION_ID} (docs {DOCUMENT_REVISION})"
 
 
 def asserts() -> None:
@@ -65,8 +64,7 @@ def asserts() -> None:
     """
     assert DOCS_VERSIONS, "DOCS_VERSIONS must not be empty"
     assert DOCUMENT_REVISION in DOCS_VERSIONS, (
-        "DOCUMENT_REVISION %r is not in DOCS_VERSIONS %r"
-        % (DOCUMENT_REVISION, DOCS_VERSIONS)
+        f"DOCUMENT_REVISION {DOCUMENT_REVISION!r} is not in DOCS_VERSIONS {DOCS_VERSIONS!r}"
     )
     assert ROLE == "server", ROLE
     assert LANGUAGE_PREFIX == "SV", LANGUAGE_PREFIX

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite contributors
 
@@ -14,16 +13,12 @@ from __future__ import annotations
 import json
 import socket
 import threading
-import time
 
 import pytest
 
 from zt_dsp_py.frames import pack_phase_one
-
 from zt_dsp_sv_py import version
 from zt_dsp_sv_py.server import (
-    ControlError,
-    ControlServer,
     Lobby,
     ParamSetError,
     Server,
@@ -143,7 +138,7 @@ def _pair(lobby, a_src, a_dst, b_src, b_dst):
 
 def test_lobby_matches_only_mutual_identities():
     lobby = Lobby(30.0)
-    first, second, matched = _pair(lobby, token(1), token(2), token(2), token(1))
+    first, _second, matched = _pair(lobby, token(1), token(2), token(2), token(1))
     assert matched is first
     assert first.event.is_set()
     assert first.peer_frame == b"b"
@@ -228,7 +223,9 @@ def test_config_refuses_zero_durations():
 
 def test_config_refuses_a_control_port_without_a_token():
     with pytest.raises(ServerConfigError):
-        config_for_profile("beginner", ("127.0.0.1", 0), control_listen=("127.0.0.1", 1)).validate()
+        config_for_profile(
+            "beginner", ("127.0.0.1", 0), control_listen=("127.0.0.1", 1)
+        ).validate()
 
 
 def test_every_shipped_profile_starts():
@@ -246,7 +243,9 @@ def test_the_identity_directory_is_off_in_every_profile():
 
 def _start_server():
     cfg = config_for_profile("beginner", ("127.0.0.1", 0))
-    cfg = ServerConfig(**{**cfg.__dict__, "handshake_timeout": 5.0, "lobby_timeout": 5.0})
+    cfg = ServerConfig(
+        **{**cfg.__dict__, "handshake_timeout": 5.0, "lobby_timeout": 5.0}
+    )
     server = Server(cfg)
     sock = server.bind()
     host, port = sock.getsockname()
@@ -290,7 +289,9 @@ def test_a_rejected_peer_hears_nothing():
         bad = dict(VALID_PARAMS)
         del bad["window"]
         peer.sendall(
-            pack_phase_one(json.dumps(bad).encode("utf-8"), token(1) + token(2), b"n" * 32)
+            pack_phase_one(
+                json.dumps(bad).encode("utf-8"), token(1) + token(2), b"n" * 32
+            )
         )
         with pytest.raises((socket.timeout, ConnectionResetError, OSError)):
             data = peer.recv(64)
