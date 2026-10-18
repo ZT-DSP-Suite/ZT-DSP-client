@@ -6,7 +6,7 @@ Python and Rust implementations, test vectors, and the licence set.
 
 ## 按什么找
 
-Build with the DEV-GUIDE in ZT-DSP-docs; judge conformance with its CONFORMANCE-GUIDE.
+Build with the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/en/DEV-GUIDE.md); judge conformance with the [CONFORMANCE-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/en/CONFORMANCE-GUIDE.md).
 
 **中文** ｜ [English](en/README.md)
 
@@ -84,7 +84,7 @@ cargo build --release
 
 | Repository | Role |
 |---|---|
-| `ZT-DSP-docs` | Protocol specification and terminology |
+| [ZT-DSP-docs](https://github.com/ZT-DSP-Suite/ZT-DSP-docs) | Protocol specification and terminology |
 | `ZT-DSP-client` (this repository; local directory `ZT-DSP-client`) | Client edition (reference implementation) |
 | `ZT-DSP-server` | Server edition (in design) |
 

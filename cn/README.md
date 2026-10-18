@@ -6,9 +6,9 @@
 
 ## 按什么找
 
-构建与验证步骤见 ZT-DSP-docs 的 DEV-GUIDE。
+构建与验证步骤见 [开发与验证指南](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/cn/DEV-GUIDE.md)。
 
-**Zero Trust Dynamic Synchronization Protocol** — 官方开发语言 **Python 与 Rust**；官方实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.0**）
+**Zero Trust Dynamic Synchronization Protocol** — 官方开发语言 **Python 与 Rust**；官方实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.1**）
 
 一个开放、零信任、端到端加密的通信协议与 Python、Rust 官方实现。基于 **PSK + X25519 + AES-256-GCM + 每包棘轮**，提供四阶段握手与全双工加密通信。
 
@@ -41,7 +41,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 ## 目录
 
 ```
-├── zt_dsp_py/                  Python 官方实现（实现标识 ZT-DSP_PY-1.0.0）
+├── zt_dsp_py/                  Python 官方实现（程序标识 ZT-DSP_PY-1.0.0）
 │   ├── version.py             版本契约唯一事实源（总指导版本 / 客户端版本 / 适用关系 / 遵循文档）
 │   ├── errors.py              协议异常体系（总指导附录 H.5）
 │   ├── params.py              参数集与校验（附录 F.1：七项固定顺序匹配）
@@ -53,7 +53,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 │   ├── transport.py           监听/连接运行器 + 心跳聊天会话（附录 H.3/H.6）
 │   ├── cli.py                 最小命令行
 │   └── tests/                 pytest 套件（原语/帧/握手/会话/端到端）
-├── zt_dsp_rs/               Rust 官方实现（实现标识 ZT-DSP_RS-1.0.0；平铺单 bin crate）
+├── zt_dsp_rs/               Rust 官方实现（程序标识 ZT-DSP_RS-1.0.0；平铺单 bin crate）
 ├── LICENSE
 └── README.md
 ```
@@ -71,7 +71,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 cd zt_dsp_py
 pip install .                     # 或 pip install -e .
 python -m zt_dsp_py --version
-# → ZT-DSP_PY-1.0.0 (docs 1.0.0)
+# → ZT-DSP_PY-1.0.0 (docs 1.0.1)
 
 # 监听端（响应方）
 zt-dsp-py --role listen --port 37291 --psk-file psk.txt
@@ -131,7 +131,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 
 | 项 | 值 |
 |----|----|
-| 适用的总指导版本 | `1.0.0`（可适用多个，见下「适用关系」） |
+| 适用的文档版本 | `1.0.0` 与 `1.0.1`（可适用多个，见下「适用关系」） |
 | 客户端版本 | `ZT-DSP_PY-1.0.0`（本仓库 Python）、`ZT-DSP_RS-1.0.0`（本仓库 Rust） |
 | 服务器版本 | `ZT-DSP_SV-1.0.0`（仓库 `ZT-DSP-server`，占位，尚未实现） |
 | 实现标识 | `ZT-DSP_PY-1.0.0`（前缀 `PY`） |

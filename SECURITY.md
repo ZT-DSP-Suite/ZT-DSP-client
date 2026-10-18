@@ -7,7 +7,7 @@ implementation here are welcome and treated seriously.
 
 | Version | Supported |
 |---|---|
-| code 1.0.x (this repository), following docs 1.0.0 | yes |
+| code 1.0.x (this repository), following docs 1.0.1 | yes |
 | earlier revisions | no |
 
 ## Reporting a vulnerability

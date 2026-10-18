@@ -6,7 +6,7 @@ The English implementation notes and Rust details.
 
 ## 按什么找
 
-Build and verification steps are in the DEV-GUIDE under ZT-DSP-docs.
+Build and verification steps are in the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/en/DEV-GUIDE.md).
 
 **Zero Trust Dynamic Synchronization Protocol** — official development languages **Python and Rust**; official implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.0**)
 
@@ -73,7 +73,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 cd zt_dsp_py
 pip install .                     # or pip install -e .
 python -m zt_dsp_py --version
-# → ZT-DSP_PY-1.0.0 (docs 1.0.0)
+# → ZT-DSP_PY-1.0.0 (docs 1.0.1)
 
 # Listening side (responder)
 zt-dsp-py --role listen --port 37291 --psk-file psk.txt
@@ -194,7 +194,7 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 #### Display and Citation Conventions
 
 - **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the total-guide version
-- **--version output** (the two parts, in order): implementation version identifier, total-guide version → ZT-DSP_PY-1.0.0 (docs 1.0.0)
+- **--version output** (the two parts, in order): implementation version identifier, total-guide version → ZT-DSP_PY-1.0.0 (docs 1.0.1)
 - **Citing protocol behavior**: write "for protocol behavior see section X of the ZT-DSP Protocol Master Guide"; do not cite a version string
 - **Prohibitions**: ① mixing the docs version into the implementation ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
 
