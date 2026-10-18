@@ -29,7 +29,6 @@ Build with the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main
 | 中文 | English |
 |---|---|
 | [cn/README.md](cn/README.md) | [en/README.md](en/README.md) |
-| [cn/rust-implementation.md](cn/rust-implementation.md) | [en/rust-implementation.md](en/rust-implementation.md) |
 
 Documentation follows a bilingual mirror layout: `cn/` and `en/` contain the same documents in Chinese and English respectively.
 
@@ -40,8 +39,8 @@ Documentation follows a bilingual mirror layout: `cn/` and `en/` contain the sam
 | `zt_dsp_py/` | Python | `ZT-DSP_PY-1.0.0` |
 | `zt_dsp_rs/` | Rust | `ZT-DSP_RS-1.0.0` |
 
-The official development languages are **Python** and **Rust**; both implementations are
-first-class and follow the same Protocol Master Guide (docs 1.0.0). Other languages can be
+The development languages are **Python** and **Rust**; both implementations are
+first-class and follow the same Protocol Master Guide (docs 1.0.1). Other languages can be
 added following the implementation-identifier rule `ZT-DSP_<prefix>-<implementation version>`.
 
 Source comments and docstrings are in English.
@@ -72,7 +71,7 @@ Two known traps:
 2. Building the Rust crate from a non-ASCII working directory (for example a Chinese path on
    Windows) requires `CARGO_TARGET_DIR` to point at an ASCII path.
 
-Rust official implementation (`zt_dsp_rs/`):
+Rust reference implementation (`zt_dsp_rs/`):
 
 ```bash
 cd zt_dsp_rs

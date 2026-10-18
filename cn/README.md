@@ -8,9 +8,9 @@
 
 构建与验证步骤见 [开发与验证指南](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/cn/DEV-GUIDE.md)。
 
-**Zero Trust Dynamic Synchronization Protocol** — 官方开发语言 **Python 与 Rust**；官方实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.1**）
+**Zero Trust Dynamic Synchronization Protocol** — 开发语言 **Python 与 Rust**；参考实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.1**）
 
-一个开放、零信任、端到端加密的通信协议与 Python、Rust 官方实现。基于 **PSK + X25519 + AES-256-GCM + 每包棘轮**，提供四阶段握手与全双工加密通信。
+一个开放、零信任、端到端加密的通信协议与 Python、Rust 参考实现。基于 **PSK + X25519 + AES-256-GCM + 每包棘轮**，提供四阶段握手与全双工加密通信。
 
 - 协议公开、实现自由、参数自治、静默丢弃
 - 端到端加密：任何中继节点都无法解密通信内容
@@ -41,7 +41,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 ## 目录
 
 ```
-├── zt_dsp_py/                  Python 官方实现（程序标识 ZT-DSP_PY-1.0.0）
+├── zt_dsp_py/                  Python 参考实现（程序标识 ZT-DSP_PY-1.0.0）
 │   ├── version.py             版本契约唯一事实源（总指导版本 / 客户端版本 / 适用关系 / 遵循文档）
 │   ├── errors.py              协议异常体系（总指导附录 H.5）
 │   ├── params.py              参数集与校验（附录 F.1：七项固定顺序匹配）
@@ -53,7 +53,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 │   ├── transport.py           监听/连接运行器 + 心跳聊天会话（附录 H.3/H.6）
 │   ├── cli.py                 最小命令行
 │   └── tests/                 pytest 套件（原语/帧/握手/会话/端到端）
-├── zt_dsp_rs/               Rust 官方实现（程序标识 ZT-DSP_RS-1.0.0；平铺单 bin crate）
+├── zt_dsp_rs/               Rust 参考实现（程序标识 ZT-DSP_RS-1.0.0；平铺单 bin crate）
 ├── LICENSE
 └── README.md
 ```
@@ -134,7 +134,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 适用的文档版本 | `1.0.0` 与 `1.0.1`（可适用多个，见下「适用关系」） |
 | 客户端版本 | `ZT-DSP_PY-1.0.0`（本仓库 Python）、`ZT-DSP_RS-1.0.0`（本仓库 Rust） |
 | 服务器版本 | `ZT-DSP_SV-1.0.0`（仓库 `ZT-DSP-server`，占位，尚未实现） |
-| 实现标识 | `ZT-DSP_PY-1.0.0`（前缀 `PY`） |
+| 程序标识 | `ZT-DSP_PY-1.0.0`（前缀 `PY`） |
 | 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md` |
 
 ### 命名规则体系（docs / code · 接管 / Fork 必读）
@@ -166,7 +166,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 主位递增 | 线上字节格式变化（帧布局/派生公式变更）——新旧实现按设计互不互通（握手必然失败） |
 | 多实现并存 | 不同实现的**版本号可以相同**（`ZT-DSP_PY-1.0.0`、`ZT-DSP_GO-1.0.0`、`ZT-DSP_SV-1.0.0` 并存），靠前缀区分；**版本号相同不等于同一份实现** |
 | 参与网络通信 | 否（版本号本身不参与；握手帧不含任何版本串） |
-| 其他语言实现 | 官方开发语言为 Python 与 Rust；新增语言实现时，在仓库根新增一个以实现标识命名的平级目录（如 `zt_dsp_go/`），与 `zt_dsp_py/`、`zt_dsp_rs/` 并列，并附协议一致性核对表 |
+| 其他语言实现 | 开发语言为 Python 与 Rust；新增语言实现时，在仓库根新增一个以程序标识命名的平级目录（如 `zt_dsp_go/`），与 `zt_dsp_py/`、`zt_dsp_rs/` 并列，并附协议一致性核对表 |
 | 合并 / 收录建议 | fork 合并、管理者新建分支或独立实现晋升主线时，核心建议：**所有代码收纳为单文件**（一实现一文件，主线目录不新增目录树），并附协议一致性核对表 |
 
 #### 适用关系（N:M）
@@ -194,9 +194,9 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 #### 显示与引用规范
 
 - **引用一个实现**：用其完整版本标识（客户端或服务器）（如 `ZT-DSP_PY-1.0.0`），不要附加 docs 版本
-- **`--version` 输出**（两段依次为）：实现版本标识、总指导版本 → `ZT-DSP_PY-1.0.0 (docs 1.0.0)`
+- **`--version` 输出**（两段依次为）：实现版本标识、总指导版本 → `ZT-DSP_PY-1.0.0 (docs 1.0.1)`
 - **引用协议行为**：写"协议行为见《ZT-DSP 协议总指导》某节"，不要引用版本串
-- **禁止事项**：① 在实现标识中混入 docs 版本；② 在握手帧中写入任何版本串；③ 回收任何已用过的版本号；④ 对已发布版本做断裂式编号重置；⑤ 在 `version.py` 之外硬编码任何版本字符串
+- **禁止事项**：① 在程序标识中混入 docs 版本；② 在握手帧中写入任何版本串；③ 回收任何已用过的版本号；④ 对已发布版本做断裂式编号重置；⑤ 在 `version.py` 之外硬编码任何版本字符串
 
 #### 唯一事实源与变更流程
 

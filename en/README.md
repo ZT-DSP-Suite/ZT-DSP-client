@@ -8,9 +8,9 @@ The English implementation notes and Rust details.
 
 Build and verification steps are in the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/en/DEV-GUIDE.md).
 
-**Zero Trust Dynamic Synchronization Protocol** — official development languages **Python and Rust**; official implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.0**)
+**Zero Trust Dynamic Synchronization Protocol** — development languages **Python and Rust**; reference implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.1**)
 
-An open, zero trust, end-to-end encrypted communication protocol with official Python and Rust implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
+An open, zero trust, end-to-end encrypted communication protocol with Python and Rust reference implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
 
 - Protocol is public, implementation is free, parameters are self-governing, silent drop
 - End-to-end encryption: no relay node can decrypt the communication content
@@ -43,7 +43,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 ## Directory Layout
 
 ```
-├── zt_dsp_py/                  Python official implementation (implementation ID ZT-DSP_PY-1.0.0)
+├── zt_dsp_py/                  Python reference implementation (program ID ZT-DSP_PY-1.0.0)
 │   ├── version.py             single source of truth for the version contract (total-guide version / client version / applicability / followed document)
 │   ├── errors.py              protocol exception hierarchy (Master Guide Appendix H.5)
 │   ├── params.py              parameter set and validation (Appendix F.1: fixed seven-item order matching)
@@ -55,7 +55,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 │   ├── transport.py           listener/connector runner + heartbeat chat session (Appendix H.3/H.6)
 │   ├── cli.py                 minimal command line
 │   └── tests/                 pytest suite (primitives/frames/handshake/session/end-to-end)
-├── zt_dsp_rs/               Rust official implementation (implementation ID ZT-DSP_RS-1.0.0; flat single-bin crate)
+├── zt_dsp_rs/               Rust reference implementation (program ID ZT-DSP_RS-1.0.0; flat single-bin crate)
 ├── LICENSE
 └── README.md
 ```
@@ -134,7 +134,7 @@ and a real two-sided TCP flow.
 | applicable total-guide version | 1.0.0 (may be several; see "Applicability" below) |
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
 | server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
-| implementation ID | ZT-DSP_PY-1.0.0 (prefix PY) |
+| program ID | ZT-DSP_PY-1.0.0 (prefix PY) |
 | followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md |
 
 ### Naming Convention System (docs / code · required reading for takeover / fork)
@@ -166,7 +166,7 @@ and a real two-sided TCP flow.
 | major digit increment | change to the on-wire byte format (frame layout / derivation formula) — old and new implementations are by design not interoperable (handshake will necessarily fail) |
 | multi-language coexistence | implementations in different languages **may share the same version number** (ZT-DSP_PY-1.0.0 and ZT-DSP_GO-1.0.0 coexist), distinguished by the language prefix |
 | participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
-| other-language implementations | the official development languages are Python and Rust; to add another language, create a sibling directory named after its implementation ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
+| other-language implementations | the development languages are Python and Rust; to add another language, create a sibling directory named after its program ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
 | merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: **collect all code into a single file** (one implementation per file, no new directory trees added to the mainline directory), with a protocol conformance checklist attached |
 
 #### Applicability (many-to-many)
@@ -196,7 +196,7 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 - **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the total-guide version
 - **--version output** (the two parts, in order): implementation version identifier, total-guide version → ZT-DSP_PY-1.0.0 (docs 1.0.1)
 - **Citing protocol behavior**: write "for protocol behavior see section X of the ZT-DSP Protocol Master Guide"; do not cite a version string
-- **Prohibitions**: ① mixing the docs version into the implementation ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
+- **Prohibitions**: ① mixing the docs version into the program ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
 
 #### Single Source of Truth and Change Process
 

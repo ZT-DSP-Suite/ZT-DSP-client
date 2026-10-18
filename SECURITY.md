@@ -20,7 +20,7 @@ If private reporting is unavailable, open a minimal issue that asks for a privat
 **without including exploit details**, and the maintainer will respond with one.
 
 Please include: affected version and file(s); whether the issue is in the protocol text, the
-Python official implementation, or the Rust official implementation; a reproduction or a
+Python reference implementation, or the Rust reference implementation; a reproduction or a
 precise argument; and the impact you believe it has. Do not include working exploit code in a
 public issue.
 
@@ -28,7 +28,7 @@ public issue.
 
 - Cryptography is delegated to `cryptography` (Python) and the RustCrypto crates; a flaw in
   those libraries belongs upstream, but tell us if this project uses them incorrectly.
-- Both official implementations (`zt_dsp_py/` in Python and `zt_dsp_rs/` in Rust) are supported
+- Both reference implementations (`zt_dsp_py/` in Python and `zt_dsp_rs/` in Rust) are supported
   and are expected to interoperate byte for byte. Reports against either are welcome.
 - Denial of service by injecting a packet that terminates an established session is a **known,
   deliberate** fail-closed tradeoff. Report it only if you

@@ -18,7 +18,7 @@ must change too, in `ZT-DSP-docs`, in **both** `cn/` and `en/`. Code and spec ar
 separate repositories and neither pulls from the other — a protocol change that is not
 in the spec is a change to an undocumented protocol.
 
-**Did you touch either implementation?** Both are official. If you change one side,
+**Did you touch either implementation?** Both are reference implementations. If you change one side,
 confirm the other still agrees. The shared vectors in `test-vectors/vectors.json` are
 what make that checkable: if a derivation changes, regenerate them and expect the diff.
 
