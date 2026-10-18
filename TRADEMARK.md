@@ -28,7 +28,7 @@ license and does not limit any right that license grants.
   reference, canonical, or the ZT-DSP implementation.
 - Use the ZT-DSP logo as your product icon, or anywhere it implies endorsement.
 - Publish a fork to PyPI or crates.io under the names zt-dsp-py, zt_dsp_py, zt-dsp-rs
-  or zt_dsp_rs. Those names identify the official distribution.
+  or zt_dsp_rs. Those names identify the distribution published in this repository.
 - Register a domain, package name, organisation name or social account that
   incorporates the marks in a way that implies you are the project.
 
