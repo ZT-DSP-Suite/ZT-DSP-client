@@ -44,7 +44,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 
 ```
 ├── zt_dsp_py/                  Python reference implementation (program ID ZT-DSP_PY-1.0.0)
-│   ├── version.py             single source of truth for the version contract (total-guide version / client version / applicability / followed document)
+│   ├── version.py             single source of truth for the version contract (document version / client version / applicability / followed document)
 │   ├── errors.py              protocol exception hierarchy (Master Guide Appendix H.5)
 │   ├── params.py              parameter set and validation (Appendix F.1: fixed seven-item order matching)
 │   ├── identity.py            P2P placeholder token hash (4.1.1)
@@ -131,7 +131,7 @@ and a real two-sided TCP flow.
 
 | Item | Value |
 |----|----|
-| applicable total-guide version | 1.0.0 (may be several; see "Applicability" below) |
+| applicable document version | 1.0.0 and 1.0.1 (may be several; see "Applicability" below) |
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
 | server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
 | program ID | ZT-DSP_PY-1.0.0 (prefix PY) |
@@ -139,9 +139,9 @@ and a real two-sided TCP flow.
 
 ### Naming Convention System (docs / code · required reading for takeover / fork)
 
-**This project has three kinds of version number** — total-guide version, client version, server version; handshake frames carry no version string, so peer compatibility is not judged by version numbers.
+**This project has three kinds of version number** — document version, client version, server version; handshake frames carry no version string, so peer compatibility is not judged by version numbers.
 
-#### total-guide version (docs version)
+#### document version (docs version)
 
 | Item | Rule |
 |----|------|
@@ -171,16 +171,16 @@ and a real two-sided TCP flow.
 
 #### Applicability (many-to-many)
 
-The relation between a total-guide version and the client/server versions is **not** one-to-one; it is many-to-many:
+The relation between a document version and the client/server versions is **not** one-to-one; it is many-to-many:
 
 | Relation | Rule |
 |----------|------|
-| one total-guide version -> several implementation versions | several implementations of the same kind whose protocol behaviour has not changed **share one declaration**; no rewrite is needed per version |
-| several total-guide versions -> one implementation version | one implementation may apply to several guides at once; listed item by item in \APPLIES_TO_DOC_VERSIONS\ |
+| one document version -> several implementation versions | several implementations of the same kind whose protocol behaviour has not changed **share one declaration**; no rewrite is needed per version |
+| several document versions -> one implementation version | one implementation may apply to several guides at once; listed item by item in `APPLIES_TO_DOC_VERSIONS` |
 | same number, different implementation | identical version numbers do **not** mean the same implementation and do not constitute a compatibility claim |
-| how compatibility is decided | applicability is a **declaration**, not a test; real compatibility is always shown by the phase-three confirmation-label check |
+| how compatibility is decided | applicability is a **declaration**, not a test; real compatibility is shown by the phase-three confirmation-label check |
 
-So adding a Python patch release (\ZT-DSP_PY-1.0.1\, unchanged protocol behaviour) requires **no change** to this section; when the Master Guide moves to a new version, simply append it to the applicable list on the implementation side.
+So adding a Python patch release (`ZT-DSP_PY-1.0.1`, unchanged protocol behaviour) requires **no change** to this section; when the Master Guide moves to a new version, simply append it to the applicable list on the implementation side.
 
 #### Bidirectional Documentation–Code Declaration
 
@@ -193,8 +193,8 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 
 #### Display and Citation Conventions
 
-- **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the total-guide version
-- **--version output** (the two parts, in order): implementation version identifier, total-guide version → ZT-DSP_PY-1.0.0 (docs 1.0.1)
+- **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the document version
+- **--version output** (the two parts, in order): implementation version identifier, document version → ZT-DSP_PY-1.0.0 (docs 1.0.1)
 - **Citing protocol behavior**: write "for protocol behavior see section X of the ZT-DSP Protocol Master Guide"; do not cite a version string
 - **Prohibitions**: ① mixing the docs version into the program ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
 
