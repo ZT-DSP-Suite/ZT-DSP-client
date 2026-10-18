@@ -12,7 +12,7 @@ Build and verification steps are in the [DEV-GUIDE](https://github.com/ZT-DSP-Su
 
 An open, zero trust, end-to-end encrypted communication protocol with Python and Rust reference implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
 
-- Protocol is public, implementation is free, parameters are self-governing, silent drop
+- Protocol is public, implementation is free, parameters are self-authoritative, silent drop
 - End-to-end encryption: no relay node can decrypt the communication content
 - Forward secrecy: X25519 ephemeral keys + per-packet ratchet rotation (consume state before sending)
 - No reliance on a centralized trust anchor; the token hash (out-of-band exchange) is shared out-of-band
@@ -25,7 +25,7 @@ An open, zero trust, end-to-end encrypted communication protocol with Python and
 > `--psk-env`, `--psk`), and keeping them secret is the caller's responsibility. Binding keys to a
 > TPM/HWID is a protocol-level design goal that is **planned for a later version**.
 >
-> This statement is re-issued with every release; the governing statement is the TPM/HWID
+> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
 > support declaration in Master Guide section 4.1.4. For the current release (client version `ZT-DSP_PY-1.0.0`): write TPM — not supported;
 > write HWID — not supported; read or modify TPM/HWID — not supported.
 
