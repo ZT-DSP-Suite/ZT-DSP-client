@@ -105,6 +105,9 @@ pub struct Cli {
     /// Connection rate limit (ops/second, 0 = disabled).
     #[arg(long, default_value_t = 0)]
     rate_limit: u32,
+    /// Do not read the input; the session only receives.
+    #[arg(long)]
+    no_stdin: bool,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -381,6 +384,7 @@ fn run_main_flow(cli: &Cli) -> i32 {
         retry_count: cli.retry_count,
         retry_interval: cli.retry_interval,
         rate_limit: cli.rate_limit,
+        read_stdin: !cli.no_stdin,
     };
 
     match run_session(role, &cfg, &host, cli.port) {
@@ -401,6 +405,14 @@ mod tests {
     fn version_output_via_clap() {
         // --version three-part output
         assert!(format_version().starts_with("ZT-DSP_RS-1.0.0"));
+    }
+
+    #[test]
+    fn the_input_is_read_unless_it_is_switched_off() {
+        let cli = Cli::parse_from(["zt-dsp-rs"]);
+        assert!(!cli.no_stdin);
+        let cli = Cli::parse_from(["zt-dsp-rs", "--no-stdin"]);
+        assert!(cli.no_stdin);
     }
 
     #[test]
