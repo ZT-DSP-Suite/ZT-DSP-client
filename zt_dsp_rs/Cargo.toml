@@ -2,7 +2,7 @@
 name = "zt-dsp-rs"
 version = "1.0.0"
 edition = "2021"
-description = "ZT-DSP_RS-1.0.0 — official Rust implementation of the ZT-DSP protocol (follows the ZT-DSP Protocol Master Guide, docs 1.0.0)"
+description = "ZT-DSP_RS-1.0.0 — official Rust implementation of the ZT-DSP protocol (follows the ZT-DSP Protocol Master Guide, docs 1.0.2)"
 license = "AGPL-3.0-or-later"
 
 # The crate is both a library and a binary. The library target is what makes the
