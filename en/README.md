@@ -8,7 +8,7 @@ The English implementation notes and Rust details.
 
 Build and verification steps are in the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/en/DEV-GUIDE.md).
 
-**Zero Trust Dynamic Synchronization Protocol** — development languages **Python and Rust**; reference implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.1**)
+**Zero Trust Dynamic Synchronization Protocol** — development languages **Python and Rust**; reference implementations **ZT-DSP_PY-1.0.0** and **ZT-DSP_RS-1.0.0** (client version **1.0.0**) | conforms to "ZT-DSP Protocol Master Guide" (**docs 1.0.2**)
 
 An open, zero trust, end-to-end encrypted communication protocol with Python and Rust reference implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
 
@@ -17,27 +17,16 @@ An open, zero trust, end-to-end encrypted communication protocol with Python and
 - Forward secrecy: X25519 ephemeral keys + per-packet ratchet rotation (consume state before sending)
 - No reliance on a centralized trust anchor; the token hash (out-of-band exchange) is shared out-of-band
 
-> ## Hardware support statement (TPM and HWID)
->
-> **Neither implementation in this repository supports the TPM or the HWID.** `zt_dsp_py` and `zt_dsp_rs`
-> contain **no** code that writes, reads or modifies a Trusted Platform Module or a Hardware Identifier.
-> The PSK and the token are ordinary configuration values supplied by the caller (`--psk-file`,
-> `--psk-env`, `--psk`), and keeping them secret is the caller's responsibility. Binding keys to a
-> TPM/HWID is a protocol-level design goal that is **planned for a later version**.
->
-> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
-> support declaration in Master Guide section 4.1.4. For the current release (client version `ZT-DSP_PY-1.0.0`): write TPM — not supported;
-> write HWID — not supported; read or modify TPM/HWID — not supported.
-
 ## Correspondence Between Documentation and Code
 
 This implementation conforms to "ZT-DSP Protocol Master Guide"; the path is given by FOLLOWS_DOC_PATH in zt_dsp_py/version.py:
 
 ```
-ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md
+ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md
 ```
 
-Documentation and code are **not bound by version numbers**: the document side declares "which settings of the code this document governs", and the code side declares "which document this implementation follows".
+Documentation and code are **not bound by version numbers**: the document side declares
+"which settings of the code this document governs", and the code side declares "which document this implementation follows".
 **Handshake frames carry no version string** — neither the phase 1 parameter JSON nor the phase 4 AAD contains any version or protocol identifier field.
 
 ## Directory Layout
@@ -78,7 +67,7 @@ Documentation and code are **not bound by version numbers**: the document side d
 cd zt_dsp_py
 pip install .                     # or pip install -e .
 python -m zt_dsp_py --version
-# → ZT-DSP_PY-1.0.0 (docs 1.0.1)
+# → ZT-DSP_PY-1.0.0 (docs 1.0.2)
 
 # Listening side (responder)
 zt-dsp-py --role listen --port 37291 --psk-file psk.txt
@@ -140,7 +129,7 @@ and a real two-sided TCP flow.
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
 | server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
 | program ID | ZT-DSP_PY-1.0.0 (prefix PY) |
-| followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md |
+| followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md |
 
 ### Naming Convention System (docs / code · required reading for takeover / fork)
 
@@ -151,7 +140,7 @@ and a real two-sided TCP flow.
 | Item | Rule |
 |----|------|
 | format | 1.0.x (major.minor.revision) |
-| carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.1-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
+| carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.2-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
 | current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
@@ -192,7 +181,7 @@ So adding a Python patch release (`ZT-DSP_PY-1.0.1`, unchanged protocol behaviou
 
 Since handshake frames carry no version string, peer compatibility is not judged by version numbers. The correspondence between documentation and code is maintained by **bidirectional declarations**:
 
-- **Documentation side**: the header of spec/ZT-DSP-1.0.1-Master_Guide.md declares "this document defines the protocol behavior and tunable parameters on the code side".
+- **Documentation side**: the header of spec/ZT-DSP-1.0.2-Master_Guide.md declares "this document defines the protocol behavior and tunable parameters on the code side".
 - **Code side**: FOLLOWS_DOC / FOLLOWS_DOC_PATH in zt_dsp_py/version.py declare which document this implementation follows.
 
 If the two ends follow inconsistent specifications, the handshake fails at the **phase 3 confirmation label**.
@@ -200,7 +189,7 @@ If the two ends follow inconsistent specifications, the handshake fails at the *
 #### Display and Citation Conventions
 
 - **Citing an implementation**: use its full version identifier (client or server), e.g. `ZT-DSP_PY-1.0.0`; do not append the document version
-- **--version output** (the two parts, in order): implementation version identifier, document version → ZT-DSP_PY-1.0.0 (docs 1.0.1)
+- **--version output** (the two parts, in order): implementation version identifier, document version → ZT-DSP_PY-1.0.0 (docs 1.0.2)
 - **Citing protocol behavior**: write "for protocol behavior see section X of the ZT-DSP Protocol Master Guide"; do not cite a version string
 - **Prohibitions**: ① mixing the docs version into the program ID; ② writing any version string into handshake frames; ③ reusing any version number ever used; ④ a discontinuous renumbering of an already-published version; ⑤ hardcoding any version string outside version.py
 

@@ -8,7 +8,7 @@ This project does not use a single abstract "code version". It has **three kinds
 versioned carrier**, and the relation between them is many-to-many:
 
 total-guide version (docs version)
-    The revision number of the Master Guide itself, written as `docs 1.0.0`.
+    The revision number of the Master Guide itself, written as `docs 1.0.2`.
     Used only for the revision counting of the document; it takes no part in network communication.
 
 client version
@@ -25,13 +25,6 @@ Applicability (many-to-many)
     declaration. Conversely, **one** total-guide version may apply to several client and
     server versions at once. Compatibility is therefore never expressed by equality of version
     numbers, only by the declarations below.
-
-Hardware support (TPM and HWID)
-    This implementation contains **no** code that writes, reads or modifies a Trusted Platform Module
-    or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the
-    caller; keeping them secret is the caller's responsibility. Binding them to a TPM/HWID was an earlier design goal; it is now **deprecated and will be removed in a
-    later revision**. This statement is re-issued with every release;
-    the authoritative statement is the TPM/HWID support declaration in Master Guide section 4.1.4.
 
 The correspondence between documentation and code is maintained via a **bidirectional declaration**, not bound by version numbers:
 
@@ -50,13 +43,13 @@ Hard-coding version strings anywhere is forbidden; this module is the single sou
 # It does NOT resolve inside this repo -- this repo ships no copy of the protocol text.
 # Once published, read it from the ZT-DSP-docs repository on GitHub.
 FOLLOWS_DOC: str = "ZT-DSP Protocol Master Guide"
-FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md"
+FOLLOWS_DOC_PATH: str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md"
 
 # --- Total-guide versions this implementation applies to (many-to-many: may hold several) ---
-APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0", "1.0.1")
+APPLIES_TO_DOC_VERSIONS: tuple[str, ...] = ("1.0.0", "1.0.1", "1.0.2")
 
 # --- total-guide version (document revision number; takes no part in network communication) ---
-DOCS_VERSION: str = "1.0.1"
+DOCS_VERSION: str = "1.0.2"
 
 # --- Role of this implementation: "client" or "server" ---
 ROLE: str = "client"
