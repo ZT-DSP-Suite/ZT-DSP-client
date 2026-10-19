@@ -76,6 +76,8 @@ export ZT_DSP_PSK=<64-digit hex>       # Linux/macOS
 zt-dsp-py --role listen --port 37291 --psk-env
 ```
 
+In a background service with no terminal on its input, add `--no-stdin`: the session receives and sends nothing, and the process does not exit when the input ends. The clocks of the two ends must be in sync: data packets carry the sender's wall-clock timestamp, and when the difference exceeds the timestamp window (30 seconds by default) the receiver drops the plaintext without reporting an error.
+
 **Running with no arguments starts the interactive wizard** (recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step. When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
 
 Inside a session, type a message and press Enter to send; exit with /quit or Ctrl+C. For a two-instance demo on the local machine, open a second terminal and run the opposite role with the same PSK and parameters.
