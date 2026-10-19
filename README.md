@@ -60,9 +60,7 @@ Two known traps:
    Windows) requires `CARGO_TARGET_DIR` to point at an ASCII path.
 
 A session started in the background keeps receiving when its input ends; `--no-stdin`
-switches the input off entirely. The two ends must keep their clocks in sync: a data
-packet carries the sender's wall-clock timestamp, and the receiver drops the plaintext
-when the difference exceeds the timestamp window.
+switches the input off entirely.
 
 Rust reference implementation (`zt_dsp_rs/`):
 

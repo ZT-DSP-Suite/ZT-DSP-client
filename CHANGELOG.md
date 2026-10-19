@@ -50,7 +50,7 @@ normative change history is `git log`. If the two ever disagree, `git log` wins.
 
 - **A packet outside the timestamp window vanished without a line of output.** The
   receiver computed the reason and dropped the plaintext, as the specification
-  requires, but nothing printed it, so a clock difference between the two ends
+  requires, but nothing printed it, so a packet the receiver was meant to discard
   looked like a dead link. The receiver now prints the reason with both timestamps.
 - **The end of the input closed the connection.** The client read the input in the
   main thread and shut the session down in a `finally` block, so a process started
