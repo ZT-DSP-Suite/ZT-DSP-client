@@ -6,9 +6,9 @@
 Appendices F.3-F.5).
 
 Default suite: X25519 + HKDF-SHA3-256 + HMAC-SHA3-256 + AES-256-GCM.
-The hash algorithm is selected by the hash_name parameter (officially
+The hash algorithm is selected by the hash_name parameter (supported by the guide
 supported: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
-official AEAD implementation contains only AES-256-GCM.
+AEAD implementation contains only AES-256-GCM.
 
 Security statements:
 - X25519 low-order point / out-of-bounds public keys (all zeros, u=1,
@@ -122,7 +122,7 @@ class CryptoSuite:
                 f"Unsupported hash algorithm: {hash_name}; available: {', '.join(sorted(_HASH_MAP))}")
         if aead_name != "AES-256-GCM":
             raise ZTDSPCryptoError(
-                f"Unsupported AEAD algorithm: {aead_name}; the official implementation only contains AES-256-GCM")
+                f"Unsupported AEAD algorithm: {aead_name}; the reference implementation only contains AES-256-GCM")
         self.hash_name = hash_name
         self.aead_name = aead_name
         self._hash_cls = hash_cls

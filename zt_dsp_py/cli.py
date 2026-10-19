@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Minimal command-line interface (official-client guide: see the ZT-DSP-client README).
+"""Minimal command-line interface (reference-client guide: see the ZT-DSP-client README).
 
 Design boundary (this version builds the protocol itself only):
 - Provides `--role listen/connect` direct CLI, the interactive wizard (README quick start), and `--version`;
@@ -136,7 +136,7 @@ def _wizard_int(prompt: str, label: str, default: int, ok, hint: str,
 
 
 def run_wizard(input_fn=None, print_fn=None):
-    """Interactive wizard -- official-client README quick start (recommended for beginners).
+    """Interactive wizard -- reference-client README quick start (recommended for beginners).
 
     Four steps: role -> address/port -> PSK -> protocol parameters. Every step accepts
     Enter to take the default. Input and output are injectable, so the wizard is testable
