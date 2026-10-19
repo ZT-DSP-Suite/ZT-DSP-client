@@ -12,7 +12,7 @@ Build and verification steps are in the [DEV-GUIDE](https://github.com/ZT-DSP-Su
 
 An open, zero trust, end-to-end encrypted communication protocol with Python and Rust reference implementations. Built on **PSK + X25519 + AES-256-GCM + per-packet ratchet**, providing a four-phase handshake and full-duplex encrypted communication.
 
-- Protocol is public, implementation is free, parameters are self-authoritative, silent drop
+- Protocol is public, implementation is free, parameters are self-governing, silent drop
 - End-to-end encryption: no relay node can decrypt the communication content
 - Forward secrecy: X25519 ephemeral keys + per-packet ratchet rotation (consume state before sending)
 - No reliance on a centralized trust anchor; the token hash (out-of-band exchange) is shared out-of-band
