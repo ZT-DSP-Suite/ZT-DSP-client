@@ -158,7 +158,7 @@ and a real two-sided TCP flow.
 | multi-language coexistence | implementations in different languages **may share the same version number** (ZT-DSP_PY-1.0.0 and ZT-DSP_GO-1.0.0 coexist), distinguished by the language prefix |
 | participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
 | other-language implementations | the development languages are Python and Rust; to add another language, create a sibling directory named after its program ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
-| merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: **collect all code into a single file** (one implementation per file, no new directory trees added to the mainline directory), with a protocol conformance checklist attached |
+| merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: implementation code follows the ordinary engineering layout of the language in use, with **no single-file requirement**, and a protocol conformance checklist is attached |
 
 #### Applicability (many-to-many)
 
