@@ -346,7 +346,7 @@ pub fn run_listen(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
     };
     drop(listener);
 
-    // connection rate limiting (off = unlimited, kept consistent with the official CLI behavior)
+    // connection rate limiting (off = unlimited, kept consistent with the reference CLI behavior)
     if let Some(l) = &limiter {
         if !l.allow() {
             // Over the limit: close immediately and silently (no bytes sent)

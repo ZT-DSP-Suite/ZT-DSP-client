@@ -6,8 +6,8 @@
 //!
 //! Default suite: X25519 (see the `kex` module) + HKDF-SHA3-256 +
 //! HMAC-SHA3-256 + AES-256-GCM. The hash algorithm is chosen by the
-//! parameter hash_name (officially supported: SHA3-256/384/512 and
-//! SHA-256/384/512, Appendix F.1); the official AEAD implementation
+//! parameter hash_name (supported by the guide: SHA3-256/384/512 and
+//! SHA-256/384/512, Appendix F.1); the AEAD implementation
 //! contains only AES-256-GCM (mapped automatically by key_len to
 //! AES-128/192/256-GCM, matching Python `AESGCM(key)` behavior).
 //!
@@ -133,7 +133,7 @@ impl CryptoSuite {
         };
         if suite.aead_name != "AES-256-GCM" {
             return Err(Error::crypto(format!(
-                "unsupported AEAD algorithm: {}, the official implementation contains only AES-256-GCM",
+                "unsupported AEAD algorithm: {}, the reference implementation contains only AES-256-GCM",
                 suite.aead_name
             )));
         }
@@ -318,7 +318,7 @@ mod tests {
 
     #[test]
     fn hkdf_rfc5869_test_case_1() {
-        // RFC 5869 Test Case 1 (SHA-256 official reference vector, binary info)
+        // RFC 5869 Test Case 1 (SHA-256 reference vector, binary info)
         // Cross-check with an inline independent Extract/Expand implementation built on HMAC primitives, then assert the known RFC prefixes.
         let ikm = hex::decode("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b").unwrap();
         let salt = hex::decode("000102030405060708090a0b0c").unwrap();

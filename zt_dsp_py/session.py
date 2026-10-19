@@ -90,12 +90,13 @@ class SecureSession:
                         f"Plaintext payload too large ({len(plaintext)} > {MAX_PLAINTEXT})")
 
                 # -- state forward-rolling (completed before encryption) --
-                ek_snapshot = bytes(self.send_ek)
+                # Working copy of the old EK: mutable, so it can be wiped once the packet is built.
+                ek_work = bytearray(self.send_ek)
                 seq = self.seq_send
                 sid_snapshot = bytes(self.session_id)
                 next_seed = secure_random(NEXT_SEED_LEN)
                 new_ek = self.suite.hkdf(
-                    ek_snapshot + next_seed, INFO_EK_ROTATE, self.params.key_len)
+                    ek_work + bytearray(next_seed), INFO_EK_ROTATE, self.params.key_len)
                 secure_zero(self.send_ek)
                 self.send_ek = bytearray(new_ek)
                 self.seq_send = seq + 1
@@ -114,11 +115,12 @@ class SecureSession:
                 padding_part = secure_random(pad_len) + struct.pack(">H", pad_len)
             payload = (timestamp + struct.pack(">B", fmt)
                        + self.peer_hash + self.local_hash
-                       + plaintext + padding_part + next_seed)
+                       + plaintext + padding_part + bytes(next_seed))
 
             nonce = gcm_nonce(seq)
             aad = build_aad(sid_snapshot, seq)
-            ciphertext = self.suite.aead_encrypt(ek_snapshot, nonce, payload, aad)
+            ciphertext = self.suite.aead_encrypt(ek_work, nonce, payload, aad)
+            secure_zero(ek_work)
             packet = pack_data_packet(sid_snapshot, seq, ciphertext)
 
             try:
@@ -160,13 +162,14 @@ class SecureSession:
                     self._terminate()
                     raise ZTDSPSecurityError(
                         "Session ID mismatch; dropping packet (sub-channel crosstalk or residual old session)")
-                ek_snapshot = bytes(self.recv_ek)
+                ek_work = bytearray(self.recv_ek)
                 aad = build_aad(session_id, seq)
 
             try:
                 # Step 3: GCM decryption and authentication (AAD takes part in authentication)
                 payload = self.suite.aead_decrypt(
-                    ek_snapshot, gcm_nonce(seq), ciphertext, aad)
+                    ek_work, gcm_nonce(seq), ciphertext, aad)
+                secure_zero(ek_work)
                 plaintext = self._validate_payload(payload, seq)
             except (ZTDSPSecurityError, ZTDSPProtocolError):
                 self._terminate()
@@ -212,7 +215,7 @@ class SecureSession:
 
             # Ratchet rotation + sequence number advance (must be completed before step 8 -- out-of-window packets are also rolled forward)
             new_ek = self.suite.hkdf(
-                bytes(self.recv_ek) + next_seed, INFO_EK_ROTATE,
+                bytearray(self.recv_ek) + bytearray(next_seed), INFO_EK_ROTATE,
                 self.params.key_len)
             secure_zero(self.recv_ek)
             self.recv_ek = bytearray(new_ek)

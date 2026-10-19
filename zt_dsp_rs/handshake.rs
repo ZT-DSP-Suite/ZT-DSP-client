@@ -9,7 +9,7 @@
 //!    attacker must not be able to tell "DH failed" from "the connection was severed" by timing alone (Appendix F.3 ordering constraint);
 //! 3. Silent drop constrains the responder only - the initiator actively disconnects on failure (Appendix F.2).
 //!
-//! The Phase 3 confirmation tag is "send-first-then-compare" (corrected against the official implementation): the responder receives the frame (silent
+//! The Phase 3 confirmation tag is "send-first-then-compare" (corrected against the reference implementation): the responder receives the frame (silent
 //! only on frame-level errors) -> sends its own tag -> both sides compare in constant time; content mismatch -> both sides
 //! wipe all keys and fail.
 //!

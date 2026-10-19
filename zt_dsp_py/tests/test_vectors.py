@@ -9,8 +9,8 @@ Rust 侧有 `zt_dsp_rs/vectors.rs` 读同一份文件。改这个 JSON 会同时
 所以它必须是提交进仓、人工复核过 diff 的产物，而不是 CI 里现生成的。
 
 覆盖：
-- RFC 5869 A.1 / A.3 —— 第三方权威常量，验证 HKDF 本身
-- RFC 7748 §6.1 —— 第三方权威常量，验证 X25519 本身
+- RFC 5869 A.1 / A.3 —— 外部来源常量，验证 HKDF 本身
+- RFC 7748 §6.1 —— 外部来源常量，验证 X25519 本身
 - 协议推导链 —— PSK‖DH → MK → anchor → session_id → 方向性 EK → 棘轮
 - 线格式 —— 握手帧、nonce、AAD 的逐字节布局
 - AEAD —— 固定输入下的确定性密文
@@ -96,12 +96,12 @@ def test_protocol_labels_match_source_constants():
 
 
 # --------------------------------------------------------------------------
-# RFC 5869 —— 第三方权威常量
+# RFC 5869 —— 外部来源常量
 # --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("v", _by_kind("hkdf"), ids=lambda v: v["name"])
 def test_hkdf_matches_rfc5869(v):
-    """RFC 5869 A.1 / A.3。两侧都必须命中官方常量——
+    """RFC 5869 A.1 / A.3。两侧都必须命中 RFC 原文常量——
     这是判定 HKDF 实现对错的**外部**依据，不是自己跟自己比。"""
     got = CryptoSuite(v["hash"]).hkdf(
         bytes.fromhex(v["ikm"]),
@@ -124,7 +124,7 @@ def test_hkdf_accepts_str_and_bytes_info_equivalently():
 
 
 # --------------------------------------------------------------------------
-# RFC 7748 —— 第三方权威常量
+# RFC 7748 —— 外部来源常量
 # --------------------------------------------------------------------------
 
 @pytest.mark.parametrize("v", _by_kind("x25519"), ids=lambda v: v["name"])
@@ -181,7 +181,7 @@ def test_session_derivation_chain(v):
     assert peer_rotated == rotated
 
 
-def test_session_vectors_cover_both_official_hash_suites():
+def test_session_vectors_cover_both_documented_hash_suites():
     """两套哈希各一份：只测一套时，另一套的回归无人发现。"""
     hashes = {v["hash"] for v in _by_kind("session")}
     assert {"SHA3-256", "SHA-256"} <= hashes
