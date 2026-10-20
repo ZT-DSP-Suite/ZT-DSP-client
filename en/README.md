@@ -125,7 +125,7 @@ and a real two-sided TCP flow.
 
 | Item | Value |
 |----|----|
-| applicable document version | 1.0.0 and 1.0.1 (may be several; see "Applicability" below) |
+| applicable document version | 1.0.0, 1.0.1 and 1.0.2 (may be several; see "Applicability" below) |
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
 | server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
 | program ID | ZT-DSP_PY-1.0.0 (prefix PY) |
