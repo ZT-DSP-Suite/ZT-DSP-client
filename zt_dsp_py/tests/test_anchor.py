@@ -32,6 +32,14 @@ def test_kdf_chain_matches_specification():
     assert hmac_sha3(mk, b"ZT-DSP-ANCHOR-v3").hex() == ref.VALUES["anchor"], "anchor"
     anchor = bytes.fromhex(ref.VALUES["anchor"])
 
-    assert suite.hkdf(anchor, "ZT-DSP-SID-v3", 256)[:32].hex() == ref.VALUES["session_id"], "session id"
-    assert suite.hkdf(mk + anchor + b"\x01", "ZT-DSP-EK-v3", 256).hex() == ref.VALUES["ek_send"], "ek_send"
-    assert suite.hkdf(mk + anchor + b"\x02", "ZT-DSP-EK-v3", 256).hex() == ref.VALUES["ek_recv"], "ek_recv"
+    assert (
+        suite.hkdf(anchor, "ZT-DSP-SID-v3", 256)[:32].hex() == ref.VALUES["session_id"]
+    ), "session id"
+    assert (
+        suite.hkdf(mk + anchor + b"\x01", "ZT-DSP-EK-v3", 256).hex()
+        == ref.VALUES["ek_send"]
+    ), "ek_send"
+    assert (
+        suite.hkdf(mk + anchor + b"\x02", "ZT-DSP-EK-v3", 256).hex()
+        == ref.VALUES["ek_recv"]
+    ), "ek_recv"

@@ -3,6 +3,7 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """Frame codec tests (Appendix F: cap pre-validation, total-deadline read, nonce/AAD construction)."""
+
 import socket
 import struct
 import time
@@ -28,6 +29,7 @@ from zt_dsp_py.frames import (
 # Phase one frame
 # =============================================================================
 
+
 def test_phase_one_round_trip() -> None:
     frame = pack_phase_one(b'{"a":1}', b"i" * 32 + b"p" * 32, b"n" * 32)
     left, right = socket.socketpair()
@@ -51,7 +53,9 @@ def test_phase_one_rejects_oversize_before_read() -> None:
     try:
         left.settimeout(2)
         right.settimeout(2)
-        left.sendall(struct.pack(">I", 4097) + b"x" * 100)  # Intentionally partial payload
+        left.sendall(
+            struct.pack(">I", 4097) + b"x" * 100
+        )  # Intentionally partial payload
         with pytest.raises(ZTDSPProtocolError):
             unpack_phase_one(right)
     finally:
@@ -72,6 +76,7 @@ def test_phase_one_pack_limits() -> None:
 # Phase two/three frame
 # =============================================================================
 
+
 def test_key_frames_layout() -> None:
     # Initiator frame 68B: [len=32][pk 32][salt 32]; responder frame 36B
     init = pack_initiator_key(b"\x01" * 32, b"\x02" * 32)
@@ -83,6 +88,7 @@ def test_key_frames_layout() -> None:
 
 def test_confirm_length_must_be_32() -> None:
     from zt_dsp_py.frames import pack_confirm, read_confirm
+
     with pytest.raises(ZTDSPProtocolError):
         pack_confirm(b"x" * 31)
     left, right = socket.socketpair()
@@ -100,6 +106,7 @@ def test_confirm_length_must_be_32() -> None:
 # =============================================================================
 # Phase four header and nonce/AAD
 # =============================================================================
+
 
 def test_data_header_round_trip() -> None:
     packet = pack_data_packet(b"s" * 32, 7, b"c" * 10)
@@ -124,8 +131,9 @@ def test_data_header_rejects_oversize_ciphertext() -> None:
     try:
         left.settimeout(2)
         right.settimeout(2)
-        left.sendall(b"s" * 32 + struct.pack(">Q", 1)
-                     + struct.pack(">I", (1 << 20) + 1))
+        left.sendall(
+            b"s" * 32 + struct.pack(">Q", 1) + struct.pack(">I", (1 << 20) + 1)
+        )
         with pytest.raises(ZTDSPProtocolError):
             read_data_header(right, None)
     finally:
@@ -148,6 +156,7 @@ def test_gcm_nonce_and_aad() -> None:
 # =============================================================================
 # Total-deadline read (Appendix H.3 Slowloris protection)
 # =============================================================================
+
 
 def test_read_exact_total_deadline_not_per_recv() -> None:
     # Attacker sends 1 byte every <timeout: the whole frame shares one deadline; fail when the budget is exhausted

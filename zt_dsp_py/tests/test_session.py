@@ -3,6 +3,7 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """Encryption session tests: round-trip send/recv, replay rejection, AAD tampering, out-of-window ratchet, padding, desync (Appendix F.5/G)."""
+
 import socket
 import struct
 import threading
@@ -37,8 +38,7 @@ class _CaptureSock:
             return self._sock.sendall(data)
 
 
-def _establish() -> Tuple[SecureSession, SecureSession,
-                          socket.socket, socket.socket]:
+def _establish() -> Tuple[SecureSession, SecureSession, socket.socket, socket.socket]:
     """Run the full handshake and build both sessions (blocks until success)."""
     a = HandshakePeer(PSK, ZTDSPParams(), "initiator")
     b = HandshakePeer(PSK, ZTDSPParams(), "responder")
@@ -59,15 +59,19 @@ def _establish() -> Tuple[SecureSession, SecureSession,
     tb.start()
     ta.join(15)
     tb.join(15)
-    assert isinstance(errors["ma"], object) and not isinstance(errors["ma"], Exception), \
-        f"initiator handshake failed: {errors['ma']}"
-    assert not isinstance(errors["mb"], Exception), f"responder handshake failed: {errors['mb']}"
+    assert isinstance(errors["ma"], object) and not isinstance(
+        errors["ma"], Exception
+    ), f"initiator handshake failed: {errors['ma']}"
+    assert not isinstance(errors["mb"], Exception), (
+        f"responder handshake failed: {errors['mb']}"
+    )
     return SecureSession(errors["ma"]), SecureSession(errors["mb"]), left, right
 
 
 # =============================================================================
 # Basic send/recv
 # =============================================================================
+
 
 def test_round_trip() -> None:
     sa, sb, left, right = _establish()
@@ -102,6 +106,7 @@ def test_heartbeat_empty_payload_and_165b_size() -> None:
 # =============================================================================
 # Replay / Tampering
 # =============================================================================
+
 
 def test_replay_rejection_terminates_session() -> None:
     sa, sb, left, right = _establish()
@@ -144,14 +149,15 @@ def test_tampered_header_fails_aad() -> None:
 def test_seq_regression_rejected() -> None:
     sa, sb, left, right = _establish()
     try:
-        sa.send_packet(left, b"one")     # sequence 0
+        sa.send_packet(left, b"one")  # sequence 0
         assert sb.recv_packet(right) == b"one"
-        sa.send_packet(left, b"two")     # sequence 1
+        sa.send_packet(left, b"two")  # sequence 1
         assert sb.recv_packet(right) == b"two"
         # Craft a packet with seq=0 directly (the current key has already rotated, so GCM would fail - but the seq check is hit first)
         # Checked against the receiver's current state: header with matching sid but regressed seq (injected from the peer)
-        bogus = (sb.session_id + struct.pack(">Q", 0)
-                 + struct.pack(">I", 16) + b"\x00" * 16)
+        bogus = (
+            sb.session_id + struct.pack(">Q", 0) + struct.pack(">I", 16) + b"\x00" * 16
+        )
         left.sendall(bogus)
         with pytest.raises(ZTDSPSecurityError):
             sb.recv_packet(right)
@@ -167,17 +173,20 @@ def test_seq_regression_rejected() -> None:
 # Timestamp window: an out-of-window packet still rotates the EK and advances seq; only the plaintext is dropped (F.5 step 8)
 # =============================================================================
 
+
 def test_stale_timestamp_advances_ratchet_without_plaintext() -> None:
     sa, sb, left, right = _establish()
     try:
         real_time = __import__("time").time
         with mock.patch("zt_dsp_py.session.time") as fake_time:
-            fake_time.time.return_value = real_time() - 120  # timestamp 120 s in the past
+            fake_time.time.return_value = (
+                real_time() - 120
+            )  # timestamp 120 s in the past
             fake_time.sleep.return_value = None
-            sa.send_packet(left, b"late")     # seq 0, out of window
-        assert sb.recv_packet(right) == b""   # plaintext dropped
+            sa.send_packet(left, b"late")  # seq 0, out of window
+        assert sb.recv_packet(right) == b""  # plaintext dropped
         # Ratchet has advanced (following the in-packet next_seed): the next "fresh" packet still decrypts normally
-        sa.send_packet(left, b"current")      # sequence 1
+        sa.send_packet(left, b"current")  # sequence 1
         assert sb.recv_packet(right) == b"current"
     finally:
         force_close_socket(left)
@@ -189,6 +198,7 @@ def test_stale_timestamp_advances_ratchet_without_plaintext() -> None:
 # =============================================================================
 # Random padding (Appendix G.2)
 # =============================================================================
+
 
 def test_padding_single_side_interop() -> None:
     # Only the sender enables padding (padding_min=512, padding_max=1024); receiver uses default config
@@ -214,7 +224,9 @@ def test_padding_single_side_interop() -> None:
         sa.send_packet(cap, b"padded message")
         # Plaintext 14 B + padding 512~1024 B: on-wire packet is far larger than unpadded (105+14+16=135 B)
         assert len(cap.captured[0]) > 105 + 14 + 16 + 512
-        assert sb.recv_packet(right) == b"padded message"  # receiver strips padding automatically
+        assert (
+            sb.recv_packet(right) == b"padded message"
+        )  # receiver strips padding automatically
     finally:
         force_close_socket(left)
         force_close_socket(right)
@@ -225,6 +237,7 @@ def test_padding_single_side_interop() -> None:
 # =============================================================================
 # Send failure -> irreversible desync (H.4)
 # =============================================================================
+
 
 def test_send_failure_requires_reconnect() -> None:
     sa, _, left, _right = _establish()
@@ -246,10 +259,12 @@ def test_send_failure_requires_reconnect() -> None:
 # Plaintext size limit
 # =============================================================================
 
+
 def test_oversize_plaintext_rejected() -> None:
     sa, _, left, _right = _establish()
     try:
         from zt_dsp_py.params import MAX_PLAINTEXT
+
         with pytest.raises(ZTDSPError):
             sa.send_packet(left, b"x" * (MAX_PLAINTEXT + 1))
     finally:

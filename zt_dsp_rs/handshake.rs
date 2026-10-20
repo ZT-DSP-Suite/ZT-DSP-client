@@ -779,9 +779,8 @@ mod tests {
         let received = left.read(&mut buf);
         assert!(t.join().unwrap());
         // No bytes received from the responder (timeout with no data, or peer closed)
-        match received {
-            Ok(n) => assert_eq!(n, 0, "the silent path must not send any bytes"),
-            Err(_) => {} // timeout: likewise indicates no bytes
+        if let Ok(n) = received {
+            assert_eq!(n, 0, "the silent path must not send any bytes");
         }
     }
 
@@ -802,7 +801,7 @@ mod tests {
         use std::io::Write;
         left.write_all(&raw).unwrap();
         let parsed = read_phase_one(&mut left, None).unwrap(); // read the responder's Phase 1 frame
-        assert!(parsed.raw.len() > 0);
+        assert!(!parsed.raw.is_empty());
         // The attacker replies with a valid pub_len header + all-zero public key + salt
         left.write_all(&32u32.to_be_bytes()).unwrap();
         left.write_all(&[0u8; 32]).unwrap();
@@ -815,12 +814,11 @@ mod tests {
             t.join().unwrap(),
             "the responder should enter strict silence"
         );
-        match received {
-            Ok(n) => assert_eq!(
+        if let Ok(n) = received {
+            assert_eq!(
                 n, 0,
                 "low-order-point silence must not send the Phase 2 response frame"
-            ),
-            Err(_) => {}
+            );
         }
     }
 

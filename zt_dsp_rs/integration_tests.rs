@@ -7,7 +7,7 @@
 // =============================================================================
 
 #[cfg(test)]
-mod integration_tests {
+mod tcp_flow {
     use std::io::{Read, Write};
     use std::net::{TcpListener, TcpStream};
     use std::time::Duration;
@@ -367,9 +367,8 @@ mod integration_tests {
         assert!(err.is_silent_drop(), "got {err}");
         let _ = left.set_read_timeout(Some(Duration::from_millis(400)));
         let mut buf = [0u8; 4096];
-        match left.read(&mut buf) {
-            Ok(n) => assert_eq!(n, 0, "the silent path must not send any byte"),
-            Err(_) => {}
+        if let Ok(n) = left.read(&mut buf) {
+            assert_eq!(n, 0, "the silent path must not send any byte");
         }
     }
 }

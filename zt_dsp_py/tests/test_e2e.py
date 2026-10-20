@@ -3,6 +3,7 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """End-to-end test: full real-TCP two-end flow + CLI contract (the automated version of the local two-instance experience in the README quick start)."""
+
 import socket
 import subprocess
 import sys
@@ -105,6 +106,7 @@ def test_psk_mismatch_over_tcp_no_crash() -> None:
     t.join(15)
     force_close_socket(server)
     from zt_dsp_py.errors import ZTDSPSecurityError
+
     assert isinstance(outcome.get("error"), ZTDSPSecurityError)
 
 
@@ -112,11 +114,16 @@ def test_psk_mismatch_over_tcp_no_crash() -> None:
 # CLI contract (README main parameters)
 # =============================================================================
 
+
 def test_cli_version() -> None:
     proc = subprocess.run(
         [sys.executable, "-m", "zt_dsp_py", "--version"],
-        cwd=REPO_ROOT, text=True, capture_output=True, check=True,
-        encoding="utf-8")
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+        encoding="utf-8",
+    )
     assert proc.stdout.strip() == format_version()
     expected = "ZT-DSP_PY-1.0.0 (docs 1.0.1)"
     assert proc.stdout.strip() == expected
@@ -125,27 +132,45 @@ def test_cli_version() -> None:
 def test_cli_requires_psk() -> None:
     proc = subprocess.run(
         [sys.executable, "-m", "zt_dsp_py", "--role", "listen"],
-        cwd=REPO_ROOT, text=True, capture_output=True,
-        encoding="utf-8")
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        encoding="utf-8",
+    )
     assert proc.returncode != 0
     assert "must be provided" in proc.stderr
 
 
 def test_cli_rejects_weak_psk() -> None:
     proc = subprocess.run(
-        [sys.executable, "-m", "zt_dsp_py", "--role", "listen",
-         "--psk", "00" * 32],
-        cwd=REPO_ROOT, text=True, capture_output=True,
-        encoding="utf-8")
+        [sys.executable, "-m", "zt_dsp_py", "--role", "listen", "--psk", "00" * 32],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        encoding="utf-8",
+    )
     assert proc.returncode != 0
     assert "entropy too low" in proc.stderr
 
 
 def test_cli_rejects_bad_padding_range() -> None:
     proc = subprocess.run(
-        [sys.executable, "-m", "zt_dsp_py", "--role", "listen",
-         "--psk", "ab" * 32,
-         "--padding-min", "2000", "--padding-max", "100"],
-        cwd=REPO_ROOT, text=True, capture_output=True,
-        encoding="utf-8")
+        [
+            sys.executable,
+            "-m",
+            "zt_dsp_py",
+            "--role",
+            "listen",
+            "--psk",
+            "ab" * 32,
+            "--padding-min",
+            "2000",
+            "--padding-max",
+            "100",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        encoding="utf-8",
+    )
     assert proc.returncode != 0

@@ -45,6 +45,7 @@ def _diag(msg: str) -> None:
     if _DEBUG:
         print(msg, file=sys.stderr)
 
+
 import time
 from dataclasses import dataclass
 from typing import Optional, Tuple
@@ -95,9 +96,9 @@ INFO_CONFIRM_INIT: bytes = b"ZT-DSP-CONFIRM-INIT-v3"
 INFO_CONFIRM_RESP: bytes = b"ZT-DSP-CONFIRM-RESP-v3"
 
 # --- Timers (complete timer table in Appendix H.3) ---
-HANDSHAKE_TIMEOUT: float = 15.0    # Total per-phase handshake deadline (= total read deadline, Slowloris protection)
-DATA_TIMEOUT: float = 60.0         # Data phase socket timeout (the 30s heartbeat still fits)
-SILENT_DROP_HOLD: float = 15.0     # Strict silent hold duration (configurable; smaller is recommended for server embedding)
+HANDSHAKE_TIMEOUT: float = 15.0  # Total per-phase handshake deadline (= total read deadline, Slowloris protection)
+DATA_TIMEOUT: float = 60.0  # Data phase socket timeout (the 30s heartbeat still fits)
+SILENT_DROP_HOLD: float = 15.0  # Strict silent hold duration (configurable; smaller is recommended for server embedding)
 
 SESSION_ID_LEN: int = 32
 
@@ -107,6 +108,7 @@ _FRAME_ERRORS = (ZTDSPProtocolError, ZTDSPTimeoutError, ConnectionError, OSError
 # =============================================================================
 # Handshake output
 # =============================================================================
+
 
 @dataclass
 class SessionMaterial:
@@ -128,6 +130,7 @@ class SessionMaterial:
 # Handshake peer
 # =============================================================================
 
+
 class HandshakePeer:
     """Performs the full four-phase handshake. A peer is a **single-use** object:
     the PSK has already been wiped per protocol after a successful handshake, so
@@ -135,27 +138,46 @@ class HandshakePeer:
     (Appendix H.6)."""
 
     __slots__ = (
-        "psk", "params", "role", "suite", "padding", "jitter", "time_window",
-        "silent_hold", "local_hash", "peer_hash",
-        "_mk", "_anchor", "_session_salt", "_session_id",
-        "_ek_send", "_ek_recv",
-        "_local_pub", "_peer_pub",
-        "_local_nonce", "_peer_nonce",
-        "_local_frame_raw", "_peer_frame_raw",
+        "psk",
+        "params",
+        "role",
+        "suite",
+        "padding",
+        "jitter",
+        "time_window",
+        "silent_hold",
+        "local_hash",
+        "peer_hash",
+        "_mk",
+        "_anchor",
+        "_session_salt",
+        "_session_id",
+        "_ek_send",
+        "_ek_recv",
+        "_local_pub",
+        "_peer_pub",
+        "_local_nonce",
+        "_peer_nonce",
+        "_local_frame_raw",
+        "_peer_frame_raw",
         "_handshake_complete",
     )
 
-    def __init__(self, psk: bytes, params: ZTDSPParams, role: str,
-                 suite: Optional[CryptoSuite] = None,
-                 padding: Optional[Tuple[int, int]] = None,
-                 jitter: float = 0.0,
-                 time_window: int = TIME_WINDOW,
-                 silent_hold: float = SILENT_DROP_HOLD) -> None:
+    def __init__(
+        self,
+        psk: bytes,
+        params: ZTDSPParams,
+        role: str,
+        suite: Optional[CryptoSuite] = None,
+        padding: Optional[Tuple[int, int]] = None,
+        jitter: float = 0.0,
+        time_window: int = TIME_WINDOW,
+        silent_hold: float = SILENT_DROP_HOLD,
+    ) -> None:
         if not isinstance(psk, (bytes, bytearray)) or len(psk) != 32:
             raise ValueError("PSK must be exactly 32 bytes")
         if role not in (ROLE_INITIATOR, ROLE_RESPONDER):
-            raise ValueError(
-                f"role must be '{ROLE_INITIATOR}' or '{ROLE_RESPONDER}'")
+            raise ValueError(f"role must be '{ROLE_INITIATOR}' or '{ROLE_RESPONDER}'")
         if padding is not None:
             pmin, pmax = padding
             if not (0 <= pmin <= pmax <= 2048):
@@ -250,11 +272,13 @@ class HandshakePeer:
         psk_bytes = bytes(self.psk)
         nonce_salt = secure_random(SESSION_SALT_LEN)
         local_nonce = self.suite.hkdf(
-            psk_bytes, INFO_NONCE, self.params.random_len, salt=nonce_salt)
+            psk_bytes, INFO_NONCE, self.params.random_len, salt=nonce_salt
+        )
         if len(local_nonce) * 8 != self.params.random_len:
             raise ZTDSPProtocolError(
                 f"access nonce length does not match declared random_len: "
-                f"{len(local_nonce) * 8} != {self.params.random_len}")
+                f"{len(local_nonce) * 8} != {self.params.random_len}"
+            )
         self._local_nonce = local_nonce
         identity_blob = self.local_hash + self.peer_hash
         local_frame = pack_phase_one(self.params.to_json(), identity_blob, local_nonce)
@@ -270,13 +294,15 @@ class HandshakePeer:
 
             if self.role == ROLE_INITIATOR:
                 sock.sendall(local_frame)
-                peer_frame_raw, param_raw, _identity, peer_nonce = \
-                    unpack_phase_one(sock, deadline)
+                peer_frame_raw, param_raw, _identity, peer_nonce = unpack_phase_one(
+                    sock, deadline
+                )
             else:
                 # The responder receives the full frame first; frame parse failure -> strict silent drop (complete trigger table in Appendix F.2)
                 try:
-                    peer_frame_raw, param_raw, _identity, peer_nonce = \
-                        unpack_phase_one(sock, deadline)
+                    peer_frame_raw, param_raw, _identity, peer_nonce = unpack_phase_one(
+                        sock, deadline
+                    )
                 except _FRAME_ERRORS as exc:
                     self._silent_drop(sock, f"phase one parse failure: {exc}")
                     raise SilentDropError(f"phase one parse failure: {exc}") from exc
@@ -308,7 +334,9 @@ class HandshakePeer:
 
         # Peer nonce length contract (the only check in the core protocol)
         if peer_nonce is None or len(peer_nonce) * 8 != peer_params.random_len:
-            self._drop_or_raise(sock, "peer nonce length does not match declared random_len")
+            self._drop_or_raise(
+                sock, "peer nonce length does not match declared random_len"
+            )
             return
 
         self._peer_nonce = peer_nonce
@@ -349,8 +377,9 @@ class HandshakePeer:
             else:
                 try:
                     peer_pub = read_pub_key(sock, deadline)
-                    session_salt = read_exact(sock, SESSION_SALT_LEN,
-                                              "session_salt", deadline)
+                    session_salt = read_exact(
+                        sock, SESSION_SALT_LEN, "session_salt", deadline
+                    )
                 except _FRAME_ERRORS as exc:
                     self._silent_drop(sock, f"phase two frame error: {exc}")
                     raise SilentDropError(f"phase two frame error: {exc}") from exc
@@ -361,7 +390,9 @@ class HandshakePeer:
                     dh = self.suite.dh_exchange(priv, peer_pub)
                 except ZTDSPCryptoError as exc:
                     self._silent_drop(sock, f"phase two key agreement failed: {exc}")
-                    raise SilentDropError(f"phase two key agreement failed: {exc}") from exc
+                    raise SilentDropError(
+                        f"phase two key agreement failed: {exc}"
+                    ) from exc
                 sock.sendall(pack_responder_key(pub))
         finally:
             try:
@@ -373,8 +404,9 @@ class HandshakePeer:
         #                    info = "ZT-DSP-MK-v3", L = key_len)
         # session_salt is the salt parameter of HKDF, not material concatenated into IKM (common-mistake correction)
         psk_bytes = bytes(self.psk)
-        mk = self.suite.hkdf(psk_bytes + dh, INFO_MK, self.params.key_len,
-                             salt=self._session_salt)
+        mk = self.suite.hkdf(
+            psk_bytes + dh, INFO_MK, self.params.key_len, salt=self._session_salt
+        )
         self._mk = bytearray(mk)
 
     # ------------------------------------------------------------------
@@ -399,8 +431,7 @@ class HandshakePeer:
         else:
             init_frame, resp_frame = self._peer_frame_raw, self._local_frame_raw
             init_pub, resp_pub = self._peer_pub, self._local_pub
-        return (init_frame + resp_frame
-                + self._session_salt + init_pub + resp_pub)
+        return init_frame + resp_frame + self._session_salt + init_pub + resp_pub
 
     def _phase3(self, sock: socket.socket) -> None:
         if self._mk is None:
@@ -415,10 +446,14 @@ class HandshakePeer:
 
         role_byte = b"\x01" if self.role == ROLE_INITIATOR else b"\x02"
         peer_role_byte = b"\x02" if self.role == ROLE_INITIATOR else b"\x01"
-        self._ek_send = bytearray(self.suite.hkdf(
-            mk_bytes + anchor + role_byte, INFO_EK, self.params.key_len))
-        self._ek_recv = bytearray(self.suite.hkdf(
-            mk_bytes + anchor + peer_role_byte, INFO_EK, self.params.key_len))
+        self._ek_send = bytearray(
+            self.suite.hkdf(mk_bytes + anchor + role_byte, INFO_EK, self.params.key_len)
+        )
+        self._ek_recv = bytearray(
+            self.suite.hkdf(
+                mk_bytes + anchor + peer_role_byte, INFO_EK, self.params.key_len
+            )
+        )
 
         transcript = self._build_transcript()
         if self.role == ROLE_INITIATOR:
@@ -452,11 +487,14 @@ class HandshakePeer:
 
         if len(peer_tag) != CONFIRM_TAG_LEN:
             self._wipe_keys()
-            raise ZTDSPSecurityError("anchor confirmation failed - confirm tag length invalid")
+            raise ZTDSPSecurityError(
+                "anchor confirmation failed - confirm tag length invalid"
+            )
         if not constant_time_compare(expected_peer_tag, peer_tag):
             self._wipe_keys()
             raise ZTDSPSecurityError(
-                "anchor confirmation failed - PSK mismatch, role mismatch, or reflection/man-in-the-middle attack")
+                "anchor confirmation failed - PSK mismatch, role mismatch, or reflection/man-in-the-middle attack"
+            )
 
         self._handshake_complete = True
         # Root key wipe (4.2.3 step 6): MK, anchor, and PSK are all zeroed
