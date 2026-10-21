@@ -1,15 +1,19 @@
-# Publishing pipeline: triggered by a client-v* tag.
+# Publishing pipeline: manual start, second-person approval, draft only.
 #
-#   git tag -a client-v1.0.1 -m "..." && git push origin client-v1.0.1
-#
-# Produces the Python distributions, a Windows one-file executable, and a GitHub Release
-# with generated notes and assets. Nothing is published to any package index.
+# A maintainer starts this workflow from Actions -> Release -> Run workflow and
+# supplies an existing client-v* tag. The github-release job waits on the
+# `release` environment, whose required reviewers are the two maintainers; the
+# person who started the run cannot approve it. The job creates a draft release.
+# A maintainer publishes it after review.
 name: Release
 
 on:
-  push:
-    tags: ["client-v*"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build, for example client-v1.0.1"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -20,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          ref: ${{ inputs.tag }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
@@ -37,6 +43,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          ref: ${{ inputs.tag }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
@@ -53,13 +61,16 @@ jobs:
           path: dist/zt_dsp_py.exe
 
   github-release:
-    name: Publish GitHub Release
+    name: Create draft GitHub Release
     needs: [dist, exe]
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          ref: ${{ inputs.tag }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           name: dist
@@ -73,15 +84,16 @@ jobs:
           # The wheel and sdist already carry LICENSE; the one-file executable does not.
           # Ship the license texts and third-party notices alongside every release asset.
           cp LICENSE LICENSING.md THIRD-PARTY-NOTICES.md dist/
-      - name: Create the release
+      - name: Create the draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Re-running the workflow for a tag that already has a release (for example after the
           # tag was moved) must replace it instead of failing with "release already exists".
-          gh release delete "${{ github.ref_name }}" --yes --cleanup-tag=false 2>/dev/null || true
-          gh release create "${{ github.ref_name }}" \
-            --title "ZT-DSP client ${{ github.ref_name }}" \
+          gh release delete "${{ inputs.tag }}" --yes --cleanup-tag=false 2>/dev/null || true
+          gh release create "${{ inputs.tag }}" \
+            --title "ZT-DSP client ${{ inputs.tag }}" \
             --generate-notes \
             --verify-tag \
+            --draft \
             dist/*
