@@ -284,7 +284,12 @@ def test_a_rejected_peer_hears_nothing():
     server, host, port = _start_server()
     try:
         peer = socket.create_connection((host, port), timeout=5)
-        peer.settimeout(5)
+        # Deliberately shorter than the server's five second drop window. When
+        # the two were equal this test raced the server's own close: whichever
+        # side the scheduler woke first decided the outcome, which is why it
+        # failed on one interpreter and passed on another with no code change.
+        peer.settimeout(1.5)
+
         # A parameter set that is missing an item must be rejected silently.
         bad = dict(VALID_PARAMS)
         del bad["window"]
@@ -293,8 +298,49 @@ def test_a_rejected_peer_hears_nothing():
                 json.dumps(bad).encode("utf-8"), token(1) + token(2), b"n" * 32
             )
         )
-        with pytest.raises((socket.timeout, ConnectionResetError, OSError)):
-            data = peer.recv(64)
-            assert data == b""
+
+        # What Appendix F.2 requires is that not one byte comes back, and that
+        # no active close is visible while the window is open. A timeout is the
+        # correct observation. The old version of this test accepted only a
+        # timeout and put its byte check after the recv, where it could never
+        # run.
+        try:
+            received = peer.recv(64)
+        except (socket.timeout, TimeoutError):
+            received = b""
+        assert received == b"", f"silent drop violated: peer received {received!r}"
+
+        # Nothing was written, so the connection is still held open rather than
+        # closed early. Asking again must not produce a reset.
+        try:
+            peer.settimeout(1.0)
+            extra = peer.recv(64)
+        except (socket.timeout, TimeoutError):
+            extra = b""
+        assert extra == b"", f"peer heard {extra!r} while the window was open"
+    finally:
+        server.stop()
+
+
+def test_the_drop_window_ends_by_closing_quietly():
+    server, host, port = _start_server()
+    try:
+        peer = socket.create_connection((host, port), timeout=5)
+        # Longer than the server's five second window, so the observation
+        # outlives the window instead of racing it.
+        peer.settimeout(10)
+
+        bad = dict(VALID_PARAMS)
+        del bad["window"]
+        peer.sendall(
+            pack_phase_one(
+                json.dumps(bad).encode("utf-8"), token(1) + token(2), b"n" * 32
+            )
+        )
+
+        # Element five: at the end of the window the connection is closed like
+        # any finished connection. End of stream, zero bytes, no reset, and no
+        # error text that would make the rejection observable.
+        assert peer.recv(64) == b""
     finally:
         server.stop()
