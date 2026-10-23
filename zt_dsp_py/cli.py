@@ -87,7 +87,10 @@ def load_psk_from_file(path: str) -> bytes:
     """Load the PSK from a file (warns if accessible to group/other users; 0600 permissions recommended)."""
     try:
         st = os.stat(path)
-        if st.st_mode & 0o077:
+        # Windows reports synthetic mode bits (0o666 for a regular file), so the POSIX
+        # permission check would warn on every file. The Rust implementation skips it
+        # under cfg(unix); keep both sides aligned.
+        if os.name == "posix" and st.st_mode & 0o077:
             print(
                 f"[!] Warning: {path} is accessible to group/other users"
                 f"(permissions {oct(st.st_mode & 0o777)}). Recommended: set to 0600.",
