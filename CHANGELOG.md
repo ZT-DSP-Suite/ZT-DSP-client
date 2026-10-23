@@ -28,9 +28,9 @@ normative change history is `git log`. If the two ever disagree, `git log` wins.
 
 ### Changed
 
-- **`--no-stdin`.** The session receives and reads nothing from the input. A server
-  process started in the background has no terminal on its input, and the flag keeps
-  the process from waiting for one.
+- **`--no-stdin`.** The session reads nothing from the input and sends no application
+  data; heartbeats continue. A server process started in the background has no
+  terminal on its input, and the flag keeps the process from waiting for one.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to
