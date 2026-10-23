@@ -11,6 +11,7 @@ from unittest import mock
 
 import pytest
 
+from zt_dsp_py.crypto import CryptoSuite
 from zt_dsp_py.errors import ZTDSPError, ZTDSPSecurityError
 from zt_dsp_py.frames import force_close_socket
 from zt_dsp_py.handshake import HandshakePeer
@@ -255,3 +256,99 @@ def test_oversize_plaintext_rejected() -> None:
     finally:
         force_close_socket(left)
         sa.wipe()
+
+
+# =============================================================================
+# Secret wiping of session key material
+# =============================================================================
+
+def test_session_key_material_is_mutable() -> None:
+    sa, sb, left, right = _establish()
+    try:
+        for buf in (sa.send_ek, sa.recv_ek, sb.send_ek, sb.recv_ek):
+            assert isinstance(buf, bytearray)
+    finally:
+        force_close_socket(left)
+        force_close_socket(right)
+        sa.wipe()
+        sb.wipe()
+
+
+def test_send_wipes_key_working_copy() -> None:
+    sa, _, left, _right = _establish()
+    seen = {}
+    original = CryptoSuite.aead_encrypt
+
+    def spy(self, key, nonce, payload, aad):
+        seen["key"] = key
+        return original(self, key, nonce, payload, aad)
+
+    old_ek = sa.send_ek
+    try:
+        with mock.patch.object(CryptoSuite, "aead_encrypt", spy):
+            sa.send_packet(left, b"payload")
+        assert seen["key"] == bytearray(len(seen["key"]))
+        assert old_ek == bytearray(len(old_ek))
+    finally:
+        force_close_socket(left)
+        sa.wipe()
+
+
+def test_send_wipes_key_working_copy_when_encryption_fails() -> None:
+    sa, _, left, _right = _establish()
+    seen = {}
+
+    def boom(self, key, nonce, payload, aad):
+        seen["key"] = key
+        raise RuntimeError("encryption failed")
+
+    try:
+        with mock.patch.object(CryptoSuite, "aead_encrypt", boom):
+            with pytest.raises(RuntimeError):
+                sa.send_packet(left, b"payload")
+        assert seen["key"] == bytearray(len(seen["key"]))
+    finally:
+        force_close_socket(left)
+        sa.wipe()
+
+
+def test_recv_wipes_key_working_copy() -> None:
+    sa, sb, left, right = _establish()
+    seen = {}
+    original = CryptoSuite.aead_decrypt
+
+    def spy(self, key, nonce, ciphertext, aad):
+        seen["key"] = key
+        return original(self, key, nonce, ciphertext, aad)
+
+    try:
+        sa.send_packet(left, b"payload")
+        with mock.patch.object(CryptoSuite, "aead_decrypt", spy):
+            assert sb.recv_packet(right) == b"payload"
+        assert seen["key"] == bytearray(len(seen["key"]))
+    finally:
+        force_close_socket(left)
+        force_close_socket(right)
+        sa.wipe()
+        sb.wipe()
+
+
+def test_recv_wipes_key_working_copy_when_decryption_fails() -> None:
+    sa, sb, left, right = _establish()
+    seen = {}
+
+    def boom(self, key, nonce, ciphertext, aad):
+        seen["key"] = key
+        raise ZTDSPSecurityError("authentication failed")
+
+    try:
+        sa.send_packet(left, b"payload")
+        with mock.patch.object(CryptoSuite, "aead_decrypt", boom):
+            with pytest.raises(ZTDSPSecurityError):
+                sb.recv_packet(right)
+        assert seen["key"] == bytearray(len(seen["key"]))
+    finally:
+        force_close_socket(left)
+        force_close_socket(right)
+        sa.wipe()
+        sb.wipe()

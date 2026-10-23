@@ -6,8 +6,8 @@
 Appendices F.3-F.5).
 
 Default suite: X25519 + HKDF-SHA3-256 + HMAC-SHA3-256 + AES-256-GCM.
-The hash algorithm is selected by the hash_name parameter (supported by the guide
-supported: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
+The hash algorithm is selected by the hash_name parameter (supported by the guide:
+SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
 AEAD implementation contains only AES-256-GCM.
 
 Security statements:
@@ -66,8 +66,8 @@ def secure_zero(buf: Optional[Union[bytearray, memoryview]]) -> bool:
     """Zero a mutable buffer in place and report whether it worked.
 
     Returns False for immutable objects such as ``bytes``: those cannot be
-    zeroed from Python, so the caller must not assume the copy is gone.
-    A failure to zero is never swallowed silently.
+    zeroed from Python. This is best-effort: a False return means nothing was
+    wiped, so the caller must not assume the copy is gone.
     """
     if buf is None:
         return True

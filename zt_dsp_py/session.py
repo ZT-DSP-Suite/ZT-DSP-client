@@ -95,8 +95,13 @@ class SecureSession:
                 seq = self.seq_send
                 sid_snapshot = bytes(self.session_id)
                 next_seed = secure_random(NEXT_SEED_LEN)
-                new_ek = self.suite.hkdf(
-                    ek_work + bytearray(next_seed), INFO_EK_ROTATE, self.params.key_len)
+                ikm = bytearray(len(ek_work) + len(next_seed))
+                ikm[:len(ek_work)] = ek_work
+                ikm[len(ek_work):] = next_seed
+                try:
+                    new_ek = self.suite.hkdf(ikm, INFO_EK_ROTATE, self.params.key_len)
+                finally:
+                    secure_zero(ikm)
                 secure_zero(self.send_ek)
                 self.send_ek = bytearray(new_ek)
                 self.seq_send = seq + 1
@@ -119,8 +124,10 @@ class SecureSession:
 
             nonce = gcm_nonce(seq)
             aad = build_aad(sid_snapshot, seq)
-            ciphertext = self.suite.aead_encrypt(ek_work, nonce, payload, aad)
-            secure_zero(ek_work)
+            try:
+                ciphertext = self.suite.aead_encrypt(ek_work, nonce, payload, aad)
+            finally:
+                secure_zero(ek_work)
             packet = pack_data_packet(sid_snapshot, seq, ciphertext)
 
             try:
@@ -166,10 +173,12 @@ class SecureSession:
                 aad = build_aad(session_id, seq)
 
             try:
-                # Step 3: GCM decryption and authentication (AAD takes part in authentication)
-                payload = self.suite.aead_decrypt(
-                    ek_work, gcm_nonce(seq), ciphertext, aad)
-                secure_zero(ek_work)
+                try:
+                    # Step 3: GCM decryption and authentication (AAD takes part in authentication)
+                    payload = self.suite.aead_decrypt(
+                        ek_work, gcm_nonce(seq), ciphertext, aad)
+                finally:
+                    secure_zero(ek_work)
                 plaintext = self._validate_payload(payload, seq)
             except (ZTDSPSecurityError, ZTDSPProtocolError):
                 self._terminate()
