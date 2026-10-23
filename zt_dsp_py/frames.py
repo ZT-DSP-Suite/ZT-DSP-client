@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Online frame encode/decode (Master Guide 1.0.0, Appendix F).
+"""Online frame encode/decode (Master Guide, Appendix F).
 
 Four frame classes (F.1/F.3/F.4/F.5), all big-endian (network byte order),
 length-prefix mode, no magic, no frame-type field, no frame-level CRC:

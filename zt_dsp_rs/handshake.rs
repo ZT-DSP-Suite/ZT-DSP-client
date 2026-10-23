@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Four-phase handshake state machine (Master Guide 1.0.0, Sec. 4.2 / Appendix F / Appendix H.1·H.2·H.4).
+//! Four-phase handshake state machine (Master Guide, Sec. 4.2 / Appendix F / Appendix H.1·H.2·H.4).
 //!
 //! Three asymmetric points of the role state machine (Appendix H.2):
 //! 1. Phase 1: the initiator sends first; the responder replies only after validation;
@@ -34,7 +34,7 @@ use crate::kex::EphemeralSecret;
 use crate::params::Params;
 
 // =============================================================================
-// Protocol constants (Master Guide 1.0.0, Sec. 4.2 / Appendix H.3)
+// Protocol constants (Master Guide, Sec. 4.2 / Appendix H.3)
 // =============================================================================
 
 // --- HKDF info / HMAC context tags (fixed byte-for-byte; any change fails the handshake) ---
