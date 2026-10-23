@@ -174,11 +174,15 @@ class ChatSession:
                 except UnicodeDecodeError:
                     text = repr(data)
                 with self._print_lock:
-                    print(f"\r[Peer] {text}\n> ", end="", flush=True)
+                    print(f"\r[Peer] {text}")
+                    if self._read_stdin:
+                        print("> ", end="", flush=True)
         except (ConnectionError, OSError, ZTDSPError) as exc:
             if self._running:
                 with self._print_lock:
-                    print(f"\r[Error] {exc}\n> ", end="", flush=True)
+                    print(f"\r[Error] {exc}")
+                    if self._read_stdin:
+                        print("> ", end="", flush=True)
         finally:
             self.shutdown()
 
