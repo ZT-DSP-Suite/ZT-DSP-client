@@ -141,7 +141,7 @@ and a real two-sided TCP flow.
 |----|------|
 | format | 1.0.x (major.minor.revision) |
 | carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.2-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
-| current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
+| current value | `1.0.2` |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
 | major digit increment | restatement of core protocol semantics (usually coupled with a client/server version increment) |

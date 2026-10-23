@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Cryptographic primitives layer (Master Guide 1.0.0 Section 4.2 /
+"""Cryptographic primitives layer (Master Guide Section 4.2 /
 Appendices F.3-F.5).
 
 Default suite: X25519 + HKDF-SHA3-256 + HMAC-SHA3-256 + AES-256-GCM.
@@ -90,7 +90,7 @@ def constant_time_compare(a: bytes, b: bytes) -> bool:
 
 def hmac_sha3(key: bytes, message: bytes) -> bytes:
     """HMAC-SHA3-256 (fixed algorithm - token hash derivation does not
-    vary with params.hash_name; see Master Guide 1.0.0 Section
+    vary with params.hash_name; see Master Guide Section
     4.1.1 placeholder path)."""
     h = _crypto_hmac.HMAC(key, hashes.SHA3_256())
     h.update(message)

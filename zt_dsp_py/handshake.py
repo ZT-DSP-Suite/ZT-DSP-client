@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Four-phase handshake state machine (Master Guide 1.0.0 Section 4.2 /
+"""Four-phase handshake state machine (Master Guide Section 4.2 /
 Appendix F / Appendix H.1, H.2, H.4).
 
 Three asymmetries of the role state machine (Appendix H.2):
@@ -82,7 +82,7 @@ from .identity import ROLE_INITIATOR, ROLE_RESPONDER, derive_p2p_identity
 from .params import TIME_WINDOW, ZTDSPParams
 
 # =============================================================================
-# Protocol constants (Master Guide 1.0.0 Section 4.2 / Appendix H.3)
+# Protocol constants (Master Guide Section 4.2 / Appendix H.3)
 # =============================================================================
 
 # --- HKDF info / HMAC context labels (fixed byte for byte; any change breaks the handshake) ---

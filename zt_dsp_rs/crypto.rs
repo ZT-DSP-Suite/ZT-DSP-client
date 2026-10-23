@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Cryptographic primitives layer (Master Guide 1.0.0, Section 4.2 /
+//! Cryptographic primitives layer (Master Guide, Section 4.2 /
 //! Appendices F.3-F.5).
 //!
 //! Default suite: X25519 (see the `kex` module) + HKDF-SHA3-256 +
@@ -17,7 +17,7 @@
 //! - `salt=None` → RFC default all-zero salt (consistent with Python
 //!   `HKDF(salt=None)`);
 //! - salt is an **independent salt parameter**, not material
-//!   concatenated into IKM (Master Guide 1.0.0, Section 4.2.2,
+//!   concatenated into IKM (Master Guide, Section 4.2.2,
 //!   correction item).
 //!
 //! Security notes:
@@ -57,7 +57,7 @@ pub fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
 }
 
 /// HMAC-SHA3-256 (fixed algorithm -- token hash derivation does not follow
-/// params.hash_name; see Master Guide 1.0.0, Section 4.1.1, placeholder path).
+/// params.hash_name; see Master Guide, Section 4.1.1, placeholder path).
 pub fn hmac_sha3(key: &[u8], message: &[u8]) -> [u8; 32] {
     let mut mac = <hmac::Hmac<sha3::Sha3_256> as hmac::Mac>::new_from_slice(key)
         .expect("HMAC accepts arbitrary-length keys");
