@@ -47,7 +47,8 @@ jobs:
             python -m pip install --upgrade pip
             python -m pip install atheris
             python -m pip install -e ./zt_dsp_py
-            python fuzz/fuzz_frames.py
+            # Same runtime budget as the Rust leg, so the job finishes inside its timeout.
+            python fuzz/fuzz_frames.py -max_total_time=600
           fi
 
       - name: Upload crash artifacts

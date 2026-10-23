@@ -367,8 +367,12 @@ mod tcp_flow {
         assert!(err.is_silent_drop(), "got {err}");
         let _ = left.set_read_timeout(Some(Duration::from_millis(400)));
         let mut buf = [0u8; 4096];
-        if let Ok(n) = left.read(&mut buf) {
-            assert_eq!(n, 0, "the silent path must not send any byte");
+        match left.read(&mut buf) {
+            Ok(n) => assert_eq!(n, 0, "the silent path must not send any byte"),
+            Err(e)
+                if e.kind() == std::io::ErrorKind::WouldBlock
+                    || e.kind() == std::io::ErrorKind::TimedOut => {}
+            Err(e) => panic!("the silent path must not close the connection: {e}"),
         }
     }
 }

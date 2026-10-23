@@ -779,8 +779,12 @@ mod tests {
         let received = left.read(&mut buf);
         assert!(t.join().unwrap());
         // No bytes received from the responder (timeout with no data, or peer closed)
-        if let Ok(n) = received {
-            assert_eq!(n, 0, "the silent path must not send any bytes");
+        match received {
+            Ok(n) => assert_eq!(n, 0, "the silent path must not send any bytes"),
+            Err(e)
+                if e.kind() == std::io::ErrorKind::WouldBlock
+                    || e.kind() == std::io::ErrorKind::TimedOut => {}
+            Err(e) => panic!("the silent path must not close the connection: {e}"),
         }
     }
 
@@ -819,6 +823,12 @@ mod tests {
                 n, 0,
                 "low-order-point silence must not send the Phase 2 response frame"
             );
+        } else if let Err(e) = received {
+            if e.kind() != std::io::ErrorKind::WouldBlock
+                && e.kind() != std::io::ErrorKind::TimedOut
+            {
+                panic!("the silent path must not close the connection: {e}");
+            }
         }
     }
 
