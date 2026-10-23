@@ -46,8 +46,9 @@ lives in `git log`. If the two ever disagree, `git log` wins.
   can reach the modules directly.
 - **The single-file collection rule is dropped.** The `合并 / 收录提议` row of `cn/README.md`
   and its `en/README.md` counterpart no longer require an implementation to be collected
-  into one file. Implementations follow the ordinary engineering layout of the language
-  in use.
+  into one file, and the accompanying ban on new directory trees under the mainline
+  directory is withdrawn as well: implementations follow the ordinary engineering layout
+  of the language in use, including subdirectories.
 
 ### Fixed
 
