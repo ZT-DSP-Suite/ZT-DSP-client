@@ -48,7 +48,34 @@ pub const LANGUAGE_PREFIX: &str = "RS";
 /// implementation version: the numeric part of a client / server version.
 pub const CODE_VERSION: &str = "1.0.0";
 
-/// Implementation identifier `ZT-DSP_RS-1.0.0`.
+/// Build date segment: development builds carry `YYYYMMDD`; RC and release leave it empty.
+/// Value is the commit date in UTC+8 (VERSIONING.md §3.1). Empty means "no date segment".
+pub const BUILD_DATE: &str = "";
+
+/// Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
+///
+/// An empty build date yields the release identifier. A non-empty one must be eight
+/// digits, so a malformed date fails here rather than in a published identifier.
+pub fn implementation_identifier(prefix: &str, code_version: &str, build_date: &str) -> String {
+    if build_date.is_empty() {
+        return format!("ZT-DSP_{}-{}", prefix, code_version);
+    }
+    assert!(
+        build_date.len() == 8 && build_date.bytes().all(|b| b.is_ascii_digit()),
+        "BUILD_DATE must be YYYYMMDD or empty"
+    );
+    format!("ZT-DSP_{}-{}-{}", prefix, code_version, build_date)
+}
+
+/// The identifier this build reports.
+pub fn implementation_id() -> String {
+    implementation_identifier(LANGUAGE_PREFIX, CODE_VERSION, BUILD_DATE)
+}
+
+/// Implementation identifier `ZT-DSP_RS-1.0.0` (release form).
+///
+/// Kept as a constant for callers that need the release form. While `BUILD_DATE` is empty
+/// it equals `implementation_id()`; the unit tests hold the two together.
 pub const IMPLEMENTATION_ID: &str = concat!("ZT-DSP_", "RS", "-", "1.0.0");
 
 /// All client versions of this kind, applicable to the same total-guide versions.
@@ -61,7 +88,7 @@ pub const SERVER_VERSIONS: &[&str] = &["ZT-DSP_SV-1.0.0"];
 ///
 /// The two segments, in order: this implementation's client/server version identifier, and the total-guide version.
 pub fn format_version() -> String {
-    format!("{} (docs {})", IMPLEMENTATION_ID, DOCS_VERSION)
+    format!("{} (docs {})", implementation_id(), DOCS_VERSION)
 }
 
 #[cfg(test)]
@@ -94,5 +121,29 @@ mod tests {
     #[test]
     fn format_version_two_segments() {
         assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.2)");
+    }
+
+    #[test]
+    fn build_date_is_empty_for_the_release_identifier() {
+        assert_eq!(BUILD_DATE, "");
+        assert_eq!(
+            implementation_identifier("RS", "1.0.0", ""),
+            "ZT-DSP_RS-1.0.0"
+        );
+        assert_eq!(implementation_id(), IMPLEMENTATION_ID);
+    }
+
+    #[test]
+    fn build_date_appends_eight_digit_date() {
+        assert_eq!(
+            implementation_identifier("RS", "1.0.0", "20261023"),
+            "ZT-DSP_RS-1.0.0-20261023"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "BUILD_DATE must be YYYYMMDD or empty")]
+    fn build_date_rejects_other_shapes() {
+        implementation_identifier("RS", "1.0.0", "2026-10-23");
     }
 }

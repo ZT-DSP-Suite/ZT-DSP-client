@@ -60,7 +60,26 @@ LANGUAGE_PREFIX: str = "PY"
 # --- implementation version: the numeric part of a client / server version ---
 CODE_VERSION: str = "1.0.0"
 
-IMPLEMENTATION_ID: str = f"ZT-DSP_{LANGUAGE_PREFIX}-{CODE_VERSION}"
+# --- build date segment: development builds carry `-YYYYMMDD`; RC and release leave it empty ---
+# Value is the commit date in UTC+8 (VERSIONING.md §3.1). Empty means "no date segment",
+# so the published identifier keeps its numeric form.
+BUILD_DATE: str = ""
+
+
+def implementation_identifier(prefix: str, code_version: str, build_date: str = "") -> str:
+    """Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
+
+    An empty build date yields the release identifier. A non-empty one must be eight
+    digits, so a malformed date fails here rather than in a published identifier.
+    """
+    if not build_date:
+        return f"ZT-DSP_{prefix}-{code_version}"
+    if len(build_date) != 8 or not build_date.isdigit():
+        raise ValueError("BUILD_DATE must be YYYYMMDD or empty")
+    return f"ZT-DSP_{prefix}-{code_version}-{build_date}"
+
+
+IMPLEMENTATION_ID: str = implementation_identifier(LANGUAGE_PREFIX, CODE_VERSION, BUILD_DATE)
 
 # --- All client versions of this kind, applicable to the same total-guide versions ---
 CLIENT_VERSIONS: tuple[str, ...] = ("ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0")
