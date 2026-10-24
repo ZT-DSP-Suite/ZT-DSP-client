@@ -54,7 +54,8 @@ pub const LANGUAGE_PREFIX: &str = "RS";
 pub const CODE_VERSION: &str = "1.0.0";
 
 /// Build date segment: development builds carry `YYYYMMDD`; RC and release leave it empty.
-/// Value is the commit date in UTC+8 (VERSIONING.md §3.1). Empty means "no date segment".
+/// Value is the commit date in UTC+8. Development builds carry the date segment;
+/// release candidates and releases leave it empty.
 pub const BUILD_DATE: &str = "";
 
 /// Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
