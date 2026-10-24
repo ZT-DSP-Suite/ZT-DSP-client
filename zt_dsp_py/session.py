@@ -260,11 +260,19 @@ class SecureSession:
                 )
 
             # Ratchet rotation + sequence number advance (must be completed before step 8 -- out-of-window packets are also rolled forward)
-            new_ek = self.suite.hkdf(
-                bytearray(self.recv_ek) + bytearray(next_seed),
-                INFO_EK_ROTATE,
-                self.params.key_len,
-            )
+            # The HKDF input is a mutable working copy so it can be wiped after
+            # use, symmetrically with the send side. hkdf() returns bytes, so the
+            # derived copy below cannot be zeroed from Python; only the input is.
+            ikm = bytearray(self.recv_ek)
+            ikm += bytearray(next_seed)
+            try:
+                new_ek = self.suite.hkdf(
+                    ikm,
+                    INFO_EK_ROTATE,
+                    self.params.key_len,
+                )
+            finally:
+                secure_zero(ikm)
             secure_zero(self.recv_ek)
             self.recv_ek = bytearray(new_ek)
             self.seq_recv = seq

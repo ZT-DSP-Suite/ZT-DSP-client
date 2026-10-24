@@ -349,6 +349,28 @@ def test_recv_wipes_key_working_copy() -> None:
         sb.wipe()
 
 
+def test_recv_wipes_the_rotation_input() -> None:
+    sa, sb, left, right = _establish()
+    seen = {}
+    original = CryptoSuite.hkdf
+
+    def spy(self, ikm, info, length_bits):
+        seen["ikm"] = ikm
+        return original(self, ikm, info, length_bits)
+
+    try:
+        sa.send_packet(left, b"payload")
+        with mock.patch.object(CryptoSuite, "hkdf", spy):
+            assert sb.recv_packet(right) == b"payload"
+        assert isinstance(seen["ikm"], bytearray)
+        assert seen["ikm"] == bytearray(len(seen["ikm"]))
+    finally:
+        force_close_socket(left)
+        force_close_socket(right)
+        sa.wipe()
+        sb.wipe()
+
+
 def test_recv_wipes_key_working_copy_when_decryption_fails() -> None:
     sa, sb, left, right = _establish()
     seen = {}
