@@ -45,6 +45,11 @@ Documentation and code are **not bound by version numbers**: the document side d
 │   ├── cli.py                 minimal command line
 │   └── tests/                 pytest suite (primitives/frames/handshake/session/end-to-end)
 ├── zt_dsp_rs/               Rust reference implementation (program ID ZT-DSP_RS-1.0.0; flat single-bin crate)
+├── zt_dsp_sv_py/            Python server implementation (program ID ZT-DSP_SV-1.0.0)
+│   ├── version.py           version contract (server role, role prefix SV)
+│   ├── server.py            pairing, byte relay and the L4 control plane (one file)
+│   ├── CONFORMANCE.md       protocol conformance checklist (with two open questions)
+│   └── tests/               pytest suite
 ├── LICENSE
 └── README.md
 ```
@@ -156,6 +161,7 @@ and a real two-sided TCP flow.
 | multi-language coexistence | implementations in different languages **may share the same version number** (ZT-DSP_PY-1.0.0 and ZT-DSP_GO-1.0.0 coexist), distinguished by the language prefix |
 | participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
 | other-language implementations | the development languages are Python and Rust; to add another language, create a sibling directory named after its program ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
+| server implementations | a server implementation is named after its program ID as well (zt_dsp_sv_py/) and carries a protocol conformance checklist; a server never decrypts, it only pairs and relays bytes |
 | merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: **collect all code into a single file** (one implementation per file, no new directory trees added to the mainline directory), with a protocol conformance checklist attached |
 
 #### Applicability (many-to-many)
