@@ -56,7 +56,8 @@ pub const BUILD_DATE: &str = "";
 /// Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
 ///
 /// An empty build date yields the release identifier. A non-empty one must be eight
-/// digits, so a malformed date fails here rather than in a published identifier.
+/// digits. A malformed date panics here rather than producing a published identifier:
+/// composition fails fast, and the Python twin raises ValueError for the same input.
 pub fn implementation_identifier(prefix: &str, code_version: &str, build_date: &str) -> String {
     if build_date.is_empty() {
         return format!("ZT-DSP_{}-{}", prefix, code_version);

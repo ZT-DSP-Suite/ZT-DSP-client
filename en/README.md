@@ -152,6 +152,7 @@ and a real two-sided TCP flow.
 | Item | Rule |
 |----|------|
 | format | `ZT-DSP_<prefix>-<major.minor.revision>`, e.g. `ZT-DSP_PY-1.0.0` (client) / `ZT-DSP_SV-1.0.0` (server) |
+| date segment | a development build appends `-YYYYMMDD`, the commit date (UTC+8), to the version; release candidates and releases drop it, and both use the same identifier; package metadata keeps a numeric-only version |
 | carrier | two kinds: **client versions** (`ZT-DSP_<language prefix>-<major.minor.revision>`) and **server versions** (`ZT-DSP_SV-<major.minor.revision>`); an implementation concretizes the specification but does not share its version number |
 | current value | ZT-DSP_PY-1.0.0 and ZT-DSP_RS-1.0.0 |
 | language prefix table | PY=Python, GO=Go, RS=Rust, C=C++ (**not the C language or C#**, which must define their own prefixes), JS=JavaScript/TypeScript, JVM=Java/Kotlin; other languages define their own all-caps prefix, which must be unique across the repository |
