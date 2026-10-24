@@ -3,9 +3,11 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
+import pytest
 
 from zt_dsp_py.version import (
     APPLIES_TO_DOC_VERSIONS,
+    BUILD_DATE,
     CLIENT_VERSIONS,
     CODE_VERSION,
     DOCS_VERSION,
@@ -16,6 +18,7 @@ from zt_dsp_py.version import (
     ROLE,
     SERVER_VERSIONS,
     format_version,
+    implementation_identifier,
 )
 
 
@@ -73,3 +76,24 @@ def test_no_protocol_identifier_constant() -> None:
 def test_format_version_contract() -> None:
     # Two segments: this implementation's client/server version identifier, then the total-guide version
     assert format_version() == "ZT-DSP_PY-1.0.0 (docs 1.0.1)"
+
+
+def test_build_date_is_empty_for_the_release_identifier() -> None:
+    # An empty BUILD_DATE means "no date segment"; the published identifier keeps its numeric form
+    assert BUILD_DATE == ""
+    assert implementation_identifier("PY", "1.0.0", "") == "ZT-DSP_PY-1.0.0"
+    assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0"
+
+
+def test_build_date_appends_eight_digit_date() -> None:
+    assert (
+        implementation_identifier("PY", "1.0.0", "20261023")
+        == "ZT-DSP_PY-1.0.0-20261023"
+    )
+
+
+def test_build_date_rejects_other_shapes() -> None:
+    # Anything that is not YYYYMMDD fails at composition time, not in a published identifier
+    for bad in ("2026-10-23", "2026102", "20261332x", "   "):
+        with pytest.raises(ValueError):
+            implementation_identifier("PY", "1.0.0", bad)
