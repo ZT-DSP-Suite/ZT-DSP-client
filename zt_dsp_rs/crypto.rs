@@ -6,8 +6,8 @@
 //!
 //! Default suite: X25519 (see the `kex` module) + HKDF-SHA3-256 +
 //! HMAC-SHA3-256 + AES-256-GCM. The hash algorithm is chosen by the
-//! parameter hash_name (officially supported: SHA3-256/384/512 and
-//! SHA-256/384/512, Appendix F.1); the official AEAD implementation
+//! parameter hash_name (allowed values: SHA3-256/384/512 and
+//! SHA-256/384/512, Appendix F.1); the reference implementation
 //! contains only AES-256-GCM (mapped automatically by key_len to
 //! AES-128/192/256-GCM, matching Python `AESGCM(key)` behavior).
 //!
@@ -132,7 +132,7 @@ impl CryptoSuite {
         };
         if suite.aead_name != "AES-256-GCM" {
             return Err(Error::crypto(format!(
-                "unsupported AEAD algorithm: {}, the official implementation contains only AES-256-GCM",
+                "unsupported AEAD algorithm: {}, the reference implementation contains only AES-256-GCM",
                 suite.aead_name
             )));
         }
