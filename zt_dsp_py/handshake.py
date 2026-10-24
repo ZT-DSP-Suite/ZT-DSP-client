@@ -16,7 +16,7 @@ Three asymmetries of the role state machine (Appendix H.2):
    disconnects on failure (Appendix F.2).
 
 The phase three confirm tag is "send first, then compare" (corrected
-against the official implementation): the responder receives the frame (silent
+against the reference implementation): the responder receives the frame (silent
 only for frame-level errors) -> sends its own tag -> both sides compare in
 constant time; on content mismatch -> both sides wipe all keys and fail.
 

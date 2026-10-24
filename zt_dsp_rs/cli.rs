@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Minimal command-line interface (command-line direct-connection subset plus base-platform subcommands; see the official-client README).
+//! Minimal command-line interface (command-line direct-connection subset plus base-platform subcommands; see the reference-client README).
 //!
 //! Design boundaries:
 //! - `--role listen/connect` direct command-line connection and `--version`;
@@ -37,7 +37,7 @@ use crate::version::{CODE_VERSION, FOLLOWS_DOC};
 
 const PSK_LEN: usize = 32;
 /// Publicly documented default PSK. It is not a credential:
-/// the guide publishes it as forbidden, and every official client must reject it.
+/// the guide publishes it as forbidden, and every reference client must reject it.
 const FORBIDDEN_DEFAULT_PSK: &str = "zt-dsp-default-psk-32bytes-long!!";
 
 /// 'static version/about strings required by clap.
