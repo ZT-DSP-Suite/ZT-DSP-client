@@ -400,7 +400,7 @@ mod tests {
     #[test]
     fn version_output_via_clap() {
         // --version three-part output
-        assert!(format_version().starts_with("ZT-DSP_RS-1.0.0"));
+        assert!(format_version().starts_with("ZT-DSP_RS-1.0.0-20261025"));
     }
 
     #[test]

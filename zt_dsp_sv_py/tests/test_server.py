@@ -57,7 +57,7 @@ def token(seed: int) -> bytes:
 
 
 def test_version_contract_is_self_consistent():
-    assert version.IMPLEMENTATION_ID == "ZT-DSP_SV-1.0.0"
+    assert version.IMPLEMENTATION_ID == "ZT-DSP_SV-1.0.0-20261025"
     assert version.ROLE == "server"
     assert version.LANGUAGE_PREFIX == "SV"
     assert version.DOCUMENT_REVISION in version.DOCS_VERSIONS

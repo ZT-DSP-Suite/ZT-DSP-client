@@ -27,7 +27,7 @@ without a token:
 python -m zt_dsp_sv_py --control 127.0.0.1:9932 --control-token ./token
 ```
 
-## Layout
+## 这里有什么
 
 | file | what |
 |---|---|
@@ -35,6 +35,12 @@ python -m zt_dsp_sv_py --control 127.0.0.1:9932 --control-token ./token
 | `version.py` | the version contract |
 | `CONFORMANCE.md` | the protocol conformance checklist |
 | `tests/` | the test suite |
+
+## 按什么找
+
+- Behaviour lives in `server.py`; the identifier and its declarations live in `version.py`.
+- The two open questions and their reasoning are in `CONFORMANCE.md`.
+- Run the suite from the repository root: `python -m pytest zt_dsp_sv_py/tests -q`.
 
 ## Tests
 

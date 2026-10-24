@@ -51,7 +51,7 @@ pub const CODE_VERSION: &str = "1.0.0";
 /// Build date segment: development builds carry `YYYYMMDD`; RC and release leave it empty.
 /// Value is the commit date in UTC+8. Development builds carry the date segment;
 /// release candidates and releases leave it empty.
-pub const BUILD_DATE: &str = "";
+pub const BUILD_DATE: &str = "20261025";
 
 /// Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
 ///
@@ -76,8 +76,8 @@ pub fn implementation_id() -> String {
 
 /// Implementation identifier `ZT-DSP_RS-1.0.0` (release form).
 ///
-/// Kept as a constant for callers that need the release form. While `BUILD_DATE` is empty
-/// it equals `implementation_id()`; the unit tests hold the two together.
+/// Kept as a constant for callers that need the release form. The build identifier
+/// (`implementation_id()`) adds the date segment whenever `BUILD_DATE` is set.
 pub const IMPLEMENTATION_ID: &str = concat!("ZT-DSP_", "RS", "-", "1.0.0");
 
 /// All client versions of this kind, applicable to the same total-guide versions.
@@ -122,30 +122,31 @@ mod tests {
 
     #[test]
     fn format_version_two_segments() {
-        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.2)");
+        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0-20261025 (docs 1.0.2)");
     }
 
     #[test]
-    fn build_date_is_empty_for_the_release_identifier() {
-        assert_eq!(BUILD_DATE, "");
+    fn build_date_is_set_for_a_development_build() {
+        assert_eq!(BUILD_DATE, "20261025");
         assert_eq!(
             implementation_identifier("RS", "1.0.0", ""),
             "ZT-DSP_RS-1.0.0"
         );
-        assert_eq!(implementation_id(), IMPLEMENTATION_ID);
+        assert_eq!(implementation_id(), "ZT-DSP_RS-1.0.0-20261025");
+        assert_ne!(implementation_id(), IMPLEMENTATION_ID);
     }
 
     #[test]
     fn build_date_appends_eight_digit_date() {
         assert_eq!(
-            implementation_identifier("RS", "1.0.0", "20261023"),
-            "ZT-DSP_RS-1.0.0-20261023"
+            implementation_identifier("RS", "1.0.0", "20261025"),
+            "ZT-DSP_RS-1.0.0-20261025"
         );
     }
 
     #[test]
     #[should_panic(expected = "BUILD_DATE must be YYYYMMDD or empty")]
     fn build_date_rejects_other_shapes() {
-        implementation_identifier("RS", "1.0.0", "2026-10-23");
+        implementation_identifier("RS", "1.0.0", "2026-10-24");
     }
 }

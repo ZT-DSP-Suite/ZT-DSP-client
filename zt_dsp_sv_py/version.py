@@ -34,6 +34,28 @@ LANGUAGE_PREFIX = "SV"
 #: Implementation version.
 CODE_VERSION = "1.0.0"
 
+#: Build date segment: development builds carry `-YYYYMMDD`; RC and release leave it empty.
+#: Value is the commit date in UTC+8. Release candidates and releases leave it empty,
+#: so the published identifier keeps its numeric form.
+BUILD_DATE = "20261025"
+
+
+def implementation_identifier(
+    prefix: str, code_version: str, build_date: str = ""
+) -> str:
+    """Compose `ZT-DSP_<prefix>-<version>[-<YYYYMMDD>]`.
+
+    An empty build date yields the release identifier. A non-empty one must be eight
+    digits. A malformed date raises ValueError here rather than producing a published
+    identifier.
+    """
+    if not build_date:
+        return f"ZT-DSP_{prefix}-{code_version}"
+    if len(build_date) != 8 or not build_date.isdigit():
+        raise ValueError("BUILD_DATE must be YYYYMMDD or empty")
+    return f"ZT-DSP_{prefix}-{code_version}-{build_date}"
+
+
 #: Document revision this implementation was written against.
 DOCUMENT_REVISION = "1.0.2"
 
@@ -43,8 +65,8 @@ CLIENT_VERSIONS = ["ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0"]
 #: Server implementations sharing the same document revision.
 SERVER_VERSIONS = ["ZT-DSP_SV-1.0.0"]
 
-#: The identifier of this implementation, e.g. ZT-DSP_SV-1.0.0.
-IMPLEMENTATION_ID = f"ZT-DSP_{LANGUAGE_PREFIX}-{CODE_VERSION}"
+#: The identifier of this implementation, e.g. ZT-DSP_SV-1.0.0-20261025 for a development build.
+IMPLEMENTATION_ID = implementation_identifier(LANGUAGE_PREFIX, CODE_VERSION, BUILD_DATE)
 
 #: Name of the executable / entry point.
 PROGRAM_NAME = "zt-dsp-server"
@@ -68,7 +90,10 @@ def asserts() -> None:
     )
     assert ROLE == "server", ROLE
     assert LANGUAGE_PREFIX == "SV", LANGUAGE_PREFIX
-    assert IMPLEMENTATION_ID == "ZT-DSP_SV-1.0.0", IMPLEMENTATION_ID
+    assert implementation_identifier("SV", CODE_VERSION, "") == "ZT-DSP_SV-1.0.0", (
+        IMPLEMENTATION_ID
+    )
+    assert IMPLEMENTATION_ID == f"ZT-DSP_SV-1.0.0-{BUILD_DATE}", IMPLEMENTATION_ID
     assert DOCS_PATH.startswith("ZT-DSP-docs/"), DOCS_PATH
 
 

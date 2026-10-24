@@ -64,7 +64,7 @@ CODE_VERSION: str = "1.0.0"
 # Value is the commit date in UTC+8. Development builds carry the date segment;
 # release candidates and releases leave it empty, so the published identifier
 # keeps its numeric form.
-BUILD_DATE: str = ""
+BUILD_DATE: str = "20261025"
 
 
 def implementation_identifier(

@@ -29,11 +29,13 @@ def test_docs_version_declaration() -> None:
 
 
 def test_implementation_id_is_a_client_version() -> None:
-    # this repository is the client implementation; `PY` is its prefix
+    # this repository is the client implementation; `PY` is its prefix.
+    # The compatibility list holds the release form; the build identifier adds the date segment.
     assert LANGUAGE_PREFIX == "PY"
     assert CODE_VERSION == "1.0.0"
-    assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0"
-    assert IMPLEMENTATION_ID.endswith(f"-{CODE_VERSION}")
+    assert BUILD_DATE == "20261025"
+    assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0-20261025"
+    assert implementation_identifier("PY", CODE_VERSION, "") == "ZT-DSP_PY-1.0.0"
 
 
 def test_role_declaration() -> None:
@@ -41,9 +43,9 @@ def test_role_declaration() -> None:
 
 
 def test_client_versions_include_self() -> None:
-    # every client version of this kind, and this implementation must be one of them
+    # every client version of this kind, and this implementation's release form must be one of them
     assert CLIENT_VERSIONS == ("ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0")
-    assert IMPLEMENTATION_ID in CLIENT_VERSIONS
+    assert implementation_identifier("PY", CODE_VERSION, "") in CLIENT_VERSIONS
 
 
 def test_server_versions_declared_separately() -> None:
@@ -76,25 +78,25 @@ def test_no_protocol_identifier_constant() -> None:
 
 def test_format_version_contract() -> None:
     # Two segments: this implementation's client/server version identifier, then the total-guide version
-    assert format_version() == "ZT-DSP_PY-1.0.0 (docs 1.0.2)"
+    assert format_version() == "ZT-DSP_PY-1.0.0-20261025 (docs 1.0.2)"
 
 
-def test_build_date_is_empty_for_the_release_identifier() -> None:
-    # An empty BUILD_DATE means "no date segment"; the published identifier keeps its numeric form
-    assert BUILD_DATE == ""
+def test_build_date_is_set_for_a_development_build() -> None:
+    # A development build carries the date segment; the release form stays available for the compatibility lists
+    assert BUILD_DATE == "20261025"
     assert implementation_identifier("PY", "1.0.0", "") == "ZT-DSP_PY-1.0.0"
-    assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0"
+    assert IMPLEMENTATION_ID == "ZT-DSP_PY-1.0.0-20261025"
 
 
 def test_build_date_appends_eight_digit_date() -> None:
     assert (
-        implementation_identifier("PY", "1.0.0", "20261023")
-        == "ZT-DSP_PY-1.0.0-20261023"
+        implementation_identifier("PY", "1.0.0", "20261025")
+        == "ZT-DSP_PY-1.0.0-20261025"
     )
 
 
 def test_build_date_rejects_other_shapes() -> None:
     # Anything that is not YYYYMMDD fails at composition time, not in a published identifier
-    for bad in ("2026-10-23", "2026102", "20261332x", "   "):
+    for bad in ("2026-10-24", "2026102", "20261332x", "   "):
         with pytest.raises(ValueError):
             implementation_identifier("PY", "1.0.0", bad)

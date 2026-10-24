@@ -36,6 +36,10 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 - **Document version aligned to 1.0.2.** Both implementations now report
   `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
   deprecated hardware key-storage notices.
+- Development builds now carry the build-date segment in the program identifier
+  (`ZT-DSP_PY-1.0.0-20261025`, `ZT-DSP_RS-1.0.0-20261025`, `ZT-DSP_SV-1.0.0-20261025`).
+  The numeric version stays `1.0.0`, package metadata stays numeric-only, and the
+  compatibility lists keep the date-free release form.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to

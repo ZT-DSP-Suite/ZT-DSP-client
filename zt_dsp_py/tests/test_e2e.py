@@ -125,7 +125,7 @@ def test_cli_version() -> None:
         encoding="utf-8",
     )
     assert proc.stdout.strip() == format_version()
-    expected = "ZT-DSP_PY-1.0.0 (docs 1.0.2)"
+    expected = "ZT-DSP_PY-1.0.0-20261025 (docs 1.0.2)"
     assert proc.stdout.strip() == expected
 
 
