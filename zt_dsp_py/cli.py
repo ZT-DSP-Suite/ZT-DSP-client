@@ -64,7 +64,8 @@ def normalize_psk(psk_input: str) -> bytes:
     s = psk_input.strip()
     if not s or s == _FORBIDDEN_DEFAULT_PSK:
         raise ValueError(
-            "Weak or public default PSK rejected. Please provide 64-character hex or standard Base64 of 32 bytes.")
+            "Weak or public default PSK rejected. Please provide 64-character hex or standard Base64 of 32 bytes."
+        )
     raw = None
     if len(s) == 64:
         try:
@@ -78,7 +79,8 @@ def normalize_psk(psk_input: str) -> bytes:
             pass
     if raw is None or len(raw) != PSK_LEN:
         raise ValueError(
-            "PSK must be exactly 32 bytes of random data, encoded as 64-character hex or standard Base64.")
+            "PSK must be exactly 32 bytes of random data, encoded as 64-character hex or standard Base64."
+        )
     check_entropy(raw)
     return raw
 
@@ -87,11 +89,15 @@ def load_psk_from_file(path: str) -> bytes:
     """Load the PSK from a file (warns if accessible to group/other users; 0600 permissions recommended)."""
     try:
         st = os.stat(path)
-        if st.st_mode & 0o077:
+        # Windows reports synthetic mode bits (0o666 for a regular file), so the POSIX
+        # permission check would warn on every file. The Rust implementation skips it
+        # under cfg(unix); keep both sides aligned.
+        if os.name == "posix" and st.st_mode & 0o077:
             print(
                 f"[!] Warning: {path} is accessible to group/other users"
                 f"(permissions {oct(st.st_mode & 0o777)}). Recommended: set to 0600.",
-                file=sys.stderr)
+                file=sys.stderr,
+            )
     except OSError:
         pass
     with open(path, "r", encoding="utf-8") as f:
@@ -118,8 +124,9 @@ def _wizard_ask(prompt: str, input_fn, print_fn) -> str:
         raise WizardAborted from None
 
 
-def _wizard_int(prompt: str, label: str, default: int, ok, hint: str,
-                input_fn, print_fn) -> int:
+def _wizard_int(
+    prompt: str, label: str, default: int, ok, hint: str, input_fn, print_fn
+) -> int:
     """Ask for an integer (Enter takes the default), re-asking until ok() holds."""
     while True:
         raw = _wizard_ask(prompt, input_fn, print_fn).strip()
@@ -128,11 +135,11 @@ def _wizard_int(prompt: str, label: str, default: int, ok, hint: str,
         try:
             value = int(raw)
         except ValueError:
-            print_fn(f'[!] {label} must be an integer.')
+            print_fn(f"[!] {label} must be an integer.")
             continue
         if ok(value):
             return value
-        print_fn(f'[!] {hint}')
+        print_fn(f"[!] {hint}")
 
 
 def run_wizard(input_fn=None, print_fn=None):
@@ -148,68 +155,116 @@ def run_wizard(input_fn=None, print_fn=None):
         print_fn = print
 
     try:
-        print_fn('ZT-DSP interactive wizard (see the ZT-DSP-client README quick start)')
+        print_fn("ZT-DSP interactive wizard (see the ZT-DSP-client README quick start)")
         print_fn()
 
         # Step 1 -- role
         while True:
-            answer = _wizard_ask(
-                '① Role: 1 = listen (responder), 2 = connect (initiator) [1]: ',
-                input_fn, print_fn).strip().lower() or '1'
-            if answer in ('1', 'listen'):
-                role = 'listen'
+            answer = (
+                _wizard_ask(
+                    "① Role: 1 = listen (responder), 2 = connect (initiator) [1]: ",
+                    input_fn,
+                    print_fn,
+                )
+                .strip()
+                .lower()
+                or "1"
+            )
+            if answer in ("1", "listen"):
+                role = "listen"
                 break
-            if answer in ('2', 'connect'):
-                role = 'connect'
+            if answer in ("2", "connect"):
+                role = "connect"
                 break
-            print_fn('[!] Please enter 1 or 2.')
+            print_fn("[!] Please enter 1 or 2.")
 
         # Step 2 -- address and port
-        default_host = (DEFAULT_HOST_LISTEN if role == 'listen' else DEFAULT_HOST_CONNECT)
-        host = _wizard_ask(
-            f'② Bind/target address [{default_host}]: ', input_fn, print_fn).strip() or default_host
+        default_host = DEFAULT_HOST_LISTEN if role == "listen" else DEFAULT_HOST_CONNECT
+        host = (
+            _wizard_ask(
+                f"② Bind/target address [{default_host}]: ", input_fn, print_fn
+            ).strip()
+            or default_host
+        )
         port = _wizard_int(
-            f'   Port [{DEFAULT_PORT}]: ', 'Port', DEFAULT_PORT,
-            lambda v: 1 <= v <= 65535, 'Port must be within 1-65535.', input_fn, print_fn)
+            f"   Port [{DEFAULT_PORT}]: ",
+            "Port",
+            DEFAULT_PORT,
+            lambda v: 1 <= v <= 65535,
+            "Port must be within 1-65535.",
+            input_fn,
+            print_fn,
+        )
 
         # Step 3 -- PSK
-        print_fn('③ PSK: press Enter to generate a new high-entropy PSK (printed for the peer),')
-        print_fn('   or give a file path / paste 64-character hex or standard Base64.')
+        print_fn(
+            "③ PSK: press Enter to generate a new high-entropy PSK (printed for the peer),"
+        )
+        print_fn("   or give a file path / paste 64-character hex or standard Base64.")
         while True:
-            raw = _wizard_ask('   PSK: ', input_fn, print_fn).strip()
+            raw = _wizard_ask("   PSK: ", input_fn, print_fn).strip()
             if not raw:
                 psk = generate_psk()
                 print_fn()
-                print_fn('   New PSK (hand this to the peer over a trusted channel):')
-                print_fn(f'   {psk_to_hex(psk)}')
+                print_fn("   New PSK (hand this to the peer over a trusted channel):")
+                print_fn(f"   {psk_to_hex(psk)}")
                 print_fn()
                 break
             try:
                 # A path to an existing file wins; otherwise treat the text as PSK material.
-                psk = load_psk_from_file(raw) if os.path.isfile(raw) else normalize_psk(raw)
+                psk = (
+                    load_psk_from_file(raw)
+                    if os.path.isfile(raw)
+                    else normalize_psk(raw)
+                )
                 break
             except (ValueError, OSError) as e:
-                print_fn(f'[!] {e}')
+                print_fn(f"[!] {e}")
 
         # Step 4 -- protocol parameters (ranges are re-validated on the shared path in main())
-        print_fn(f'④ Protocol parameters: Enter takes the defaults '
-                 f'(random_len={RANDOM_LEN}, random_rate={RANDOM_RATE}, window={WINDOW}).')
+        print_fn(
+            f"④ Protocol parameters: Enter takes the defaults "
+            f"(random_len={RANDOM_LEN}, random_rate={RANDOM_RATE}, window={WINDOW})."
+        )
         random_len = _wizard_int(
-            f'   random_len [{RANDOM_LEN}]: ', 'random_len', RANDOM_LEN,
+            f"   random_len [{RANDOM_LEN}]: ",
+            "random_len",
+            RANDOM_LEN,
             lambda v: v > 0 and v % 8 == 0 and v // 8 <= 512,
-            'random_len must be a positive multiple of 8 (at most 4096 bits / 512 bytes).',
-            input_fn, print_fn)
+            "random_len must be a positive multiple of 8 (at most 4096 bits / 512 bytes).",
+            input_fn,
+            print_fn,
+        )
         random_rate = _wizard_int(
-            f'   random_rate [{RANDOM_RATE}]: ', 'random_rate', RANDOM_RATE,
-            lambda v: v > 0, 'random_rate must be a positive integer.', input_fn, print_fn)
+            f"   random_rate [{RANDOM_RATE}]: ",
+            "random_rate",
+            RANDOM_RATE,
+            lambda v: v > 0,
+            "random_rate must be a positive integer.",
+            input_fn,
+            print_fn,
+        )
         window = _wizard_int(
-            f'   window [{WINDOW}]: ', 'window', WINDOW,
-            lambda v: v > 0, 'window must be a positive integer.', input_fn, print_fn)
+            f"   window [{WINDOW}]: ",
+            "window",
+            WINDOW,
+            lambda v: v > 0,
+            "window must be a positive integer.",
+            input_fn,
+            print_fn,
+        )
     except WizardAborted:
         return None
 
-    return {'role': role, 'host': host, 'port': port, 'psk_bytes': psk,
-            'random_len': random_len, 'random_rate': random_rate, 'window': window}
+    return {
+        "role": role,
+        "host": host,
+        "port": port,
+        "psk_bytes": psk,
+        "random_len": random_len,
+        "random_rate": random_rate,
+        "window": window,
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -239,39 +294,91 @@ License:
   AGPL-3.0-or-later, or a commercial license — see LICENSING.md
   Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
   Source: https://github.com/ZT-DSP-Suite/ZT-DSP-docs
-""")
-    parser.add_argument("--role", choices=["listen", "connect"], default=None,
-                        help="Role: listen=listener (responder), connect=connector (initiator)")
+""",
+    )
+    parser.add_argument(
+        "--role",
+        choices=["listen", "connect"],
+        default=None,
+        help="Role: listen=listener (responder), connect=connector (initiator)",
+    )
     parser.add_argument("--host", default=None, help="Bind/target address")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="Port number")
-    parser.add_argument("--psk", default=None, help="PSK (64-character hex or Base64; insecure)")
+    parser.add_argument(
+        "--psk", default=None, help="PSK (64-character hex or Base64; insecure)"
+    )
     parser.add_argument("--psk-file", default=None, help="PSK file path (recommended)")
-    parser.add_argument("--psk-env", action="store_true",
-                        help="Read from environment variable ZT_DSP_PSK")
-    parser.add_argument("--random-len", type=int, default=RANDOM_LEN,
-                        help=f"Random data length in bits (default {RANDOM_LEN})")
-    parser.add_argument("--random-rate", type=int, default=RANDOM_RATE,
-                        help=f"Generation rate in counts per second (default {RANDOM_RATE})")
-    parser.add_argument("--window", type=int, default=WINDOW,
-                        help=f"Negotiation window in seconds; both peers must match (default {WINDOW})")
-    parser.add_argument("--time-window", type=int, default=TIME_WINDOW,
-                        help=f"Timestamp window in seconds (default {TIME_WINDOW})")
-    parser.add_argument("--retry-count", type=int, default=DEFAULT_CONNECT_RETRY_COUNT,
-                        help=f"Connection retry count (default {DEFAULT_CONNECT_RETRY_COUNT})")
-    parser.add_argument("--retry-interval", type=float,
-                        default=DEFAULT_CONNECT_RETRY_INTERVAL,
-                        help=f"Retry interval in seconds (default {DEFAULT_CONNECT_RETRY_INTERVAL})")
-    parser.add_argument("--padding-min", type=int, default=None,
-                        help="Random padding minimum in bytes (enabled only when --padding-max is also given)")
-    parser.add_argument("--padding-max", type=int, default=None,
-                        help=f"Random padding maximum in bytes (<= {MAX_PAD})")
-    parser.add_argument("--jitter", type=float, default=0.0,
-                        help="Transmission timing jitter in seconds (default 0 = off)")
-    parser.add_argument("--silent-hold", type=float, default=15.0,
-                        help="Strict silent hold duration in seconds (default 15)")
+    parser.add_argument(
+        "--psk-env",
+        action="store_true",
+        help="Read from environment variable ZT_DSP_PSK",
+    )
+    parser.add_argument(
+        "--random-len",
+        type=int,
+        default=RANDOM_LEN,
+        help=f"Random data length in bits (default {RANDOM_LEN})",
+    )
+    parser.add_argument(
+        "--random-rate",
+        type=int,
+        default=RANDOM_RATE,
+        help=f"Generation rate in counts per second (default {RANDOM_RATE})",
+    )
+    parser.add_argument(
+        "--window",
+        type=int,
+        default=WINDOW,
+        help=f"Negotiation window in seconds; both peers must match (default {WINDOW})",
+    )
+    parser.add_argument(
+        "--time-window",
+        type=int,
+        default=TIME_WINDOW,
+        help=f"Timestamp window in seconds (default {TIME_WINDOW})",
+    )
+    parser.add_argument(
+        "--retry-count",
+        type=int,
+        default=DEFAULT_CONNECT_RETRY_COUNT,
+        help=f"Connection retry count (default {DEFAULT_CONNECT_RETRY_COUNT})",
+    )
+    parser.add_argument(
+        "--retry-interval",
+        type=float,
+        default=DEFAULT_CONNECT_RETRY_INTERVAL,
+        help=f"Retry interval in seconds (default {DEFAULT_CONNECT_RETRY_INTERVAL})",
+    )
+    parser.add_argument(
+        "--padding-min",
+        type=int,
+        default=None,
+        help="Random padding minimum in bytes (enabled only when --padding-max is also given)",
+    )
+    parser.add_argument(
+        "--padding-max",
+        type=int,
+        default=None,
+        help=f"Random padding maximum in bytes (<= {MAX_PAD})",
+    )
+    parser.add_argument(
+        "--jitter",
+        type=float,
+        default=0.0,
+        help="Transmission timing jitter in seconds (default 0 = off)",
+    )
+    parser.add_argument(
+        "--silent-hold",
+        type=float,
+        default=15.0,
+        help="Strict silent hold duration in seconds (default 15)",
+    )
     parser.add_argument("--version", action="version", version=format_version())
-    parser.add_argument("--no-banner", action="store_true",
-                        help="Do not print the startup banner (also via ZT_DSP_NO_BANNER)")
+    parser.add_argument(
+        "--no-banner",
+        action="store_true",
+        help="Do not print the startup banner (also via ZT_DSP_NO_BANNER)",
+    )
     return parser
 
 
@@ -334,8 +441,9 @@ def main() -> None:
         ns.random_rate = wizard["random_rate"]
         ns.window = wizard["window"]
 
-    host = ns.host or (DEFAULT_HOST_LISTEN if ns.role == "listen"
-                       else DEFAULT_HOST_CONNECT)
+    host = ns.host or (
+        DEFAULT_HOST_LISTEN if ns.role == "listen" else DEFAULT_HOST_CONNECT
+    )
 
     # --- Parameter range validation (invalid values never reach the protocol layer) ---
     if not (1 <= ns.port <= 65535):
@@ -343,7 +451,9 @@ def main() -> None:
     if ns.random_len <= 0 or ns.random_len % 8 != 0:
         parser.error("random_len must be a positive integer and a multiple of 8")
     if ns.random_len // 8 > 512:
-        parser.error("random_len/8 must not exceed the 512-byte cap on attached random data")
+        parser.error(
+            "random_len/8 must not exceed the 512-byte cap on attached random data"
+        )
     if ns.random_rate <= 0:
         parser.error("random_rate must be a positive integer")
     if ns.window <= 0:
@@ -400,15 +510,23 @@ def main() -> None:
         print(f"[!] {e}", file=sys.stderr)
         sys.exit(1)
 
-    run_session({
-        "role": ns.role, "host": host, "port": ns.port,
-        "psk_bytes": psk_bytes, "params": params,
-        "time_window": ns.time_window,
-        "retry_count": ns.retry_count, "retry_interval": ns.retry_interval,
-        "padding": ((ns.padding_min, ns.padding_max)
-                    if ns.padding_min is not None else None),
-        "jitter": ns.jitter, "silent_hold": ns.silent_hold,
-    })
+    run_session(
+        {
+            "role": ns.role,
+            "host": host,
+            "port": ns.port,
+            "psk_bytes": psk_bytes,
+            "params": params,
+            "time_window": ns.time_window,
+            "retry_count": ns.retry_count,
+            "retry_interval": ns.retry_interval,
+            "padding": (
+                (ns.padding_min, ns.padding_max) if ns.padding_min is not None else None
+            ),
+            "jitter": ns.jitter,
+            "silent_hold": ns.silent_hold,
+        }
+    )
 
 
 if __name__ == "__main__":

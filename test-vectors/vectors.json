@@ -1,6 +1,6 @@
 {
   "schema": "zt-dsp-shared-vectors/1",
-  "note": "Shared known-answer vectors for ZT-DSP 1.0.0. Consumed by BOTH zt_dsp_py and zt_dsp_rs. Regenerate with test-vectors/generate_vectors.py and review the diff.",
+  "note": "Shared known-answer vectors for ZT-DSP 1.0.2. Consumed by BOTH zt_dsp_py and zt_dsp_rs. Regenerate with test-vectors/generate_vectors.py and review the diff.",
   "labels": {
     "INFO_MK": "ZT-DSP-MK-v3",
     "INFO_ANCHOR": "ZT-DSP-ANCHOR-v3",

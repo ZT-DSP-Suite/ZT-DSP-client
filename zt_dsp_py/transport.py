@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Transport and session runners (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
+"""Transport and session runners (Master Guide Appendix H.3 timers / H.6 cleanup semantics).
 
 Provides:
 - two run entries: listen (responder) and connect (initiator), with
@@ -39,7 +39,7 @@ DEFAULT_HOST_LISTEN: str = "0.0.0.0"
 DEFAULT_HOST_CONNECT: str = "127.0.0.1"
 DEFAULT_CONNECT_RETRY_COUNT: int = 3
 DEFAULT_CONNECT_RETRY_INTERVAL: float = 5.0
-HEARTBEAT_INTERVAL: float = 30.0   # Empty-payload heartbeat (Appendix G.5: baseline traffic + half-open detection)
+HEARTBEAT_INTERVAL: float = 30.0  # Empty-payload heartbeat (Appendix G.5: baseline traffic + half-open detection)
 HEARTBEAT_PAYLOAD: bytes = b""
 
 
@@ -74,6 +74,7 @@ def _is_self_connection(host: str, port: int) -> bool:
 # Interactive chat session
 # =============================================================================
 
+
 class ChatSession:
     """Three-thread interactive session: receive / heartbeat / send. shutdown is idempotent (Appendix H.6)."""
 
@@ -89,9 +90,11 @@ class ChatSession:
 
     def start(self) -> None:
         self._recv_thread = threading.Thread(
-            target=self._recv_loop, daemon=True, name="zt-dsp-recv")
+            target=self._recv_loop, daemon=True, name="zt-dsp-recv"
+        )
         self._heartbeat_thread = threading.Thread(
-            target=self._heartbeat_loop, daemon=True, name="zt-dsp-heartbeat")
+            target=self._heartbeat_loop, daemon=True, name="zt-dsp-heartbeat"
+        )
         self._recv_thread.start()
         self._heartbeat_thread.start()
         self._send_loop()
@@ -192,11 +195,14 @@ class ChatSession:
 # Listen / connect runners
 # =============================================================================
 
+
 def _print_params(args: Dict[str, Any]) -> None:
     params: ZTDSPParams = args["params"]
-    print(f"    Parameters: random_len={params.random_len}, "
-          f"rate={params.random_rate}, window={params.window}, "
-          f"time_window={args.get('time_window', TIME_WINDOW)}")
+    print(
+        f"    Parameters: random_len={params.random_len}, "
+        f"rate={params.random_rate}, window={params.window}, "
+        f"time_window={args.get('time_window', TIME_WINDOW)}"
+    )
 
 
 def run_listen(args: Dict[str, Any]) -> None:
@@ -224,8 +230,11 @@ def run_listen(args: Dict[str, Any]) -> None:
         print(f"[+] Connection from {addr}")
         set_socket_options(conn)
         peer = HandshakePeer(
-            args["psk_bytes"], params, role="responder",
-            padding=args.get("padding"), jitter=args.get("jitter", 0.0),
+            args["psk_bytes"],
+            params,
+            role="responder",
+            padding=args.get("padding"),
+            jitter=args.get("jitter", 0.0),
             time_window=args.get("time_window", TIME_WINDOW),
             silent_hold=args.get("silent_hold", SILENT_DROP_HOLD),
         )
@@ -238,7 +247,9 @@ def run_listen(args: Dict[str, Any]) -> None:
             return
         except ZTDSPError as e:
             print(f"\n[!] Handshake failed: {e}")
-            print("    Possible causes: PSK mismatch / parameter mismatch / network tampering")
+            print(
+                "    Possible causes: PSK mismatch / parameter mismatch / network tampering"
+            )
             force_close_socket(conn)
             return
         except (ConnectionError, OSError) as e:
@@ -270,7 +281,9 @@ def run_connect(args: Dict[str, Any]) -> None:
 
     if _is_self_connection(host, port):
         print(f"  [!] Warning: target address {host} is a local address.")
-        print("    If ZT-DSP in listen mode is not running on this machine at the same time, the connection will fail.\n")
+        print(
+            "    If ZT-DSP in listen mode is not running on this machine at the same time, the connection will fail.\n"
+        )
 
     try:
         for attempt in range(1, max_retries + 1):
@@ -287,8 +300,11 @@ def run_connect(args: Dict[str, Any]) -> None:
                 conn.settimeout(DATA_TIMEOUT)
 
                 peer = HandshakePeer(
-                    args["psk_bytes"], params, role="initiator",
-                    padding=args.get("padding"), jitter=args.get("jitter", 0.0),
+                    args["psk_bytes"],
+                    params,
+                    role="initiator",
+                    padding=args.get("padding"),
+                    jitter=args.get("jitter", 0.0),
                     time_window=args.get("time_window", TIME_WINDOW),
                     silent_hold=args.get("silent_hold", SILENT_DROP_HOLD),
                 )
@@ -296,7 +312,9 @@ def run_connect(args: Dict[str, Any]) -> None:
                     material = peer.perform_handshake(conn)
                 except ZTDSPError as e:
                     print(f"\n[!] Handshake failed: {e}")
-                    print("    Possible causes: PSK mismatch / parameter mismatch / network tampering")
+                    print(
+                        "    Possible causes: PSK mismatch / parameter mismatch / network tampering"
+                    )
                     force_close_socket(conn)
                     return
                 except (ConnectionError, OSError) as e:
@@ -305,15 +323,21 @@ def run_connect(args: Dict[str, Any]) -> None:
                     return
 
                 print("[+] Handshake complete; secure channel established.")
-                print("    Type a message and press Enter to send; /quit or Ctrl+C to exit\n")
+                print(
+                    "    Type a message and press Enter to send; /quit or Ctrl+C to exit\n"
+                )
                 ChatSession(SecureSession(material), conn).start()
                 return
             except (ConnectionError, OSError) as e:
                 if attempt < max_retries:
-                    print(f"    Connection failed: {e}; retrying in {retry_interval} s...")
+                    print(
+                        f"    Connection failed: {e}; retrying in {retry_interval} s..."
+                    )
                     time.sleep(retry_interval)
                 else:
-                    print(f"\n[!] Connection failed; maximum retry count ({max_retries}) reached")
+                    print(
+                        f"\n[!] Connection failed; maximum retry count ({max_retries}) reached"
+                    )
                     print(f"    Last error: {e}")
                 if established:
                     force_close_socket(conn)

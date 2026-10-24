@@ -29,10 +29,13 @@ def _binary():
 
 @pytest.mark.skipif(not os.path.exists(INTEROP), reason="interop_test.py not present")
 def test_cross_implementation_interop():
-    if _binary() is None:
+    binary = _binary()
+    if binary is None:
         pytest.skip("Rust binary not built; run cargo build --release in zt_dsp_rs")
+    # interop_test.py looks for target/release unless told otherwise; pass the path this
+    # wrapper found so a debug-only build is tested instead of skipped then failed.
     r = subprocess.run(
-        [sys.executable, "interop_test.py"],
+        [sys.executable, "interop_test.py", "--rust-bin", binary],
         cwd=RS_DIR,
         capture_output=True,
         text=True,

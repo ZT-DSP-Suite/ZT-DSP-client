@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Transport and session runner (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
+//! Transport and session runner (Master Guide Appendix H.3 timers / H.6 cleanup semantics).
 //!
 //! Provides:
 //! - Two runner entry points, listen (responder) and connect (initiator), with connection retry and a self-connection warning;

@@ -54,4 +54,4 @@ mod vectors;
 // The end-to-end binary smoke test is covered by interop_test.py.
 #[cfg(test)]
 #[path = "integration_tests.rs"]
-mod integration_tests;
+mod tcp_integration;

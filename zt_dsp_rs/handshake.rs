@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Four-phase handshake state machine (Master Guide 1.0.0, Sec. 4.2 / Appendix F / Appendix H.1·H.2·H.4).
+//! Four-phase handshake state machine (Master Guide, Sec. 4.2 / Appendix F / Appendix H.1·H.2·H.4).
 //!
 //! Three asymmetric points of the role state machine (Appendix H.2):
 //! 1. Phase 1: the initiator sends first; the responder replies only after validation;
@@ -34,7 +34,7 @@ use crate::kex::EphemeralSecret;
 use crate::params::Params;
 
 // =============================================================================
-// Protocol constants (Master Guide 1.0.0, Sec. 4.2 / Appendix H.3)
+// Protocol constants (Master Guide, Sec. 4.2 / Appendix H.3)
 // =============================================================================
 
 // --- HKDF info / HMAC context tags (fixed byte-for-byte; any change fails the handshake) ---
@@ -781,7 +781,10 @@ mod tests {
         // No bytes received from the responder (timeout with no data, or peer closed)
         match received {
             Ok(n) => assert_eq!(n, 0, "the silent path must not send any bytes"),
-            Err(_) => {} // timeout: likewise indicates no bytes
+            Err(e)
+                if e.kind() == std::io::ErrorKind::WouldBlock
+                    || e.kind() == std::io::ErrorKind::TimedOut => {}
+            Err(e) => panic!("the silent path must not close the connection: {e}"),
         }
     }
 
@@ -802,7 +805,7 @@ mod tests {
         use std::io::Write;
         left.write_all(&raw).unwrap();
         let parsed = read_phase_one(&mut left, None).unwrap(); // read the responder's Phase 1 frame
-        assert!(parsed.raw.len() > 0);
+        assert!(!parsed.raw.is_empty());
         // The attacker replies with a valid pub_len header + all-zero public key + salt
         left.write_all(&32u32.to_be_bytes()).unwrap();
         left.write_all(&[0u8; 32]).unwrap();
@@ -815,12 +818,17 @@ mod tests {
             t.join().unwrap(),
             "the responder should enter strict silence"
         );
-        match received {
-            Ok(n) => assert_eq!(
+        if let Ok(n) = received {
+            assert_eq!(
                 n, 0,
                 "low-order-point silence must not send the Phase 2 response frame"
-            ),
-            Err(_) => {}
+            );
+        } else if let Err(e) = received {
+            if e.kind() != std::io::ErrorKind::WouldBlock
+                && e.kind() != std::io::ErrorKind::TimedOut
+            {
+                panic!("the silent path must not close the connection: {e}");
+            }
         }
     }
 
