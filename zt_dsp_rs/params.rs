@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Protocol parameter set (Master Guide 1.0.0, Appendix B / F.1).
+//! Protocol parameter set (Master Guide, Appendix B / F.1).
 //!
 //! All parameters can be freely declared by the server operator in their own library; both
 //! communicating parties must match exactly before access. On-the-wire structure of the parameter JSON: keys in lexicographic order, compact separators, UTF-8
@@ -187,7 +187,7 @@ impl Params {
     }
 
     /// Build a parameter set from a peer JSON value. Peer-controllable input: all type/value errors are uniformly
-    /// converged into [`Error::Param`]. Missing keys take the official defaults; numeric fields accept integers / numeric strings
+    /// converged into [`Error::Param`]. Missing keys take the documented defaults; numeric fields accept integers / numeric strings
     /// (aligned with Python `int()` convergence behavior); hash/aead scalars are converted to strings for comparison.
     pub fn from_value(v: &Value) -> Result<Self> {
         let obj = match v {
@@ -343,7 +343,7 @@ mod tests {
             ),
             (256, 1024, 60, 256, "SHA3-256", "AES-256-GCM")
         );
-        // F.1: under default parameters the parameter JSON is exactly 120 bytes, byte-for-byte equal to the official layout
+        // F.1: under default parameters the parameter JSON is exactly 120 bytes, byte-for-byte equal to the specified layout
         let expected: &[u8] = br#"{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,"module_flags":{},"random_len":256,"random_rate":1024,"window":60}"#;
         let got = p.to_json().unwrap();
         assert_eq!(got, expected);

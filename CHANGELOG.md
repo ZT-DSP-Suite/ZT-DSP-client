@@ -28,6 +28,9 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Changed
 
+- **Document version aligned to 1.0.2.** Both implementations now report
+  `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
+  deprecated hardware key-storage notices.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to
