@@ -43,7 +43,7 @@ const FORBIDDEN_DEFAULT_PSK: &str = "zt-dsp-default-psk-32bytes-long!!";
 /// 'static version/about strings required by clap.
 static VERSION_LINE: LazyLock<String> = LazyLock::new(crate::version::format_version);
 static ABOUT_LINE: LazyLock<String> = LazyLock::new(|| {
-    format!("ZT-DSP Core {CODE_VERSION} (Rust) — Core Protocol (conforming to {FOLLOWS_DOC}) official implementation")
+    format!("ZT-DSP Core {CODE_VERSION} (Rust) — Core Protocol (conforming to {FOLLOWS_DOC}) reference implementation")
 });
 
 #[derive(Debug, Parser)]
