@@ -87,12 +87,19 @@ jobs:
       - name: Create the draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
         run: |
+          # The tag prefix used to be enforced by the `push: tags: ["client-v*"]`
+          # trigger. A free-text input enforces nothing, so the constraint lives here.
+          case "$TAG" in
+            client-v*) ;;
+            *) echo "not a client-v* tag: $TAG" >&2; exit 1 ;;
+          esac
           # Re-running the workflow for a tag that already has a release (for example after the
           # tag was moved) must replace it instead of failing with "release already exists".
-          gh release delete "${{ inputs.tag }}" --yes --cleanup-tag=false 2>/dev/null || true
-          gh release create "${{ inputs.tag }}" \
-            --title "ZT-DSP client ${{ inputs.tag }}" \
+          gh release delete "$TAG" --yes --cleanup-tag=false 2>/dev/null || true
+          gh release create "$TAG" \
+            --title "ZT-DSP client $TAG" \
             --generate-notes \
             --verify-tag \
             --draft \
