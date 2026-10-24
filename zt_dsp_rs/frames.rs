@@ -368,7 +368,7 @@ mod tests {
         let parsed = read_phase_one(&mut right, None).unwrap();
         assert_eq!(parsed.raw, frame);
         assert_eq!(parsed.param_json, br#"{"a":1}"#);
-        assert_eq!(parsed.identity, [b'i'; 32].repeat(1).as_slice());
+        assert_eq!(parsed.identity, &[b'i'; 32][..]);
         assert_eq!(parsed.identity.len(), 32);
         assert_eq!(parsed.nonce, vec![b'n'; 32]);
     }

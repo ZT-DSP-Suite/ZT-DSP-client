@@ -50,10 +50,23 @@ class SecureSession:
     """Full-duplex encrypted session built from the handshake artifacts (send/receive and ratchet state)."""
 
     __slots__ = (
-        "session_id", "send_ek", "recv_ek", "params", "suite",
-        "local_hash", "peer_hash", "time_window", "padding", "jitter",
-        "seq_send", "seq_recv", "last_recv_drop",
-        "_send_lock", "_recv_lock", "_state_lock", "_closed",
+        "session_id",
+        "send_ek",
+        "recv_ek",
+        "params",
+        "suite",
+        "local_hash",
+        "peer_hash",
+        "time_window",
+        "padding",
+        "jitter",
+        "seq_send",
+        "seq_recv",
+        "last_recv_drop",
+        "_send_lock",
+        "_recv_lock",
+        "_state_lock",
+        "_closed",
     )
 
     def __init__(self, material: SessionMaterial) -> None:
@@ -84,10 +97,13 @@ class SecureSession:
         with self._send_lock:
             with self._state_lock:
                 if self._closed or self.send_ek is None or self.session_id is None:
-                    raise ZTDSPError("Session is irreversibly desynchronized or not yet established; reconnection required")
+                    raise ZTDSPError(
+                        "Session is irreversibly desynchronized or not yet established; reconnection required"
+                    )
                 if len(plaintext) > MAX_PLAINTEXT:
                     raise ZTDSPProtocolError(
-                        f"Plaintext payload too large ({len(plaintext)} > {MAX_PLAINTEXT})")
+                        f"Plaintext payload too large ({len(plaintext)} > {MAX_PLAINTEXT})"
+                    )
 
                 # -- state forward-rolling (completed before encryption) --
                 ek_snapshot = bytes(self.send_ek)
@@ -95,7 +111,8 @@ class SecureSession:
                 sid_snapshot = bytes(self.session_id)
                 next_seed = secure_random(NEXT_SEED_LEN)
                 new_ek = self.suite.hkdf(
-                    ek_snapshot + next_seed, INFO_EK_ROTATE, self.params.key_len)
+                    ek_snapshot + next_seed, INFO_EK_ROTATE, self.params.key_len
+                )
                 secure_zero(self.send_ek)
                 self.send_ek = bytearray(new_ek)
                 self.seq_send = seq + 1
@@ -112,9 +129,15 @@ class SecureSession:
                 pad_len = secrets.randbelow(pmax - pmin + 1) + pmin
                 # The pad_len field sits immediately before next_seed: the receiver locates it from a fixed position at the tail
                 padding_part = secure_random(pad_len) + struct.pack(">H", pad_len)
-            payload = (timestamp + struct.pack(">B", fmt)
-                       + self.peer_hash + self.local_hash
-                       + plaintext + padding_part + next_seed)
+            payload = (
+                timestamp
+                + struct.pack(">B", fmt)
+                + self.peer_hash
+                + self.local_hash
+                + plaintext
+                + padding_part
+                + next_seed
+            )
 
             nonce = gcm_nonce(seq)
             aad = build_aad(sid_snapshot, seq)
@@ -129,7 +152,8 @@ class SecureSession:
             except (BrokenPipeError, ConnectionError, OSError) as exc:
                 self.wipe()
                 raise ZTDSPError(
-                    f"Send failed; session irreversibly desynchronized: {exc}") from exc
+                    f"Send failed; session irreversibly desynchronized: {exc}"
+                ) from exc
 
     # ------------------------------------------------------------------
     # Receiving (appendix F.5: receiver-side validation pipeline, fixed order)
@@ -149,24 +173,29 @@ class SecureSession:
 
             with self._state_lock:
                 if self._closed or self.recv_ek is None or self.session_id is None:
-                    raise ZTDSPError("Session is irreversibly desynchronized or not yet established; reconnection required")
+                    raise ZTDSPError(
+                        "Session is irreversibly desynchronized or not yet established; reconnection required"
+                    )
                 # Step 1: seq must strictly increase (seq_recv is initialized to -1)
                 if seq <= self.seq_recv:
                     self._terminate()
                     raise ZTDSPSecurityError(
-                        f"Replay or out-of-order packet detected: seq={seq} <= last={self.seq_recv}")
+                        f"Replay or out-of-order packet detected: seq={seq} <= last={self.seq_recv}"
+                    )
                 # Step 2: session ID must match (cross-channel crosstalk / residual old session)
                 if session_id != bytes(self.session_id):
                     self._terminate()
                     raise ZTDSPSecurityError(
-                        "Session ID mismatch; dropping packet (sub-channel crosstalk or residual old session)")
+                        "Session ID mismatch; dropping packet (sub-channel crosstalk or residual old session)"
+                    )
                 ek_snapshot = bytes(self.recv_ek)
                 aad = build_aad(session_id, seq)
 
             try:
                 # Step 3: GCM decryption and authentication (AAD takes part in authentication)
                 payload = self.suite.aead_decrypt(
-                    ek_snapshot, gcm_nonce(seq), ciphertext, aad)
+                    ek_snapshot, gcm_nonce(seq), ciphertext, aad
+                )
                 plaintext = self._validate_payload(payload, seq)
             except (ZTDSPSecurityError, ZTDSPProtocolError):
                 self._terminate()
@@ -179,7 +208,9 @@ class SecureSession:
         with self._state_lock:
             # Step 4: minimum payload length (105B, heartbeat packet size)
             if len(payload) < MIN_PAYLOAD_LEN:
-                raise ZTDSPProtocolError("Payload too short to extract internal structure")
+                raise ZTDSPProtocolError(
+                    "Payload too short to extract internal structure"
+                )
 
             # Step 5: payload format marker
             fmt = payload[TIMESTAMP_LEN]
@@ -192,28 +223,35 @@ class SecureSession:
             tail = NEXT_SEED_LEN
             if fmt == FMT_PADDING:
                 pad_len = struct.unpack(
-                    ">H", payload[-NEXT_SEED_LEN - PAD_LEN_FIELD:-NEXT_SEED_LEN])[0]
+                    ">H", payload[-NEXT_SEED_LEN - PAD_LEN_FIELD : -NEXT_SEED_LEN]
+                )[0]
                 if pad_len > MAX_PAD:
-                    raise ZTDSPProtocolError(f"Padding length exceeds maximum: {pad_len}")
+                    raise ZTDSPProtocolError(
+                        f"Padding length exceeds maximum: {pad_len}"
+                    )
                 tail += PAD_LEN_FIELD + pad_len
             if header_end + tail > len(payload):
                 raise ZTDSPProtocolError("Contradictory payload structure lengths")
-            plaintext = payload[header_end:len(payload) - tail]
+            plaintext = payload[header_end : len(payload) - tail]
 
             # Step 7: bidirectional token hash check (traffic reflection / crosstalk / identity spoofing)
-            dst_hash = payload[TIMESTAMP_LEN + FMT_LEN:
-                               TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN]
-            src_hash = payload[TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN:
-                               header_end]
+            dst_hash = payload[
+                TIMESTAMP_LEN + FMT_LEN : TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN
+            ]
+            src_hash = payload[TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN : header_end]
             if dst_hash != self.local_hash:
-                raise ZTDSPSecurityError("Destination token hash mismatch (sub-channel crosstalk or traffic reflection)")
+                raise ZTDSPSecurityError(
+                    "Destination token hash mismatch (sub-channel crosstalk or traffic reflection)"
+                )
             if src_hash != self.peer_hash:
-                raise ZTDSPSecurityError("Source token hash mismatch (identity spoofing)")
+                raise ZTDSPSecurityError(
+                    "Source token hash mismatch (identity spoofing)"
+                )
 
             # Ratchet rotation + sequence number advance (must be completed before step 8 -- out-of-window packets are also rolled forward)
             new_ek = self.suite.hkdf(
-                bytes(self.recv_ek) + next_seed, INFO_EK_ROTATE,
-                self.params.key_len)
+                bytes(self.recv_ek) + next_seed, INFO_EK_ROTATE, self.params.key_len
+            )
             secure_zero(self.recv_ek)
             self.recv_ek = bytearray(new_ek)
             self.seq_recv = seq
@@ -223,7 +261,8 @@ class SecureSession:
             now_ms = int(time.time() * 1000)
             if abs(now_ms - ts) > self.time_window * 1000:
                 self.last_recv_drop = (
-                    f"timestamp_window: ts={ts / 1000:.1f}s, now={now_ms / 1000:.1f}s")
+                    f"timestamp_window: ts={ts / 1000:.1f}s, now={now_ms / 1000:.1f}s"
+                )
                 return b""
 
             self.last_recv_drop = None

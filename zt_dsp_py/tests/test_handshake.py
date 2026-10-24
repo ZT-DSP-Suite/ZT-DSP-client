@@ -3,6 +3,7 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """Four-phase handshake test: both ends succeed, directional key cross-check, confirmation tags, strict silent path (Appendix F/H)."""
+
 import socket
 import struct
 import threading
@@ -23,10 +24,13 @@ def _pair() -> Tuple[socket.socket, socket.socket]:
     return left, right
 
 
-def _run_handshake(psk_a: bytes = PSK, psk_b: bytes = PSK,
-                   params_a: ZTDSPParams = None,
-                   params_b: ZTDSPParams = None,
-                   **kwargs) -> Tuple[Dict, Tuple[socket.socket, socket.socket]]:
+def _run_handshake(
+    psk_a: bytes = PSK,
+    psk_b: bytes = PSK,
+    params_a: ZTDSPParams = None,
+    params_b: ZTDSPParams = None,
+    **kwargs,
+) -> Tuple[Dict, Tuple[socket.socket, socket.socket]]:
     """Run the full handshake in one thread per socketpair end and collect the results."""
     params_a = params_a or ZTDSPParams()
     params_b = params_b or ZTDSPParams()
@@ -61,6 +65,7 @@ def _run_handshake(psk_a: bytes = PSK, psk_b: bytes = PSK,
 # Success path
 # =============================================================================
 
+
 def test_full_handshake_success_and_cross_keys() -> None:
     results, (left, right) = _run_handshake()
     try:
@@ -88,6 +93,7 @@ def test_full_handshake_success_and_cross_keys() -> None:
 # Failure path: PSK mismatch → confirmation tag mismatch → each side zeroizes and raises a security error
 # =============================================================================
 
+
 def test_psk_mismatch_fails_both_sides() -> None:
     results, (left, right) = _run_handshake(psk_b=bytes(range(32, 64)))
     try:
@@ -107,9 +113,9 @@ def test_psk_mismatch_fails_both_sides() -> None:
 # Failure path: parameter mismatch → responder stays strictly silent (zero bytes, no active close, F.2)
 # =============================================================================
 
+
 def test_param_mismatch_responder_strict_silence() -> None:
-    results, (left, right) = _run_handshake(
-        params_a=ZTDSPParams(random_len=512))
+    results, (left, right) = _run_handshake(params_a=ZTDSPParams(random_len=512))
     try:
         eb = results["b"].get("error")
         assert isinstance(eb, SilentDropError)
@@ -157,6 +163,7 @@ def test_param_mismatch_silence_sends_nothing() -> None:
 # Failure path: low-order public key → responder stays silent before sending any byte (F.3 ordering constraint)
 # =============================================================================
 
+
 def test_low_order_public_key_silent_before_reply() -> None:
     initiator = HandshakePeer(PSK, ZTDSPParams(), "initiator")
     responder = HandshakePeer(PSK, ZTDSPParams(), "responder", silent_hold=0.2)
@@ -187,7 +194,9 @@ def test_low_order_public_key_silent_before_reply() -> None:
         leak = None
     tb.join(10)
 
-    assert leak in (None, b""), f"responder leaked a reply frame before DH failure: {leak!r}"
+    assert leak in (None, b""), (
+        f"responder leaked a reply frame before DH failure: {leak!r}"
+    )
     assert isinstance(outcome.get("responder_error"), SilentDropError)
     force_close_socket(left)
     force_close_socket(right)
@@ -197,8 +206,10 @@ def test_low_order_public_key_silent_before_reply() -> None:
 # Constant reflection guard: the INIT/RESP labels differ (F.4)
 # =============================================================================
 
+
 def test_confirm_labels_differ() -> None:
     from zt_dsp_py.handshake import INFO_CONFIRM_INIT, INFO_CONFIRM_RESP
+
     assert INFO_CONFIRM_INIT != INFO_CONFIRM_RESP
     assert INFO_CONFIRM_INIT == b"ZT-DSP-CONFIRM-INIT-v3"
     assert INFO_CONFIRM_RESP == b"ZT-DSP-CONFIRM-RESP-v3"

@@ -24,3 +24,9 @@ package-dir = { "zt_dsp_py" = "." }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
