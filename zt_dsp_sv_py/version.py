@@ -20,10 +20,10 @@ DOCS_NAME = "ZT-DSP Protocol Master Guide"
 
 #: Path of the followed document, relative to the sibling documentation repo.
 #: NOTE: that path resolves in ZT-DSP-docs, not in this repository.
-DOCS_PATH = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md"
+DOCS_PATH = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md"
 
 #: The document revisions this implementation applies to (many-to-many).
-DOCS_VERSIONS = ["1.0.0", "1.0.1"]
+DOCS_VERSIONS = ["1.0.0", "1.0.1", "1.0.2"]
 
 #: Role implemented by this package.
 ROLE = "server"
@@ -35,7 +35,7 @@ LANGUAGE_PREFIX = "SV"
 CODE_VERSION = "1.0.0"
 
 #: Document revision this implementation was written against.
-DOCUMENT_REVISION = "1.0.1"
+DOCUMENT_REVISION = "1.0.2"
 
 #: Client implementations this server is interoperable with.
 CLIENT_VERSIONS = ["ZT-DSP_PY-1.0.0", "ZT-DSP_RS-1.0.0"]
