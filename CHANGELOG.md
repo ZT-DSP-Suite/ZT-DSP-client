@@ -31,6 +31,9 @@ lives in `git log`. If the two ever disagree, `git log` wins.
 - **Document version aligned to 1.0.2.** Both implementations now report
   `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
   deprecated hardware key-storage notices.
+- **`--no-stdin`.** The session reads nothing from the input and sends no application
+  data; heartbeats continue. A server process started in the background has no
+  terminal on its input, and the flag keeps the process from waiting for one.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to
@@ -44,6 +47,17 @@ lives in `git log`. If the two ever disagree, `git log` wins.
 
 ### Fixed
 
+- **A packet outside the timestamp window vanished without a line of output.** The
+  receiver computed the reason and dropped the plaintext, as the specification
+  requires, but nothing printed it, so a clock difference between the two ends
+  looked like a dead link. The receiver now prints the reason with both timestamps.
+- **The end of the input closed the connection.** The client read the input in the
+  main thread and shut the session down in a `finally` block, so a process started
+  in the background -- where the input ends at once -- closed the connection as soon
+  as the handshake finished. The peer then read the end of the stream, wiped its
+  session, and reported "session is irreversibly desynchronized or not established"
+  on its first send. An end of the input now stops the sending only; the receiving
+  goes on until the peer disconnects.
 - **20 source references pointed at appendix letters that no longer exist.** The docs repo
   commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
   had moved into the client README, but 20 docstrings and comments across `cli.py`,
