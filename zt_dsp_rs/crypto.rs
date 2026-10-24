@@ -47,8 +47,7 @@ pub const GCM_NONCE_LEN: usize = 12;
 /// Cryptographically secure random bytes.
 pub fn secure_random(n: usize) -> Result<Vec<u8>> {
     let mut buf = vec![0u8; n];
-    getrandom::getrandom(&mut buf)
-        .map_err(|e| Error::crypto(format!("random source failure: {e}")))?;
+    getrandom::fill(&mut buf).map_err(|e| Error::crypto(format!("random source failure: {e}")))?;
     Ok(buf)
 }
 
@@ -159,37 +158,37 @@ impl CryptoSuite {
     fn mac_bytes(&self, kind: HashKind, key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
         let out = match kind {
             HashKind::Sha3_256 => {
-                let mut m = <hmac::Hmac<sha3::Sha3_256> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha3::Sha3_256> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
             }
             HashKind::Sha3_384 => {
-                let mut m = <hmac::Hmac<sha3::Sha3_384> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha3::Sha3_384> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
             }
             HashKind::Sha3_512 => {
-                let mut m = <hmac::Hmac<sha3::Sha3_512> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha3::Sha3_512> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
             }
             HashKind::Sha256 => {
-                let mut m = <hmac::Hmac<sha2::Sha256> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha2::Sha256> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
             }
             HashKind::Sha384 => {
-                let mut m = <hmac::Hmac<sha2::Sha384> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha2::Sha384> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
             }
             HashKind::Sha512 => {
-                let mut m = <hmac::Hmac<sha2::Sha512> as Mac>::new_from_slice(key)
+                let mut m = <hmac::Hmac<sha2::Sha512> as hmac::Mac>::new_from_slice(key)
                     .map_err(|e| Error::crypto(format!("invalid HMAC key: {e}")))?;
                 m.update(data);
                 m.finalize().into_bytes().to_vec()
@@ -257,7 +256,8 @@ impl CryptoSuite {
 pub fn aead_encrypt(key: &[u8], nonce: &[u8], plaintext: &[u8], aad: &[u8]) -> Result<Vec<u8>> {
     use aes_gcm::aead::{Aead, KeyInit, Payload};
     use aes_gcm::{Aes128Gcm, Aes256Gcm, AesGcm, Nonce};
-    let nonce = Nonce::from_slice(nonce); // 12B
+    let nonce = Nonce::try_from(nonce)
+        .map_err(|_| Error::crypto(format!("invalid nonce length: {}", nonce.len())))?; // 12B
     let payload = Payload {
         msg: plaintext,
         aad,
@@ -266,20 +266,20 @@ pub fn aead_encrypt(key: &[u8], nonce: &[u8], plaintext: &[u8], aad: &[u8]) -> R
         16 => {
             let c = Aes128Gcm::new_from_slice(key)
                 .map_err(|e| Error::crypto(format!("invalid AEAD key: {e}")))?;
-            c.encrypt(nonce, payload)
+            c.encrypt(&nonce, payload)
                 .map_err(|e| Error::crypto(format!("AEAD encryption failed: {e}")))
         }
         24 => {
             type Aes192Gcm = AesGcm<aes::Aes192, aes_gcm::aead::consts::U12>;
             let c = Aes192Gcm::new_from_slice(key)
                 .map_err(|e| Error::crypto(format!("invalid AEAD key: {e}")))?;
-            c.encrypt(nonce, payload)
+            c.encrypt(&nonce, payload)
                 .map_err(|e| Error::crypto(format!("AEAD encryption failed: {e}")))
         }
         32 => {
             let c = Aes256Gcm::new_from_slice(key)
                 .map_err(|e| Error::crypto(format!("invalid AEAD key: {e}")))?;
-            c.encrypt(nonce, payload)
+            c.encrypt(&nonce, payload)
                 .map_err(|e| Error::crypto(format!("AEAD encryption failed: {e}")))
         }
         n => Err(Error::crypto(format!("invalid AEAD key length: {n}"))),
@@ -290,7 +290,8 @@ pub fn aead_encrypt(key: &[u8], nonce: &[u8], plaintext: &[u8], aad: &[u8]) -> R
 pub fn aead_decrypt(key: &[u8], nonce: &[u8], ciphertext: &[u8], aad: &[u8]) -> Result<Vec<u8>> {
     use aes_gcm::aead::{Aead, KeyInit, Payload};
     use aes_gcm::{Aes128Gcm, Aes256Gcm, AesGcm, Nonce};
-    let nonce = Nonce::from_slice(nonce);
+    let nonce = Nonce::try_from(nonce)
+        .map_err(|_| Error::crypto(format!("invalid nonce length: {}", nonce.len())))?;
     let payload = Payload {
         msg: ciphertext,
         aad,
@@ -299,13 +300,13 @@ pub fn aead_decrypt(key: &[u8], nonce: &[u8], ciphertext: &[u8], aad: &[u8]) -> 
         match key.len() {
             16 => Aes128Gcm::new_from_slice(key)
                 .map_err(|_| aes_gcm::Error)?
-                .decrypt(nonce, payload),
+                .decrypt(&nonce, payload),
             24 => AesGcm::<aes::Aes192, aes_gcm::aead::consts::U12>::new_from_slice(key)
                 .map_err(|_| aes_gcm::Error)?
-                .decrypt(nonce, payload),
+                .decrypt(&nonce, payload),
             32 => Aes256Gcm::new_from_slice(key)
                 .map_err(|_| aes_gcm::Error)?
-                .decrypt(nonce, payload),
+                .decrypt(&nonce, payload),
             _ => Err(aes_gcm::Error),
         }
     };
@@ -324,7 +325,7 @@ mod tests {
         let salt = hex::decode("000102030405060708090a0b0c").unwrap();
         let info = hex::decode("f0f1f2f3f4f5f6f7f8f9").unwrap();
         let mac = |k: &[u8], d: &[u8]| -> Vec<u8> {
-            let mut m = <hmac::Hmac<sha2::Sha256> as Mac>::new_from_slice(k).unwrap();
+            let mut m = <hmac::Hmac<sha2::Sha256> as hmac::Mac>::new_from_slice(k).unwrap();
             m.update(d);
             m.finalize().into_bytes().to_vec()
         };
