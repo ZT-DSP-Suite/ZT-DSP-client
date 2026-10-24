@@ -16,6 +16,7 @@
 //! After a successful handshake, MK, anchor, and PSK are all securely zeroized (4.2.3 step 6); the session retains only
 //! EK_send / EK_recv / session ID / sequence number.
 
+use std::fmt;
 use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::time::{Duration, Instant};
@@ -64,7 +65,10 @@ fn is_frame_error(e: &Error) -> bool {
 // =============================================================================
 
 /// All state handed off to the session layer after a successful handshake (MK/anchor/PSK have been wiped; not listed here).
-#[derive(Debug, Clone)]
+///
+/// No `Clone`: the artifacts move exactly once, from the handshake into the
+/// session, and a copy would be key material outside the wipe paths. The
+/// hand-written `Debug` prints lengths only, never key bytes.
 pub struct SessionMaterial {
     pub session_id: [u8; SESSION_ID_LEN],
     pub send_ek: Vec<u8>,
@@ -75,6 +79,22 @@ pub struct SessionMaterial {
     pub time_window: u64,
     pub padding: Option<(usize, usize)>,
     pub jitter: f64,
+}
+
+impl fmt::Debug for SessionMaterial {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SessionMaterial")
+            .field("session_id", &"[REDACTED]")
+            .field("send_ek_len", &self.send_ek.len())
+            .field("recv_ek_len", &self.recv_ek.len())
+            .field("local_hash", &"[REDACTED]")
+            .field("peer_hash", &"[REDACTED]")
+            .field("params", &self.params)
+            .field("time_window", &self.time_window)
+            .field("padding", &self.padding)
+            .field("jitter", &self.jitter)
+            .finish()
+    }
 }
 
 // =============================================================================
@@ -679,6 +699,34 @@ mod tests {
             Duration::from_secs(5),
         )
         .unwrap()
+    }
+
+    /// SessionMaterial is a hand-off bag of key material. Its Debug output
+    /// must show shapes, never bytes; without this guard a future derive
+    /// or field addition would leak session keys into one `{:?}` print.
+    #[test]
+    fn debug_output_contains_no_key_material() {
+        let material = SessionMaterial {
+            session_id: [0xAB; SESSION_ID_LEN],
+            send_ek: vec![0xCD; 32],
+            recv_ek: vec![0xEF; 32],
+            local_hash: [0x11; 32],
+            peer_hash: [0x22; 32],
+            params: Params::default(),
+            time_window: 60,
+            padding: None,
+            jitter: 0.0,
+        };
+        let out = format!("{material:?}");
+        for secret in [
+            "abab", "ABAB", "cdcd", "CDCD", "efef", "EFEF", "1111", "2222",
+        ] {
+            assert!(!out.contains(secret), "key bytes leaked via Debug: {out}");
+        }
+        assert!(
+            out.contains("send_ek_len: 32"),
+            "lengths stay visible for diagnosis: {out}"
+        );
     }
 
     #[test]

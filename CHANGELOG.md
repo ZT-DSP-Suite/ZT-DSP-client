@@ -28,6 +28,17 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Changed
 
+- **The Rust key-holding structs no longer expose themselves to `{:?}`.**
+  `SessionMaterial`, `SessionState` and `SessionConfig` carried derived
+  `Debug`, and the first and last also derived `Clone`. `SessionMaterial`
+  holds the session keys, `SessionState` holds both direction keys,
+  `SessionConfig` holds the PSK, and the CLI `Args` holds the `--psk`
+  string: one `{:?}` print of a live value emits key bytes, and a `Clone`
+  produces key copies outside the wipe paths. `SessionMaterial` and
+  `SessionConfig` now carry hand-written `Debug` impls that print lengths
+  only; `SessionState` and `Args` lost `Debug`; the two `Clone` derives
+  are gone. Two tests pin that the Debug output shows lengths and never
+  key bytes.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to

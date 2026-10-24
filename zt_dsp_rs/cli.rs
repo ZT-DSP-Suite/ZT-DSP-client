@@ -46,7 +46,9 @@ static ABOUT_LINE: LazyLock<String> = LazyLock::new(|| {
     format!("ZT-DSP Core {CODE_VERSION} (Rust) — Core Protocol (conforming to {FOLLOWS_DOC}) official implementation")
 });
 
-#[derive(Debug, Parser)]
+// No Debug on Args: it carries the PSK from --psk / --psk-env, and a
+// `{:?}` print would emit the secret.
+#[derive(Parser)]
 #[command(
     name = "zt-dsp-rs",
     version = VERSION_LINE.as_str(),
