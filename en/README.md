@@ -138,7 +138,7 @@ and a real two-sided TCP flow.
 |----|----|
 | applicable document version | 1.0.0 and 1.0.1 (may be several; see "Applicability" below) |
 | client version | ZT-DSP_PY-1.0.0 (Python in this repository), ZT-DSP_RS-1.0.0 (Rust in this repository) |
-| server version | ZT-DSP_SV-1.0.0 (repository `ZT-DSP-server`, placeholder, not implemented yet) |
+| server version | ZT-DSP_SV-1.0.0 (Rust implementation in the repository `ZT-DSP-server`, Python implementation in this repository at `zt_dsp_sv_py/`) |
 | program ID | ZT-DSP_PY-1.0.0 (prefix PY) |
 | followed document | "ZT-DSP Protocol Master Guide", path ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md |
 
@@ -152,7 +152,7 @@ and a real two-sided TCP flow.
 |----|------|
 | format | 1.0.x (major.minor.revision) |
 | carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.1-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
-| current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
+| current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
 | major digit increment | restatement of core protocol semantics (usually coupled with a client/server version increment) |

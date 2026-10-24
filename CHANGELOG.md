@@ -41,6 +41,14 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Fixed
 
+- **The client READMEs no longer call the server implementation a
+  placeholder.** The "server version" and "current value" rows in both
+  mirrors still marked `ZT-DSP_SV-1.0.0` as "占位，尚未实现" / "not
+  implemented yet", although both implementations have landed: Rust in
+  ZT-DSP-server (merged as ZT-DSP-server#1) and Python as `zt_dsp_sv_py`
+  in this repository (merged as #12). The rows now state where each
+  implementation lives, and the "current value" rows drop the marker.
+
 - **20 source references pointed at appendix letters that no longer exist.** The docs repo
   commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
   had moved into the client README, but 20 docstrings and comments across `cli.py`,
