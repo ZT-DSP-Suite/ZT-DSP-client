@@ -41,6 +41,16 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Fixed
 
+- **A legal JSON number crashed the responder outside the funnel.** `json.loads`
+  parses `1e999` to float infinity, and `int(inf)` raises `OverflowError`, which
+  neither `ZTDSPParams.from_wire` (`params.py`) nor the handshake's parameter
+  convergence (`handshake.py`) caught — a peer could produce a bare traceback
+  where Appendix H.4 demands a funnelled, silent rejection. Both capture tuples
+  now include `OverflowError`. The Rust path was audited and needs no change:
+  serde_json rejects out-of-range numbers at parse time and `coerce_u64`'s float
+  branch refuses non-finite values. Hostile-but-legal values are pinned by
+  `test_primitives.py`, a responder-level silent-drop test, and a Rust parser
+  rejection assertion.
 - **20 source references pointed at appendix letters that no longer exist.** The docs repo
   commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
   had moved into the client README, but 20 docstrings and comments across `cli.py`,

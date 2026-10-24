@@ -318,7 +318,12 @@ class HandshakePeer:
         try:
             payload = json.loads(param_raw.decode("utf-8"))
             peer_params = ZTDSPParams.from_wire(payload)
-        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
+        except (
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            OverflowError,
+            RecursionError,
+        ) as exc:
             reason = f"parameter JSON invalid: {exc}"
             self._drop_or_raise(sock, reason)
             return
