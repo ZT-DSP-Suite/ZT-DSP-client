@@ -14,7 +14,8 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 - **Build-date segment in the implementation identifier.** `BUILD_DATE` is empty by
   default, so `--version` keeps the release form. A non-empty value must be eight
-  digits and is appended as `-YYYYMMDD` (VERSIONING.md 3.1). Both implementations
+  digits and is appended as `-YYYYMMDD` on development builds only; release
+  candidates and releases drop the segment. Both implementations
   compose the identifier through one helper, so a malformed date fails there.
 - **Shared known-answer test vectors** (`test-vectors/vectors.json`), consumed by *both*
   the Python and the Rust implementation. Before this, each implementation had its own

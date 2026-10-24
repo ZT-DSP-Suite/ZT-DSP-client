@@ -61,8 +61,9 @@ LANGUAGE_PREFIX: str = "PY"
 CODE_VERSION: str = "1.0.0"
 
 # --- build date segment: development builds carry `-YYYYMMDD`; RC and release leave it empty ---
-# Value is the commit date in UTC+8 (VERSIONING.md §3.1). Empty means "no date segment",
-# so the published identifier keeps its numeric form.
+# Value is the commit date in UTC+8. Development builds carry the date segment;
+# release candidates and releases leave it empty, so the published identifier
+# keeps its numeric form.
 BUILD_DATE: str = ""
 
 
