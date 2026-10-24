@@ -8,8 +8,8 @@ name: CI
 on:
   push:
     branches: [main]
+  # Every pull request, not only those targeting main: stacked branches must be checked too.
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
