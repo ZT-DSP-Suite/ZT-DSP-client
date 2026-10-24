@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! On-wire frame codec (Master Guide 1.0.0, Appendix F).
+//! On-wire frame codec (Master Guide, Appendix F).
 //!
 //! Four frame types (F.1/F.3/F.4/F.5), all Big-Endian, Length-Prefix mode, no magic
 //! number, no frame-type field, no frame-level CRC:
@@ -368,7 +368,7 @@ mod tests {
         let parsed = read_phase_one(&mut right, None).unwrap();
         assert_eq!(parsed.raw, frame);
         assert_eq!(parsed.param_json, br#"{"a":1}"#);
-        assert_eq!(parsed.identity, [b'i'; 32].repeat(1).as_slice());
+        assert_eq!(parsed.identity, &[b'i'; 32][..]);
         assert_eq!(parsed.identity.len(), 32);
         assert_eq!(parsed.nonce, vec![b'n'; 32]);
     }

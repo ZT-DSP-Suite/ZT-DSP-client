@@ -11,6 +11,7 @@ input ends at once. The sending must stop there and the receiving must go on.
 import socket
 import threading
 import time
+from unittest import mock
 
 from zt_dsp_py.handshake import HandshakePeer
 from zt_dsp_py.params import ZTDSPParams
@@ -96,6 +97,39 @@ def test_disabled_input_keeps_receiving(monkeypatch) -> None:
         while server_session.seq_recv < 0 and time.time() < deadline:
             time.sleep(0.05)
         assert server_session.seq_recv >= 0
+    finally:
+        client.close()
+        worker.join(5)
+        chat.shutdown()
+        conn.close()
+
+
+def test_out_of_window_packet_is_reported_and_session_continues(capsys) -> None:
+    """An out-of-window packet prints [Dropped] to stderr; the session keeps working."""
+    client, client_session, conn, server_session = _pair()
+    chat = ChatSession(server_session, conn, read_stdin=False)
+
+    real_time = time.time
+    with mock.patch("zt_dsp_py.session.time") as fake_time:
+        fake_time.time.return_value = real_time() - 120
+        fake_time.sleep.return_value = None
+        client_session.send_packet(client, b"late")
+
+    worker = threading.Thread(target=chat.start)
+    worker.start()
+    try:
+        captured = ""
+        deadline = time.time() + 5
+        while "timestamp_window" not in captured and time.time() < deadline:
+            captured += capsys.readouterr().err
+            time.sleep(0.05)
+        assert "[Dropped] timestamp_window" in captured
+
+        client_session.send_packet(client, b"current")
+        deadline = time.time() + 5
+        while server_session.seq_recv < 1 and time.time() < deadline:
+            time.sleep(0.05)
+        assert server_session.seq_recv >= 1
     finally:
         client.close()
         worker.join(5)

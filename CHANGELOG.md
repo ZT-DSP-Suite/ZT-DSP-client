@@ -5,8 +5,8 @@ All notable changes to this repository are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-**Note on authority:** this file is a convenience record, not the source of truth. The
-normative change history is `git log`. If the two ever disagree, `git log` wins.
+**Note:** this file is a convenience record, not the source of truth. The change history
+lives in `git log`. If the two ever disagree, `git log` wins.
 
 ## [Unreleased]
 
@@ -28,9 +28,12 @@ normative change history is `git log`. If the two ever disagree, `git log` wins.
 
 ### Changed
 
-- **`--no-stdin`.** The session receives and reads nothing from the input. A server
-  process started in the background has no terminal on its input, and the flag keeps
-  the process from waiting for one.
+- **Document version aligned to 1.0.2.** Both implementations now report
+  `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
+  deprecated hardware key-storage notices.
+- **`--no-stdin`.** The session reads nothing from the input and sends no application
+  data; heartbeats continue. A server process started in the background has no
+  terminal on its input, and the flag keeps the process from waiting for one.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to

@@ -5,7 +5,7 @@
 //!
 //! Word-for-word aligned with the Python reference implementation `zt_dsp_py/version.py`:
 //!
-//! - **total-guide version (docs version)**: `1.0.0`, used only for the revision count of the Master Guide
+//! - **total-guide version (docs version)**: `1.0.2`, used only for the revision count of the Master Guide
 //!   document itself; it does not participate in network communication;
 //! - **client version**: `ZT-DSP_<prefix>-<major.minor.patch>`; this implementation is `ZT-DSP_RS-1.0.0`
 //!   (language prefix RS = Rust);
@@ -17,7 +17,8 @@
 //!   expressed by equality of version numbers;
 //! - The handshake frame **carries no version string**: the phase-1 parameter JSON and the phase-4 AAD both contain neither a version nor
 //!   a protocol identifier field. Whether the peer is compatible is reflected by the phase-3 confirmation tag verification.
-//!//! The correspondence between the document and the code is maintained by a **bidirectional declaration**, not bound by version numbers:
+//!
+//! The correspondence between the document and the code is maintained by a **bidirectional declaration**, not bound by version numbers:
 //! The code side declares "which documents this implementation applies to" (see `FOLLOWS_DOC` / `FOLLOWS_DOC_PATH` /
 //! `APPLIES_TO_DOC_VERSIONS`).
 //!

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Transport and session runner (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
+//! Transport and session runner (Master Guide Appendix H.3 timers / H.6 cleanup semantics).
 //!
 //! Provides:
 //! - Two runner entry points, listen (responder) and connect (initiator), with connection retry and a self-connection warning;
@@ -126,6 +126,7 @@ struct ChatHandle {
     stream: TcpStream,
     running: Arc<AtomicBool>,
     print_lock: Arc<Mutex<()>>,
+    read_stdin: bool,
 }
 
 impl ChatHandle {
@@ -133,6 +134,13 @@ impl ChatHandle {
         let _g = self.print_lock.lock().unwrap();
         println!("{line}");
         let _ = std::io::stdout().flush();
+    }
+
+    /// Diagnostics go to stderr so stdout carries only peer messages and prompts.
+    fn eprint(&self, line: &str) {
+        let _g = self.print_lock.lock().unwrap();
+        eprintln!("{line}");
+        let _ = std::io::stderr().flush();
     }
 
     /// Idempotent shutdown: the socket is closed exactly once, the key wiped exactly once.
@@ -144,7 +152,13 @@ impl ChatHandle {
 }
 
 impl ChatSession {
-    pub fn new(session: SecureSession, stream: TcpStream, read_stdin: bool) -> Self {
+    /// Two-argument constructor kept from 1.0.0; the session reads stdin.
+    pub fn new(session: SecureSession, stream: TcpStream) -> Self {
+        Self::with_input(session, stream, true)
+    }
+
+    /// Constructor with explicit control over whether stdin is read.
+    pub fn with_input(session: SecureSession, stream: TcpStream, read_stdin: bool) -> Self {
         set_socket_options(&stream);
         ChatSession {
             session: Arc::new(session),
@@ -170,6 +184,7 @@ impl ChatSession {
             stream: stream.try_clone().expect("clone stream for recv thread"),
             running: running.clone(),
             print_lock: print_lock.clone(),
+            read_stdin,
         };
         let hb_handle = ChatHandle {
             session: session.clone(),
@@ -178,6 +193,7 @@ impl ChatSession {
                 .expect("clone stream for heartbeat thread"),
             running: running.clone(),
             print_lock: print_lock.clone(),
+            read_stdin,
         };
 
         let recv_thread = std::thread::Builder::new()
@@ -195,11 +211,12 @@ impl ChatSession {
             stream,
             running,
             print_lock,
+            read_stdin,
         };
         if read_stdin {
             send_loop(&main_handle);
         } else {
-            main_handle.print("[Input disabled] receiving only");
+            main_handle.eprint("[Input disabled] receiving only");
         }
 
         recv_thread.join().ok();
@@ -224,15 +241,17 @@ fn recv_loop(h: &ChatHandle) {
                     // A heartbeat carries no text; an out-of-window packet is
                     // dropped on purpose, and the reason says which one it was
                     if let Some(reason) = h.session.last_recv_drop() {
-                        h.print(&format!("[Dropped] {reason}"));
+                        h.eprint(&format!("[Dropped] {reason}"));
                     }
                     continue;
                 }
                 let text = String::from_utf8_lossy(&data);
                 let _g = h.print_lock.lock().unwrap();
                 println!("[Peer] {text}");
-                print!("> ");
-                let _ = std::io::stdout().flush();
+                if h.read_stdin {
+                    print!("> ");
+                    let _ = std::io::stdout().flush();
+                }
             }
             Err(Error::Timeout(e)) => {
                 h.print(&format!("[Timeout] {e}"));
@@ -293,7 +312,7 @@ fn send_loop(h: &ChatHandle) {
             Some(Ok(l)) => l,
             None => {
                 // The input ended: the sending stops, the receiving goes on
-                h.print("[Input closed] sending stopped; receiving continues");
+                h.eprint("[Input closed] sending stopped; receiving continues");
                 break;
             }
             Some(Err(e)) => {
@@ -404,7 +423,7 @@ pub fn run_listen(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
             println!("[+] Handshake complete, secure channel established.");
             println!("    Type a message and press Enter to send; /quit or Ctrl+C to exit\n");
             let session = SecureSession::new(material);
-            ChatSession::new(session, conn, cfg.read_stdin).start();
+            ChatSession::with_input(session, conn, cfg.read_stdin).start();
             Ok(())
         }
         Err(Error::SilentDrop(e)) => {
@@ -498,7 +517,7 @@ pub fn run_connect(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
                 println!("[+] Handshake complete, secure channel established.");
                 println!("    Type a message and press Enter to send; /quit or Ctrl+C to exit\n");
                 let session = SecureSession::new(material);
-                ChatSession::new(session, conn, cfg.read_stdin).start();
+                ChatSession::with_input(session, conn, cfg.read_stdin).start();
                 return Ok(());
             }
             Err(Error::Io(e)) => {

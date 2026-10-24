@@ -45,6 +45,11 @@ Documentation and code are **not bound by version numbers**: the document side d
 │   ├── cli.py                 minimal command line
 │   └── tests/                 pytest suite (primitives/frames/handshake/session/end-to-end)
 ├── zt_dsp_rs/               Rust reference implementation (program ID ZT-DSP_RS-1.0.0; flat single-bin crate)
+├── zt_dsp_sv_py/            Python server implementation (program ID ZT-DSP_SV-1.0.0)
+│   ├── version.py           version contract (server role, role prefix SV)
+│   ├── server.py            pairing, byte relay and the L4 control plane (one file)
+│   ├── CONFORMANCE.md       protocol conformance checklist (with two open questions)
+│   └── tests/               pytest suite
 ├── LICENSE
 └── README.md
 ```
@@ -76,7 +81,9 @@ export ZT_DSP_PSK=<64-digit hex>       # Linux/macOS
 zt-dsp-py --role listen --port 37291 --psk-env
 ```
 
-In a background service with no terminal on its input, add `--no-stdin`: the session receives and sends nothing, and the process does not exit when the input ends. The clocks of the two ends must be in sync: data packets carry the sender's wall-clock timestamp, and when the difference exceeds the timestamp window (30 seconds by default) the receiver drops the plaintext without reporting an error.
+In a background service with no terminal on its input, add `--no-stdin`: the session stops reading stdin and stops application sends; heartbeats continue, and the process does not exit when the input ends. The clocks of the two ends must be in sync: data packets carry the sender's wall-clock timestamp, and when the difference exceeds the timestamp window (30 seconds by default) the receiver drops only the plaintext, keeps the session, and prints `[Dropped]` locally with both timestamps. Diagnostics (`[Dropped]`, `[Input closed]`)
+go to stderr; stdout carries only peer messages and prompts. Press Ctrl+C to end an
+interactive session; use `--no-stdin` for a background one.
 
 **Running with no arguments starts the interactive wizard** (recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step. When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
 
@@ -138,7 +145,7 @@ and a real two-sided TCP flow.
 |----|------|
 | format | 1.0.x (major.minor.revision) |
 | carrier | the Master Guide document (`en/spec/ZT-DSP-1.0.2-Master_Guide.md` in the standalone document repository `ZT-DSP-docs`) |
-| current value | clients: `ZT-DSP_PY-1.0.0`, `ZT-DSP_RS-1.0.0`; server: `ZT-DSP_SV-1.0.0` (placeholder) |
+| current value | `1.0.2` |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
 | major digit increment | restatement of core protocol semantics (usually coupled with a client/server version increment) |
@@ -158,6 +165,7 @@ and a real two-sided TCP flow.
 | multi-language coexistence | implementations in different languages **may share the same version number** (ZT-DSP_PY-1.0.0 and ZT-DSP_GO-1.0.0 coexist), distinguished by the language prefix |
 | participates in network communication | No (the version number itself does not participate; handshake frames carry no version string) |
 | other-language implementations | the development languages are Python and Rust; to add another language, create a sibling directory named after its program ID (for example zt_dsp_go/), alongside zt_dsp_py/ and zt_dsp_rs/, with a protocol conformance checklist attached |
+| server implementations | a server implementation is named after its program ID as well (zt_dsp_sv_py/) and carries a protocol conformance checklist; a server never decrypts, it only pairs and relays bytes |
 | merge / recording suggestions | when merging a fork, when a maintainer creates a new branch, or when promoting a standalone implementation to the mainline, the core recommendation is: implementation code follows the ordinary engineering layout of the language in use, with **no single-file requirement**; subdirectories under the mainline directory are now permitted, and a protocol conformance checklist is attached |
 
 #### Applicability (many-to-many)

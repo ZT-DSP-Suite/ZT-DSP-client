@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Cryptographic primitives layer (Master Guide 1.0.0 Section 4.2 /
+"""Cryptographic primitives layer (Master Guide Section 4.2 /
 Appendices F.3-F.5).
 
 Default suite: X25519 + HKDF-SHA3-256 + HMAC-SHA3-256 + AES-256-GCM.
-The hash algorithm is selected by the hash_name parameter (supported by the guide
-supported: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
-AEAD implementation contains only AES-256-GCM.
+The hash algorithm is selected by the hash_name parameter (allowed
+values: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
+reference implementation contains only AES-256-GCM.
 
 Security statements:
 - X25519 low-order point / out-of-bounds public keys (all zeros, u=1,
@@ -32,7 +32,10 @@ from typing import Optional, Tuple, Union
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives import hashes, hmac as _crypto_hmac, serialization
-from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
+from cryptography.hazmat.primitives.asymmetric.x25519 import (
+    X25519PrivateKey,
+    X25519PublicKey,
+)
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
@@ -57,17 +60,18 @@ _HASH_MAP = {
 # Basic helpers
 # =============================================================================
 
+
 def secure_random(n: int) -> bytes:
     """Cryptographically secure random bytes."""
     return secrets.token_bytes(n)
 
 
 def secure_zero(buf: Optional[Union[bytearray, memoryview]]) -> bool:
-    """Zero a mutable buffer in place and report whether it worked.
+    """Zero a mutable buffer in place. Best effort; the return value is diagnostic.
 
     Returns False for immutable objects such as ``bytes``: those cannot be
-    zeroed from Python, so the caller must not assume the copy is gone.
-    A failure to zero is never swallowed silently.
+    zeroed from Python. Callers are not required to check the result; a False
+    means the buffer was immutable and the caller must not assume it is gone.
     """
     if buf is None:
         return True
@@ -86,7 +90,7 @@ def constant_time_compare(a: bytes, b: bytes) -> bool:
 
 def hmac_sha3(key: bytes, message: bytes) -> bytes:
     """HMAC-SHA3-256 (fixed algorithm - token hash derivation does not
-    vary with params.hash_name; see Master Guide 1.0.0 Section
+    vary with params.hash_name; see Master Guide Section
     4.1.1 placeholder path)."""
     h = _crypto_hmac.HMAC(key, hashes.SHA3_256())
     h.update(message)
@@ -103,26 +107,32 @@ def check_entropy(data: bytes, min_bits: float = 3.5) -> None:
     entropy = -sum((c / length) * math.log2(c / length) for c in counts.values())
     if entropy < min_bits:
         raise ValueError(
-            f"PSK entropy too low ({entropy:.2f} bits/byte); use a cryptographically secure random source")
+            f"PSK entropy too low ({entropy:.2f} bits/byte); use a cryptographically secure random source"
+        )
 
 
 # =============================================================================
 # Crypto suite
 # =============================================================================
 
+
 class CryptoSuite:
     """Cryptographic primitive set bound to the hash_name parameter."""
 
     __slots__ = ("hash_name", "aead_name", "_hash_cls")
 
-    def __init__(self, hash_name: str = "SHA3-256", aead_name: str = "AES-256-GCM") -> None:
+    def __init__(
+        self, hash_name: str = "SHA3-256", aead_name: str = "AES-256-GCM"
+    ) -> None:
         hash_cls = _HASH_MAP.get(hash_name)
         if hash_cls is None:
             raise ZTDSPCryptoError(
-                f"Unsupported hash algorithm: {hash_name}; available: {', '.join(sorted(_HASH_MAP))}")
+                f"Unsupported hash algorithm: {hash_name}; available: {', '.join(sorted(_HASH_MAP))}"
+            )
         if aead_name != "AES-256-GCM":
             raise ZTDSPCryptoError(
-                f"Unsupported AEAD algorithm: {aead_name}; the reference implementation only contains AES-256-GCM")
+                f"Unsupported AEAD algorithm: {aead_name}; the reference implementation only contains AES-256-GCM"
+            )
         self.hash_name = hash_name
         self.aead_name = aead_name
         self._hash_cls = hash_cls
@@ -130,8 +140,13 @@ class CryptoSuite:
     # ------------------------------------------------------------------
     # HKDF / HMAC
     # ------------------------------------------------------------------
-    def hkdf(self, ikm: bytes, info: Union[str, bytes], length_bits: int,
-             salt: Optional[bytes] = None) -> bytes:
+    def hkdf(
+        self,
+        ikm: bytes,
+        info: Union[str, bytes],
+        length_bits: int,
+        salt: Optional[bytes] = None,
+    ) -> bytes:
         """HKDF (RFC 5869). Note that salt is a **standalone salt
         parameter**, not material concatenated into the IKM (General
         Directive, Section 4.2.2).
@@ -171,8 +186,9 @@ class CryptoSuite:
         )
         return priv, pub
 
-    def dh_exchange(self, private_key: X25519PrivateKey,
-                    peer_public_bytes: bytes) -> bytes:
+    def dh_exchange(
+        self, private_key: X25519PrivateKey, peer_public_bytes: bytes
+    ) -> bytes:
         """X25519 shared secret computation. Failure judgments (F.3):
         public key length != 32B; computation raises an error (low-order
         point or out-of-bounds public key); all-zero output. All converge
@@ -184,29 +200,36 @@ class CryptoSuite:
             dh = private_key.exchange(peer_pub)
         except (ValueError, TypeError) as exc:
             raise ZTDSPCryptoError(
-                f"Invalid peer public key (low-order point or out of bounds): {exc}") from exc
+                f"Invalid peer public key (low-order point or out of bounds): {exc}"
+            ) from exc
         if dh == b"\x00" * len(dh):
-            raise ZTDSPCryptoError("Weak DH output detected (all zeros); possible low-order point attack")
+            raise ZTDSPCryptoError(
+                "Weak DH output detected (all zeros); possible low-order point attack"
+            )
         return dh
 
     # ------------------------------------------------------------------
     # AEAD (Appendix F.5)
     # ------------------------------------------------------------------
-    def aead_encrypt(self, key: bytes, nonce: bytes, plaintext: bytes,
-                     aad: bytes) -> bytes:
+    def aead_encrypt(
+        self, key: bytes, nonce: bytes, plaintext: bytes, aad: bytes
+    ) -> bytes:
         """AES-256-GCM encryption; output = ciphertext || 16B
         authentication tag."""
         return AESGCM(key).encrypt(nonce, plaintext, aad)
 
-    def aead_decrypt(self, key: bytes, nonce: bytes, ciphertext: bytes,
-                     aad: bytes) -> bytes:
+    def aead_decrypt(
+        self, key: bytes, nonce: bytes, ciphertext: bytes, aad: bytes
+    ) -> bytes:
         """AES-256-GCM decryption and authentication. Any failure
         converges to ZTDSPSecurityError."""
         try:
             return AESGCM(key).decrypt(nonce, ciphertext, aad)
         except InvalidTag as exc:
             raise ZTDSPSecurityError(
-                f"AEAD decryption or integrity check failed: {exc}") from exc
+                f"AEAD decryption or integrity check failed: {exc}"
+            ) from exc
         except Exception as exc:
             raise ZTDSPSecurityError(
-                f"AEAD decryption or integrity check failed: {exc}") from exc
+                f"AEAD decryption or integrity check failed: {exc}"
+            ) from exc

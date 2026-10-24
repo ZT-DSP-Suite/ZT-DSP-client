@@ -10,3 +10,4 @@ Format:
 ## Accepted
 
 - ZT-DSP Suite maintainers <SCAL-ROAM> - original author, all contributions before the CLA was introduced
+- ZT-DSP Suite maintainers <SCAL-ROAM> - CLA accepted 2026-10-23

@@ -26,8 +26,9 @@ Documentation follows a bilingual mirror layout: `cn/` and `en/` contain the sam
 |---|---|---|
 | `zt_dsp_py/` | Python | `ZT-DSP_PY-1.0.0` |
 | `zt_dsp_rs/` | Rust | `ZT-DSP_RS-1.0.0` |
+| `zt_dsp_sv_py/` | Python | `ZT-DSP_SV-1.0.0` |
 
-The development languages are **Python** and **Rust**; both implementations are
+The development languages are **Python** and **Rust**; all implementations are
 first-class and follow the same Protocol Master Guide (docs 1.0.2). Other languages can be
 added following the implementation-identifier rule `ZT-DSP_<prefix>-<implementation version>`.
 
@@ -62,7 +63,9 @@ Two known traps:
 A session started in the background keeps receiving when its input ends; `--no-stdin`
 switches the input off entirely. The two ends must keep their clocks in sync: a data
 packet carries the sender's wall-clock timestamp, and the receiver drops the plaintext
-when the difference exceeds the timestamp window.
+when the difference exceeds the timestamp window. Diagnostics such as `[Dropped]` and
+`[Input closed]` go to stderr; stdout carries only peer messages and prompts. Press Ctrl+C
+to end an interactive session; use `--no-stdin` for a background one.
 
 Rust reference implementation (`zt_dsp_rs/`):
 
