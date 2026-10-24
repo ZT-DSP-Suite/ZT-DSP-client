@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Protocol parameter set (Master Guide 1.0.0, Appendix B / F.1).
+"""Protocol parameter set (Master Guide, Appendix B / F.1).
 
 Every parameter may be declared freely by the server operator in their
 database; both communicating parties must match exactly before they can
@@ -23,22 +23,24 @@ from typing import Any, Dict, Optional, Tuple
 from .errors import ZTDSPParamError
 
 # --- Default parameters (Appendix B.1) ---
-RANDOM_LEN: int = 256          # Connection-random length (bits, multiple of 8)
-RANDOM_RATE: int = 1024        # Random generation rate (times/sec)
-WINDOW: int = 60               # Negotiation window (seconds; both parties must agree; != timestamp window)
-TIME_WINDOW: int = 30          # Timestamp window (seconds, per-peer configurable)
-KEY_LEN: int = 256             # Session key length (bits, only 128/192/256)
+RANDOM_LEN: int = 256  # Connection-random length (bits, multiple of 8)
+RANDOM_RATE: int = 1024  # Random generation rate (times/sec)
+WINDOW: int = (
+    60  # Negotiation window (seconds; both parties must agree; != timestamp window)
+)
+TIME_WINDOW: int = 30  # Timestamp window (seconds, per-peer configurable)
+KEY_LEN: int = 256  # Session key length (bits, only 128/192/256)
 HASH_NAME: str = "SHA3-256"
 AEAD_NAME: str = "AES-256-GCM"
 
 # --- Upper-limit constants (Appendix F.6; all upper-limit checks must run before reading the corresponding payload) ---
-MAX_PARAM_JSON: int = 4096         # Phase 1 param_json
-MAX_IDENTITY: int = 8192           # Phase 1 identity_blob
-MAX_NONCE: int = 512               # Phase 1 connection random
-MAX_CIPHERTEXT: int = 1 << 20      # Phase 4 ct_len (1 MiB)
-MAX_PAD: int = 2048                # Phase 4 random padding
+MAX_PARAM_JSON: int = 4096  # Phase 1 param_json
+MAX_IDENTITY: int = 8192  # Phase 1 identity_blob
+MAX_NONCE: int = 512  # Phase 1 connection random
+MAX_CIPHERTEXT: int = 1 << 20  # Phase 4 ct_len (1 MiB)
+MAX_PAD: int = 2048  # Phase 4 random padding
 # User plaintext limit = 1 MiB - 64 - fmt(1) - Token Hash(64) - ts(8) - next_seed(32) - pad_len(2) - MAX_PAD
-MAX_PLAINTEXT: int = ((1 << 20) - 64 - 1 - 64 - 8 - 32 - 2 - MAX_PAD)  # 1046357
+MAX_PLAINTEXT: int = (1 << 20) - 64 - 1 - 64 - 8 - 32 - 2 - MAX_PAD  # 1046357
 
 # module_flags validation limits (guards against recursive bombs / node explosion)
 MAX_FLAG_DEPTH: int = 32
@@ -59,11 +61,15 @@ def validate_module_flags(flags: Dict[str, Any]) -> None:
     while stack:
         current, depth = stack.pop()
         if depth > MAX_FLAG_DEPTH:
-            raise ZTDSPParamError(f"module_flags nesting depth exceeds the limit of {MAX_FLAG_DEPTH}")
+            raise ZTDSPParamError(
+                f"module_flags nesting depth exceeds the limit of {MAX_FLAG_DEPTH}"
+            )
         for key, value in current.items():
             nodes += 1
             if nodes > MAX_FLAG_NODES:
-                raise ZTDSPParamError(f"module_flags node count exceeds the limit of {MAX_FLAG_NODES}")
+                raise ZTDSPParamError(
+                    f"module_flags node count exceeds the limit of {MAX_FLAG_NODES}"
+                )
             if not isinstance(key, str):
                 raise ZTDSPParamError(f"module_flags keys must be str, got {type(key)}")
             if isinstance(value, dict):
@@ -73,17 +79,20 @@ def validate_module_flags(flags: Dict[str, Any]) -> None:
                     nodes += 1
                     if nodes > MAX_FLAG_NODES:
                         raise ZTDSPParamError(
-                            f"module_flags node count exceeds the limit of {MAX_FLAG_NODES}")
+                            f"module_flags node count exceeds the limit of {MAX_FLAG_NODES}"
+                        )
                     if isinstance(item, dict):
                         stack.append((item, depth + 1))
                     elif not isinstance(item, _ALLOWED_FLAG_TYPES):
                         raise ZTDSPParamError(
                             f"module_flags value type {type(item)} is not supported, "
-                            f"only str/int/float/bool/list/dict/None are allowed")
+                            f"only str/int/float/bool/list/dict/None are allowed"
+                        )
             elif not isinstance(value, _ALLOWED_FLAG_TYPES):
                 raise ZTDSPParamError(
                     f"module_flags value type {type(value)} is not supported, "
-                    f"only str/int/float/bool/list/dict/None are allowed")
+                    f"only str/int/float/bool/list/dict/None are allowed"
+                )
 
 
 @dataclass(frozen=True)
@@ -99,11 +108,18 @@ class ZTDSPParams:
     module_flags: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not isinstance(self.random_len, int) or self.random_len <= 0 or self.random_len % 8 != 0:
-            raise ZTDSPParamError("random_len must be a positive integer and a multiple of 8")
+        if (
+            not isinstance(self.random_len, int)
+            or self.random_len <= 0
+            or self.random_len % 8 != 0
+        ):
+            raise ZTDSPParamError(
+                "random_len must be a positive integer and a multiple of 8"
+            )
         if self.random_len // 8 > MAX_NONCE:
             raise ZTDSPParamError(
-                f"random_len/8 must not exceed the connection random upper limit of {MAX_NONCE} bytes")
+                f"random_len/8 must not exceed the connection random upper limit of {MAX_NONCE} bytes"
+            )
         if self.key_len not in (128, 192, 256):
             raise ZTDSPParamError("key_len supports only 128/192/256")
         if not isinstance(self.window, int) or self.window <= 0:
@@ -134,7 +150,9 @@ class ZTDSPParams:
         """Compact JSON bytes (keys lexicographic, no spaces, UTF-8). 120 bytes under the default parameters."""
         try:
             return json.dumps(
-                self.to_wire(), separators=(",", ":"), sort_keys=True,
+                self.to_wire(),
+                separators=(",", ":"),
+                sort_keys=True,
                 ensure_ascii=False,
             ).encode("utf-8")
         except (ValueError, TypeError, RecursionError) as exc:

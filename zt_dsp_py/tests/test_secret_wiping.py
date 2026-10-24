@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
+
 """Tests for the wiping of secret material.
 
 The Python client cannot erase an immutable `bytes` object, so every buffer that

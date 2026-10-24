@@ -60,7 +60,9 @@ def _source_files():
 def test_no_cited_appendix_is_missing():
     spec_files = _spec_files()
     if not spec_files:
-        pytest.skip("ZT-DSP-docs spec not found (cross-repo check, runs in the full workspace)")
+        pytest.skip(
+            "ZT-DSP-docs spec not found (cross-repo check, runs in the full workspace)"
+        )
 
     existing = _existing_letters(spec_files)
     assert existing, "no appendix headings parsed; the heading pattern may have drifted"
@@ -73,4 +75,6 @@ def test_no_cited_appendix_is_missing():
                     rel = path.relative_to(CLIENT_ROOT).as_posix()
                     dangling.append(f"{rel}:{lineno} cites Appendix {letter}")
 
-    assert not dangling, "appendix citations that do not resolve:\n  " + "\n  ".join(dangling)
+    assert not dangling, "appendix citations that do not resolve:\n  " + "\n  ".join(
+        dangling
+    )

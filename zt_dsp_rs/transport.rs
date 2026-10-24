@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Transport and session runner (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
+//! Transport and session runner (Master Guide Appendix H.3 timers / H.6 cleanup semantics).
 //!
 //! Provides:
 //! - Two runner entry points, listen (responder) and connect (initiator), with connection retry and a self-connection warning;
@@ -136,6 +136,13 @@ impl ChatHandle {
         let _ = std::io::stdout().flush();
     }
 
+    /// Diagnostics go to stderr so stdout carries only peer messages and prompts.
+    fn eprint(&self, line: &str) {
+        let _g = self.print_lock.lock().unwrap();
+        eprintln!("{line}");
+        let _ = std::io::stderr().flush();
+    }
+
     /// Idempotent shutdown: the socket is closed exactly once, the key wiped exactly once.
     fn shutdown(&self) {
         self.running.store(false, Ordering::SeqCst);
@@ -209,7 +216,7 @@ impl ChatSession {
         if read_stdin {
             send_loop(&main_handle);
         } else {
-            main_handle.print("[Input disabled] receiving only");
+            main_handle.eprint("[Input disabled] receiving only");
         }
 
         recv_thread.join().ok();
@@ -234,7 +241,7 @@ fn recv_loop(h: &ChatHandle) {
                     // A heartbeat carries no text; an out-of-window packet is
                     // dropped on purpose, and the reason says which one it was
                     if let Some(reason) = h.session.last_recv_drop() {
-                        h.print(&format!("[Dropped] {reason}"));
+                        h.eprint(&format!("[Dropped] {reason}"));
                     }
                     continue;
                 }
@@ -305,7 +312,7 @@ fn send_loop(h: &ChatHandle) {
             Some(Ok(l)) => l,
             None => {
                 // The input ended: the sending stops, the receiving goes on
-                h.print("[Input closed] sending stopped; receiving continues");
+                h.eprint("[Input closed] sending stopped; receiving continues");
                 break;
             }
             Some(Err(e)) => {

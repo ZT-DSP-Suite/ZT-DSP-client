@@ -105,7 +105,7 @@ def test_disabled_input_keeps_receiving(monkeypatch) -> None:
 
 
 def test_out_of_window_packet_is_reported_and_session_continues(capsys) -> None:
-    """An out-of-window packet prints [Dropped] and the session keeps working."""
+    """An out-of-window packet prints [Dropped] to stderr; the session keeps working."""
     client, client_session, conn, server_session = _pair()
     chat = ChatSession(server_session, conn, read_stdin=False)
 
@@ -121,7 +121,7 @@ def test_out_of_window_packet_is_reported_and_session_continues(capsys) -> None:
         captured = ""
         deadline = time.time() + 5
         while "timestamp_window" not in captured and time.time() < deadline:
-            captured += capsys.readouterr().out
+            captured += capsys.readouterr().err
             time.sleep(0.05)
         assert "[Dropped] timestamp_window" in captured
 

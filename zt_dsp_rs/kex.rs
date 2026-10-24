@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! X25519 key agreement (Master Guide 1.0.0, section 4.2.2 steps 1-3 / Appendix F.3).
+//! X25519 key agreement (Master Guide, section 4.2.2 steps 1-3 / Appendix F.3).
 //!
 //! Each session generates a one-time ephemeral scalar (private key); the peer only sees the 32B Raw public key.
 //! Failure criteria (Appendix F.3; any of the following yields [`Error::Crypto`], handled as a low-order point attack):

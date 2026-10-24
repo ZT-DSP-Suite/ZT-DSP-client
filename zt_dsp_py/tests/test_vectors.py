@@ -67,6 +67,7 @@ def _dh(sk: bytes, pk: bytes) -> bytes:
 # 向量文件本身的完整性 —— 缺了或读错，后面的绿灯全是假的
 # --------------------------------------------------------------------------
 
+
 def test_vector_file_is_present_and_populated():
     assert VECTOR_FILE.exists(), "共享向量文件缺失：跨实现比对无从谈起"
     assert len(VECTORS) >= 9
@@ -99,13 +100,14 @@ def test_protocol_labels_match_source_constants():
 # RFC 5869 —— 外部来源常量
 # --------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("v", _by_kind("hkdf"), ids=lambda v: v["name"])
 def test_hkdf_matches_rfc5869(v):
     """RFC 5869 A.1 / A.3。两侧都必须命中 RFC 原文常量——
     这是判定 HKDF 实现对错的**外部**依据，不是自己跟自己比。"""
     got = CryptoSuite(v["hash"]).hkdf(
         bytes.fromhex(v["ikm"]),
-        bytes.fromhex(v["info"]),          # 二进制 info：RFC 向量必须是 bytes
+        bytes.fromhex(v["info"]),  # 二进制 info：RFC 向量必须是 bytes
         v["length_bits"],
         salt=bytes.fromhex(v["salt"]),
     )
@@ -127,6 +129,7 @@ def test_hkdf_accepts_str_and_bytes_info_equivalently():
 # RFC 7748 —— 外部来源常量
 # --------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("v", _by_kind("x25519"), ids=lambda v: v["name"])
 def test_x25519_matches_rfc7748(v):
     got = _dh(bytes.fromhex(v["scalar"]), bytes.fromhex(v["peer_public"]))
@@ -136,6 +139,7 @@ def test_x25519_matches_rfc7748(v):
 # --------------------------------------------------------------------------
 # 协议推导链
 # --------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("v", _by_kind("session"), ids=lambda v: v["name"])
 def test_session_derivation_chain(v):
@@ -172,12 +176,14 @@ def test_session_derivation_chain(v):
     assert init_send == resp_recv
     assert init_recv == resp_send
 
-    rotated = suite.hkdf(init_send + bytes.fromhex(v["next_seed"]),
-                         INFO_EK_ROTATE, key_len)
+    rotated = suite.hkdf(
+        init_send + bytes.fromhex(v["next_seed"]), INFO_EK_ROTATE, key_len
+    )
     assert rotated.hex() == v["rotated_ek"]
     # A 转完必须等于 B 用接收密钥转完，否则棘轮两端分叉
-    peer_rotated = suite.hkdf(resp_recv + bytes.fromhex(v["next_seed"]),
-                              INFO_EK_ROTATE, key_len)
+    peer_rotated = suite.hkdf(
+        resp_recv + bytes.fromhex(v["next_seed"]), INFO_EK_ROTATE, key_len
+    )
     assert peer_rotated == rotated
 
 
@@ -191,23 +197,33 @@ def test_session_vectors_cover_both_documented_hash_suites():
 # 线格式（附录 F）
 # --------------------------------------------------------------------------
 
-@pytest.mark.parametrize("v", [v for v in _by_kind("frame")
-                               if v["name"] == "frames-phase2-phase3"],
-                         ids=lambda v: v["name"])
+
+@pytest.mark.parametrize(
+    "v",
+    [v for v in _by_kind("frame") if v["name"] == "frames-phase2-phase3"],
+    ids=lambda v: v["name"],
+)
 def test_handshake_frame_bytes(v):
-    assert pack_initiator_key(bytes(range(32)),
-                              bytes(range(32, 64))).hex() == v["initiator_key"]
+    assert (
+        pack_initiator_key(bytes(range(32)), bytes(range(32, 64))).hex()
+        == v["initiator_key"]
+    )
     assert pack_responder_key(bytes(range(64, 96))).hex() == v["responder_key"]
     assert pack_confirm(bytes(range(96, 128))).hex() == v["confirm"]
-    assert len(pack_initiator_key(bytes(range(32)),
-                                  bytes(range(32, 64)))) == v["initiator_key_len"] == 68
+    assert (
+        len(pack_initiator_key(bytes(range(32)), bytes(range(32, 64))))
+        == v["initiator_key_len"]
+        == 68
+    )
     assert len(pack_responder_key(bytes(range(64, 96)))) == v["responder_key_len"] == 36
     assert len(pack_confirm(bytes(range(96, 128)))) == v["confirm_len"] == 36
 
 
-@pytest.mark.parametrize("v", [v for v in _by_kind("frame")
-                               if v["name"] == "frames-phase4-nonce-aad"],
-                         ids=lambda v: v["name"])
+@pytest.mark.parametrize(
+    "v",
+    [v for v in _by_kind("frame") if v["name"] == "frames-phase4-nonce-aad"],
+    ids=lambda v: v["name"],
+)
 def test_nonce_and_aad_bytes(v):
     """nonce = 0000 ‖ seq(8B BE)，AAD = session_id ‖ seq(8B BE)。
     seq 必须铺满整个 uint64 域——两端若在这里分叉，长跑会话必然失步。"""
@@ -225,17 +241,25 @@ def test_nonce_and_aad_bytes(v):
 # AEAD（附录 F.5）
 # --------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("v", _by_kind("aead"), ids=lambda v: v["name"])
 def test_aead_deterministic_ciphertext(v):
     """GCM 无随机化：固定 key/nonce/plaintext/aad 必须产出同一密文。
     两侧密文不同 = 两实现的 payload 布局或 AAD 不同。"""
     suite = CryptoSuite(v["hash"]) if "hash" in v else CryptoSuite("SHA3-256")
-    ct = suite.aead_encrypt(bytes.fromhex(v["key"]),
-                            bytes.fromhex(v["nonce"]),
-                            bytes.fromhex(v["plaintext"]),
-                            bytes.fromhex(v["aad"]))
+    ct = suite.aead_encrypt(
+        bytes.fromhex(v["key"]),
+        bytes.fromhex(v["nonce"]),
+        bytes.fromhex(v["plaintext"]),
+        bytes.fromhex(v["aad"]),
+    )
     assert ct.hex() == v["ciphertext"]
-    assert suite.aead_decrypt(bytes.fromhex(v["key"]),
-                              bytes.fromhex(v["nonce"]),
-                              ct,
-                              bytes.fromhex(v["aad"])).hex() == v["plaintext"]
+    assert (
+        suite.aead_decrypt(
+            bytes.fromhex(v["key"]),
+            bytes.fromhex(v["nonce"]),
+            ct,
+            bytes.fromhex(v["aad"]),
+        ).hex()
+        == v["plaintext"]
+    )

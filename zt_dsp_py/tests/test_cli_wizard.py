@@ -69,7 +69,11 @@ def test_wizard_connect_with_explicit_values():
     assert result["host"] == "10.0.0.5"
     assert result["port"] == 4444
     assert result["psk_bytes"] == binascii.unhexlify(hex_psk)
-    assert (result["random_len"], result["random_rate"], result["window"]) == (128, 256, 30)
+    assert (result["random_len"], result["random_rate"], result["window"]) == (
+        128,
+        256,
+        30,
+    )
 
 
 def test_wizard_retries_invalid_input():

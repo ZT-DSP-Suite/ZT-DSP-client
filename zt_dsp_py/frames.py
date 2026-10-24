@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Online frame encode/decode (Master Guide 1.0.0, Appendix F).
+"""Online frame encode/decode (Master Guide, Appendix F).
 
 Four frame classes (F.1/F.3/F.4/F.5), all big-endian (network byte order),
 length-prefix mode, no magic, no frame-type field, no frame-level CRC:
@@ -48,7 +48,9 @@ FMT_PADDING: int = 0x01
 RECV_CHUNK: int = 8192
 
 # Minimum Phase 4 payload = ts(8) + fmt(1) + dst(32) + src(32) + next_seed(32) (heartbeat packet)
-MIN_PAYLOAD_LEN: int = TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN * 2 + NEXT_SEED_LEN  # 105
+MIN_PAYLOAD_LEN: int = (
+    TIMESTAMP_LEN + FMT_LEN + TOKEN_HASH_LEN * 2 + NEXT_SEED_LEN
+)  # 105
 
 
 def force_close_socket(sock: socket.socket) -> None:
@@ -63,8 +65,12 @@ def force_close_socket(sock: socket.socket) -> None:
         pass
 
 
-def read_exact(sock: socket.socket, n: int, field_name: str = "data",
-               deadline: Optional[float] = None) -> bytes:
+def read_exact(
+    sock: socket.socket,
+    n: int,
+    field_name: str = "data",
+    deadline: Optional[float] = None,
+) -> bytes:
     """Deterministically read n bytes from the socket (Appendix H.3
     total-timeout semantics).
 
@@ -94,9 +100,11 @@ def read_exact(sock: socket.socket, n: int, field_name: str = "data",
                         force_close_socket(sock)
                         raise ZTDSPTimeoutError(
                             f"reading {field_name} half-packet timeout (total deadline exhausted),"
-                            f"frame synchronization broken, connection closed")
+                            f"frame synchronization broken, connection closed"
+                        )
                     raise ZTDSPTimeoutError(
-                        f"reading {field_name} timed out (total deadline exhausted, Slowloris defense)")
+                        f"reading {field_name} timed out (total deadline exhausted, Slowloris defense)"
+                    )
                 sock.settimeout(remaining)
             try:
                 chunk = sock.recv(min(n - offset, RECV_CHUNK))
@@ -104,13 +112,17 @@ def read_exact(sock: socket.socket, n: int, field_name: str = "data",
                 if offset > 0:
                     force_close_socket(sock)
                     raise ZTDSPTimeoutError(
-                        f"reading {field_name} half-packet timeout, frame synchronization broken, connection closed")
+                        f"reading {field_name} half-packet timeout, frame synchronization broken, connection closed"
+                    )
                 raise ZTDSPTimeoutError(
-                    f"reading {field_name} timed out (data-stage timeout or network latency)")
+                    f"reading {field_name} timed out (data-stage timeout or network latency)"
+                )
             if not chunk:
                 force_close_socket(sock)
-                raise ConnectionError("connection closed by peer before the read completed")
-            view[offset:offset + len(chunk)] = chunk
+                raise ConnectionError(
+                    "connection closed by peer before the read completed"
+                )
+            view[offset : offset + len(chunk)] = chunk
             offset += len(chunk)
         return bytes(buf)
     except ZTDSPTimeoutError:
@@ -128,8 +140,7 @@ def read_exact(sock: socket.socket, n: int, field_name: str = "data",
             pass
 
 
-def _deadline_from(sock: socket.socket,
-                   deadline: Optional[float]) -> Optional[float]:
+def _deadline_from(sock: socket.socket, deadline: Optional[float]) -> Optional[float]:
     if deadline is not None:
         return deadline
     timeout = sock.gettimeout()
@@ -140,6 +151,7 @@ def _deadline_from(sock: socket.socket,
 # Phase 1 frame (Appendix F.1)
 # =============================================================================
 
+
 def pack_phase_one(param_json: bytes, identity: bytes, nonce: bytes) -> bytes:
     """Encode a Phase 1 frame. The size limits also apply on the encoding side (expose local misconfiguration early)."""
     if len(param_json) > MAX_PARAM_JSON:
@@ -148,14 +160,19 @@ def pack_phase_one(param_json: bytes, identity: bytes, nonce: bytes) -> bytes:
         raise ZTDSPProtocolError("identity announcement payload exceeds the size limit")
     if len(nonce) > MAX_NONCE:
         raise ZTDSPProtocolError("nonce too long")
-    return (struct.pack(">I", len(param_json)) + param_json
-            + struct.pack(">I", len(identity)) + identity
-            + struct.pack(">I", len(nonce)) + nonce)
+    return (
+        struct.pack(">I", len(param_json))
+        + param_json
+        + struct.pack(">I", len(identity))
+        + identity
+        + struct.pack(">I", len(nonce))
+        + nonce
+    )
 
 
-def unpack_phase_one(sock: socket.socket,
-                     deadline: Optional[float] = None
-                     ) -> Tuple[bytes, Any, bytes, bytes]:
+def unpack_phase_one(
+    sock: socket.socket, deadline: Optional[float] = None
+) -> Tuple[bytes, Any, bytes, bytes]:
     """Read a Phase 1 frame. Returns (raw frame bytes, parameter JSON bytes,
     identity_blob, nonce).
 
@@ -191,6 +208,7 @@ def unpack_phase_one(sock: socket.socket,
 # Phase 2 frame (Appendix F.3)
 # =============================================================================
 
+
 def pack_initiator_key(pub: bytes, session_salt: bytes) -> bytes:
     """Initiator frame: [pub_len(4)][pk_A(32)][session_salt(32)], 68B total."""
     if len(pub) != X25519_PUB_LEN:
@@ -219,6 +237,7 @@ def read_pub_key(sock: socket.socket, deadline: Optional[float]) -> bytes:
 # Phase 3 frame (Appendix F.4)
 # =============================================================================
 
+
 def pack_confirm(tag: bytes) -> bytes:
     """Confirmation frame: [confirm_len(4)][tag(32)], 36B total."""
     if len(tag) != CONFIRM_TAG_LEN:
@@ -239,18 +258,24 @@ def read_confirm(sock: socket.socket, deadline: Optional[float]) -> bytes:
 # Phase 4 data packets (Appendix F.5)
 # =============================================================================
 
+
 def pack_data_packet(session_id: bytes, seq: int, ciphertext: bytes) -> bytes:
     """Data packet: [session_id(32)][seq(8)][ct_len(4)][ciphertext+tag]."""
     if len(session_id) != SESSION_ID_LEN:
         raise ZTDSPProtocolError("session_id length mismatch")
     if len(ciphertext) > MAX_CIPHERTEXT:
         raise ZTDSPProtocolError("ciphertext too large")
-    return (session_id + struct.pack(">Q", seq)
-            + struct.pack(">I", len(ciphertext)) + ciphertext)
+    return (
+        session_id
+        + struct.pack(">Q", seq)
+        + struct.pack(">I", len(ciphertext))
+        + ciphertext
+    )
 
 
-def read_data_header(sock: socket.socket, deadline: Optional[float]
-                     ) -> Tuple[bytes, int, int]:
+def read_data_header(
+    sock: socket.socket, deadline: Optional[float]
+) -> Tuple[bytes, int, int]:
     """Read the 44-byte plaintext header of a data packet,
     returning (session_id, seq, ct_len).
     The ct_len limit check runs before the ciphertext is read

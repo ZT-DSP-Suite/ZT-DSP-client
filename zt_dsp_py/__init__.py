@@ -5,7 +5,7 @@
 """ZT-DSP - Zero Trust Dynamic Synchronization Protocol.
 
 Reference implementation (client version ZT-DSP_PY-1.0.0, applying to the
-"ZT-DSP Protocol Master Guide", total-guide version 1.0.0).
+"ZT-DSP Protocol Master Guide", total-guide version 1.0.2).
 
 Programming usage:
 
@@ -50,11 +50,26 @@ __docs_version__ = DOCS_VERSION
 __implementation__ = IMPLEMENTATION_ID
 
 __all__ = [
-    "CODE_VERSION", "DOCS_VERSION", "FOLLOWS_DOC", "FOLLOWS_DOC_PATH",
-    "IMPLEMENTATION_ID", "LANGUAGE_PREFIX",
-    "format_version", "__version__", "__docs_version__", "__implementation__",
-    "ZTDSPParams", "HandshakePeer", "SessionMaterial", "SecureSession",
+    "CODE_VERSION",
+    "DOCS_VERSION",
+    "FOLLOWS_DOC",
+    "FOLLOWS_DOC_PATH",
+    "IMPLEMENTATION_ID",
+    "LANGUAGE_PREFIX",
+    "format_version",
+    "__version__",
+    "__docs_version__",
+    "__implementation__",
+    "ZTDSPParams",
+    "HandshakePeer",
+    "SessionMaterial",
+    "SecureSession",
     "derive_p2p_identity",
-    "ZTDSPError", "ZTDSPSecurityError", "ZTDSPParamError", "SilentDropError",
-    "ZTDSPProtocolError", "ZTDSPCryptoError", "ZTDSPTimeoutError",
+    "ZTDSPError",
+    "ZTDSPSecurityError",
+    "ZTDSPParamError",
+    "SilentDropError",
+    "ZTDSPProtocolError",
+    "ZTDSPCryptoError",
+    "ZTDSPTimeoutError",
 ]

@@ -19,7 +19,7 @@ CI 里两侧（Python / Rust）只**读** `vectors.json`，从不重新生成。
     cd ZT-DSP-client
     python test-vectors/generate_vectors.py
 
-覆盖的推导链（与 Master Guide 1.0.0 第 4.2 节 / 附录 F 一一对应）：
+覆盖的推导链（与 Master Guide 第 4.2 节 / 附录 F 一一对应）：
     dh          = X25519(sk, pk)                                  附录 F.3
     mk          = HKDF(ikm = PSK || dh, salt = session_salt,
                       info = "ZT-DSP-MK-v3", L = key_len)          4.2.2
@@ -164,13 +164,13 @@ def self_assert_rfc(vectors: list[dict]) -> None:
 def build() -> dict:
     vectors: list[dict] = []
 
-    # ---- RFC 5869 RFC 原文测试向量（外部来源，非本项目推导）----
+    # ---- RFC 5869 测试向量（外部来源，非本项目推导）----
     # ⚠ 这些常量是**手抄进代码的**，所以下面每一条都由 self_assert_rfc()
     # 用实现重算一遍再比对：手抄错一位就在生成时炸掉，而不是安静地流进 CI。
     vectors.append({
         "name": "rfc5869-tc1-sha256",
         "kind": "hkdf",
-        "why": "RFC 5869 Appendix A.1 RFC 原文测试向量，两侧必须逐字节命中",
+        "why": "RFC 5869 Appendix A.1 测试向量，两侧必须逐字节命中",
         "hash": "SHA-256",
         "ikm": "0b" * 22,
         "salt": "000102030405060708090a0b0c",
@@ -220,11 +220,11 @@ def build() -> dict:
         ),
     })
 
-    # ---- RFC 7748 RFC 原文 X25519 向量 ----
+    # ---- RFC 7748 X25519 测试向量 ----
     vectors.append({
         "name": "rfc7748-x25519-dh",
         "kind": "x25519",
-        "why": "RFC 7748 §6.1 RFC 原文 DH 向量：Alice 私钥 × Bob 公钥",
+        "why": "RFC 7748 §6.1 DH 测试向量：Alice 私钥 × Bob 公钥",
         "scalar": "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a",
         "peer_public": "de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f",
         "shared": "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742",
@@ -310,7 +310,7 @@ def build() -> dict:
 
     return {
         "schema": "zt-dsp-shared-vectors/1",
-        "note": ("Shared known-answer vectors for ZT-DSP 1.0.0. Consumed by BOTH "
+        "note": ("Shared known-answer vectors for ZT-DSP 1.0.2. Consumed by BOTH "
                  "zt_dsp_py and zt_dsp_rs. Regenerate with "
                  "test-vectors/generate_vectors.py and review the diff."),
         "labels": {
