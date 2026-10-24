@@ -20,8 +20,6 @@ use std::net::{Shutdown, TcpStream};
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use rand::rngs::OsRng;
-use rand::Rng;
 use zeroize::Zeroize;
 
 use crate::crypto::{aead_decrypt, aead_encrypt, secure_random, CryptoSuite, NEXT_SEED_LEN};
@@ -199,7 +197,7 @@ impl SecureSession {
 
         //  -  Timing jitter: pure local send behavior, does not change the wire bytes (Appendix G.3)  -
         if self.jitter > 0.0 {
-            let d: f64 = OsRng.gen_range(0.0..self.jitter);
+            let d: f64 = rand::random_range(0.0..self.jitter);
             std::thread::sleep(Duration::from_secs_f64(d));
         }
         // Send failure = session irreversibly out of sync (key has advanced, reconnect only)
@@ -216,7 +214,7 @@ impl SecureSession {
     fn build_padding(&self, pmin: usize, pmax: usize) -> Result<Vec<u8>> {
         // Uniformly distributed within the interval; content is truly random bytes (all-zero strings are a low-entropy fingerprint, forbidden)
         let pad_len: usize = if pmax > pmin {
-            OsRng.gen_range(pmin..=pmax)
+            rand::random_range(pmin..=pmax)
         } else {
             pmin
         };
