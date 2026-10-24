@@ -4,6 +4,12 @@
 # manifest moved inside the package directory during the 1.0.0 rebuild. A stale
 # directory here is silently useless -- Dependabot reports success while scanning
 # a path that does not exist. Verified against zt_dsp_py/pyproject.toml.
+#
+# Version-update proposals are off (open-pull-requests-limit: 0 in every
+# entry): the weekly proposals kept arriving as pull requests, and robot
+# pull requests are not merged by policy. The pins move only when a
+# maintainer applies the change in a signed commit. Alert-driven security
+# fixes stay governed by the repository security settings, not by this file.
 version: 2
 
 updates:
@@ -11,14 +17,14 @@ updates:
     directory: /zt_dsp_py
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     labels: [dependencies, python]
 
   - package-ecosystem: cargo
     directory: /zt_dsp_rs
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     labels: [dependencies, rust]
     ignore:
       # sha3 0.12 does not implement the CoreProxy trait from digest 0.11, so
@@ -38,5 +44,5 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     labels: [dependencies, ci]
