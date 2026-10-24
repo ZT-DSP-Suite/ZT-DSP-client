@@ -3,6 +3,7 @@
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
 """Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
+
 import pytest
 
 from zt_dsp_py.version import (
