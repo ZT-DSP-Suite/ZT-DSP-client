@@ -244,7 +244,7 @@ fn session_derivation_chain() {
 
 /// 两套哈希各一份：只测一套时另一套的回归无人发现。
 #[test]
-fn session_vectors_cover_both_official_hash_suites() {
+fn session_vectors_cover_both_documented_hash_suites() {
     let d = doc();
     let hashes: Vec<String> = vec_of(&d, "session").iter().map(|v| s(v, "hash")).collect();
     assert!(

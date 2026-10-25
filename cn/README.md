@@ -8,7 +8,7 @@
 
 构建与验证步骤见 [开发与验证指南](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main/cn/DEV-GUIDE.md)。
 
-**Zero Trust Dynamic Synchronization Protocol** — 开发语言 **Python 与 Rust**；参考实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.1**）
+**Zero Trust Dynamic Synchronization Protocol** — 开发语言 **Python 与 Rust**；参考实现 **ZT-DSP_PY-1.0.0** 与 **ZT-DSP_RS-1.0.0**（客户端版本 **1.0.0**）｜ 遵循《ZT-DSP 协议总指导》（**docs 1.0.2**）
 
 一个开放、零信任、端到端加密的通信协议与 Python、Rust 参考实现。基于 **PSK + X25519 + AES-256-GCM + 每包棘轮**，提供四阶段握手与全双工加密通信。
 
@@ -17,22 +17,12 @@
 - 前向安全：X25519 临时密钥 + 每包棘轮旋转（先消耗状态后发送）
 - 不依赖中心化信任锚点；令牌哈希（门牌号）经带外交换
 
-> ## 硬件支持声明（TPM 与 HWID）
->
-> **本仓库的两个实现均不支持 TPM 与 HWID。** `zt_dsp_py` 与 `zt_dsp_rs` 中**没有任何**写入、读取或
-> 修改可信平台模块（TPM）或硬件标识（HWID）的代码。PSK 与令牌都是调用方以普通配置方式
->（`--psk-file`、`--psk-env`、`--psk`）提供的普通值，其保密性由调用方自行负责。把密钥绑定到
-> TPM/HWID 是协议层面的设计目标，**计划在后续版本中更新**。
->
-> 本声明随每个版本重新发布；以《ZT-DSP 协议总指导》4.1.4 为准的「版本支持声明 · TPM 与 HWID」。
-> 当前发行版（客户端版本 1.0.0）的状态为：写入 TPM — 不支持；写入 HWID — 不支持；读取或修改 TPM/HWID — 不支持。
-
 ## 文档与代码的对应关系
 
 本实现遵循《ZT-DSP 协议总指导》，路径见 `zt_dsp_py/version.py` 的 `FOLLOWS_DOC_PATH`：
 
 ```
-ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
+ZT-DSP-docs/cn/spec/ZT-DSP-1.0.2-总指导.md
 ```
 
 文档与代码**不靠版本号绑定**：文档侧声明"本文档管 code 的哪些设置"，代码侧声明"本实现遵循哪份文档"。
@@ -76,7 +66,7 @@ ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md
 cd zt_dsp_py
 pip install .                     # 或 pip install -e .
 python -m zt_dsp_py --version
-# → ZT-DSP_PY-1.0.0 (docs 1.0.1)
+# → ZT-DSP_PY-1.0.0 (docs 1.0.2)
 
 # 监听端（响应方）
 zt-dsp-py --role listen --port 37291 --psk-file psk.txt
@@ -136,11 +126,11 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 
 | 项 | 值 |
 |----|----|
-| 适用的文档版本 | `1.0.0` 与 `1.0.1`（可适用多个，见下「适用关系」） |
+| 适用的文档版本 | `1.0.0`、`1.0.1` 与 `1.0.2`（可适用多个，见下「适用关系」） |
 | 客户端版本 | `ZT-DSP_PY-1.0.0`（本仓库 Python）、`ZT-DSP_RS-1.0.0`（本仓库 Rust） |
 | 服务器版本 | `ZT-DSP_SV-1.0.0`（Rust 实现在仓库 `ZT-DSP-server`，Python 实现为本仓 `zt_dsp_sv_py/`） |
 | 程序标识 | `ZT-DSP_PY-1.0.0`（前缀 `PY`） |
-| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP-1.0.1-总指导.md` |
+| 遵循文档 | 《ZT-DSP 协议总指导》，路径 `ZT-DSP-docs/cn/spec/ZT-DSP-1.0.2-总指导.md` |
 
 ### 命名规则体系（docs / code · 接管 / Fork 必读）
 
@@ -151,8 +141,8 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 项 | 规定 |
 |----|------|
 | 格式 | `1.0.x`（主.次.修订） |
-| 载体 | 总指导文档（独立文档仓库 `ZT-DSP-docs` 中的 `cn/spec/ZT-DSP-1.0.1-总指导.md`） |
-| 现行值 | `1.0.0` |
+| 载体 | 总指导文档（独立文档仓库 `ZT-DSP-docs` 中的 `cn/spec/ZT-DSP-1.0.2-总指导.md`） |
+| 现行值 | `1.0.2` |
 | 修订位递增 | 澄清、勘误、可读性改进——不改变任何线上行为定义 |
 | 次位递增 | 新增附录或可选章节——不改变线上行为定义 |
 | 主位递增 | 协议核心语义重述（通常伴随客户端/服务器版本联动） |
@@ -200,7 +190,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 #### 显示与引用规范
 
 - **引用一个实现**：用其完整版本标识（客户端或服务器）（如 `ZT-DSP_PY-1.0.0`），不要附加 docs 版本
-- **`--version` 输出**（两段依次为）：实现版本标识、总指导版本 → `ZT-DSP_PY-1.0.0 (docs 1.0.1)`
+- **`--version` 输出**（两段依次为）：实现版本标识、总指导版本 → `ZT-DSP_PY-1.0.0 (docs 1.0.2)`
 - **引用协议行为**：写"协议行为见《ZT-DSP 协议总指导》某节"，不要引用版本串
 - **禁止事项**：① 在程序标识中混入 docs 版本；② 在握手帧中写入任何版本串；③ 回收任何已用过的版本号；④ 对已发布版本做断裂式编号重置；⑤ 在 `version.py` 之外硬编码任何版本字符串
 
