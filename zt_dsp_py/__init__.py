@@ -5,7 +5,7 @@
 """ZT-DSP - Zero Trust Dynamic Synchronization Protocol.
 
 Reference implementation (client version ZT-DSP_PY-1.0.0, applying to the
-"ZT-DSP Protocol Master Guide", total-guide version 1.0.0).
+"ZT-DSP Protocol Master Guide", total-guide version 1.0.2).
 
 Programming usage:
 

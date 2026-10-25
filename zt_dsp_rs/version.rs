@@ -5,7 +5,7 @@
 //!
 //! Word-for-word aligned with the Python reference implementation `zt_dsp_py/version.py`:
 //!
-//! - **total-guide version (docs version)**: `1.0.0`, used only for the revision count of the Master Guide
+//! - **total-guide version (docs version)**: `1.0.2`, used only for the revision count of the Master Guide
 //!   document itself; it does not participate in network communication;
 //! - **client version**: `ZT-DSP_<prefix>-<major.minor.patch>`; this implementation is `ZT-DSP_RS-1.0.0`
 //!   (language prefix RS = Rust);
@@ -17,11 +17,6 @@
 //!   expressed by equality of version numbers;
 //! - The handshake frame **carries no version string**: the phase-1 parameter JSON and the phase-4 AAD both contain neither a version nor
 //!   a protocol identifier field. Whether the peer is compatible is reflected by the phase-3 confirmation tag verification.
-//!
-//! Hardware support (TPM and HWID): this implementation contains **no** code that writes, reads or modifies a Trusted Platform Module
-//! or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the caller; keeping them secret is the
-//! caller's responsibility. Binding them to a TPM/HWID was an earlier design goal; it is now **deprecated and will be removed in a later revision**. This statement is
-//! re-issued with every release; the authoritative statement is the TPM/HWID support declaration in Master Guide section 4.1.4.
 //!
 //! The correspondence between the document and the code is maintained by a **bidirectional declaration**, not bound by version numbers:
 //! The code side declares "which documents this implementation applies to" (see `FOLLOWS_DOC` / `FOLLOWS_DOC_PATH` /
@@ -36,13 +31,13 @@
 pub const FOLLOWS_DOC: &str = "ZT-DSP Protocol Master Guide";
 
 /// Code-side bidirectional declaration: the path of the followed document.
-pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md";
+pub const FOLLOWS_DOC_PATH: &str = "ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md";
 
 /// Total-guide versions this implementation applies to (many-to-many: may hold several).
-pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0", "1.0.1"];
+pub const APPLIES_TO_DOC_VERSIONS: &[&str] = &["1.0.0", "1.0.1", "1.0.2"];
 
 /// docs version (document revision number, does not participate in network communication).
-pub const DOCS_VERSION: &str = "1.0.1";
+pub const DOCS_VERSION: &str = "1.0.2";
 
 /// Role of this implementation: "client" or "server".
 pub const ROLE: &str = "client";
@@ -76,20 +71,20 @@ mod tests {
     #[test]
     fn version_contract() {
         assert_eq!(IMPLEMENTATION_ID, "ZT-DSP_RS-1.0.0");
-        assert_eq!(DOCS_VERSION, "1.0.1");
+        assert_eq!(DOCS_VERSION, "1.0.2");
         assert_eq!(CODE_VERSION, "1.0.0");
         assert_eq!(LANGUAGE_PREFIX, "RS");
         assert_eq!(ROLE, "client");
         assert_eq!(FOLLOWS_DOC, "ZT-DSP Protocol Master Guide");
         assert_eq!(
             FOLLOWS_DOC_PATH,
-            "ZT-DSP-docs/en/spec/ZT-DSP-1.0.1-Master_Guide.md"
+            "ZT-DSP-docs/en/spec/ZT-DSP-1.0.2-Master_Guide.md"
         );
     }
 
     #[test]
     fn applicability_is_many_to_many() {
-        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.0.0", "1.0.1"]);
+        assert_eq!(APPLIES_TO_DOC_VERSIONS, &["1.0.0", "1.0.1", "1.0.2"]);
         assert!(APPLIES_TO_DOC_VERSIONS.contains(&DOCS_VERSION));
         assert!(CLIENT_VERSIONS.contains(&IMPLEMENTATION_ID));
         assert!(!SERVER_VERSIONS.contains(&IMPLEMENTATION_ID));
@@ -98,6 +93,6 @@ mod tests {
 
     #[test]
     fn format_version_two_segments() {
-        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.1)");
+        assert_eq!(format_version(), "ZT-DSP_RS-1.0.0 (docs 1.0.2)");
     }
 }

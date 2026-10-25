@@ -187,7 +187,7 @@ def test_session_derivation_chain(v):
     assert peer_rotated == rotated
 
 
-def test_session_vectors_cover_both_official_hash_suites():
+def test_session_vectors_cover_both_documented_hash_suites():
     """两套哈希各一份：只测一套时，另一套的回归无人发现。"""
     hashes = {v["hash"] for v in _by_kind("session")}
     assert {"SHA3-256", "SHA-256"} <= hashes
