@@ -76,7 +76,8 @@ export ZT_DSP_PSK=<64-digit hex>       # Linux/macOS
 zt-dsp-py --role listen --port 37291 --psk-env
 ```
 
-**Running with no arguments starts the interactive wizard** (recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step. When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
+**Running with no arguments starts the interactive wizard** (recommended for beginners): it asks in turn for the role, address and port, the PSK (pressing Enter generates a fresh PSK and prints it for the peer) and the protocol parameters, with Enter accepting the default at every step.
+When stdin or stdout is redirected (pipe, CI, IDE), no-argument startup prints usage and exits 0 instead of blocking.
 
 Inside a session, type a message and press Enter to send; exit with /quit or Ctrl+C. For a two-instance demo on the local machine, open a second terminal and run the opposite role with the same PSK and parameters.
 
@@ -166,7 +167,7 @@ The relation between a document version and the client/server versions is **not*
 | Relation | Rule |
 |----------|------|
 | one document version -> several implementation versions | several implementations of the same kind whose protocol behaviour has not changed **share one declaration**; no rewrite is needed per version |
-| several document versions -> one implementation version | one implementation may apply to several guides at once; listed item by item in `APPLIES_TO_DOC_VERSIONS` |
+| several document versions -> one implementation version | one implementation may apply to several guides at once; the applicable list is kept item by item in the doc-side declaration |
 | same number, different implementation | identical version numbers do **not** mean the same implementation and do not constitute a compatibility claim |
 | how compatibility is decided | applicability is a **declaration**, not a test; real compatibility is shown by the phase-three confirmation-label check |
 

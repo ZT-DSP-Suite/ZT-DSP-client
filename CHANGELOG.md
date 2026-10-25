@@ -41,6 +41,14 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   concatenated output.
 - The Rust integration tests moved from the binary entry point into the library, so they
   can reach the modules directly.
+- **Version contract simplified: `APPLIES_TO_DOC_VERSIONS` removed.** The
+  applicability list is a doc-side declaration; before any release the
+  implementations declare the development baseline only (`FOLLOWS_DOC` /
+  `FOLLOWS_DOC_PATH` / `DOCS_VERSION`). The code side keeps the
+  `CLIENT_VERSIONS` / `SERVER_VERSIONS` pairing tables. The constant and its
+  assertions are gone from `zt_dsp_py/version.py`, `zt_dsp_rs/version.rs`, and
+  both test suites; the README applicability rows now point at the doc-side
+  declaration.
 
 ### Removed
 

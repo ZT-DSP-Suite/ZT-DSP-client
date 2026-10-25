@@ -167,7 +167,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 | 关系 | 规则 |
 |------|------|
 | 一个总指导版本 → 多个实现版本 | 同品类、协议行为未改变的多个实现**共用同一份适用声明**，无需为每个版本重写 |
-| 多个总指导版本 → 一个实现版本 | 一个实现可同时适用多份总指导；由 `APPLIES_TO_DOC_VERSIONS` 逐项列出 |
+| 多个总指导版本 → 一个实现版本 | 一个实现可同时适用多份总指导；适用清单由文档侧声明逐项列出 |
 | 同号不同实现 | 版本号相同**不表示**同一实现，也不构成兼容声明；兼容性只由声明 + 实际握手结果决定 |
 | 判定方式 | 适用性是**声明**，不是判据；真实兼容性始终由阶段三确认标签校验体现 |
 
@@ -178,7 +178,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 握手帧不携带版本串，因此对端兼容性不靠版本号判断。文档与代码的对应关系由**双向声明**维护：
 
 - **文档侧**：总指导头部声明"本文档规定实现侧的协议行为与可调参数"，并列出**适用本版本的客户端与服务器版本**。
-- **代码侧**：`zt_dsp_py/version.py` 的 `FOLLOWS_DOC` / `FOLLOWS_DOC_PATH` 声明本实现遵循哪份文档，`APPLIES_TO_DOC_VERSIONS` / `CLIENT_VERSIONS` / `SERVER_VERSIONS` 声明适用关系。
+- **代码侧**：`zt_dsp_py/version.py` 的 `FOLLOWS_DOC` / `FOLLOWS_DOC_PATH` 声明本实现遵循哪份文档，`CLIENT_VERSIONS` / `SERVER_VERSIONS` 保留同品类版本配对表。
 
 若两端遵循的规范不一致，握手会在**阶段三确认标签**处失败。
 
@@ -191,7 +191,7 @@ python -m pytest zt_dsp_py/tests -q      # 从仓库根目录运行
 
 #### 唯一事实源与变更流程
 
-- `zt_dsp_py/version.py` 是**唯一事实源**：`DOCS_VERSION`、`CODE_VERSION` / `LANGUAGE_PREFIX` / `IMPLEMENTATION_ID`、`ROLE`、`APPLIES_TO_DOC_VERSIONS`、`CLIENT_VERSIONS`、`SERVER_VERSIONS`、`FOLLOWS_DOC` / `FOLLOWS_DOC_PATH`
+- `zt_dsp_py/version.py` 是**唯一事实源**：`DOCS_VERSION`、`CODE_VERSION` / `LANGUAGE_PREFIX` / `IMPLEMENTATION_ID`、`ROLE`、`CLIENT_VERSIONS`、`SERVER_VERSIONS`、`FOLLOWS_DOC` / `FOLLOWS_DOC_PATH`
 - `zt_dsp_py/tests/test_version.py` 锁定契约——改版本必须连测试一起改，测试不改则提交被拦
 - 改版本的完整清单：`version.py` → `test_version.py` → 本节对应表格 → `pyproject.toml`（`version = CODE_VERSION`）→ 相关文档中的版本引用
 
