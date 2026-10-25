@@ -4,6 +4,9 @@
 
 """Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
 
+import shutil
+import subprocess
+
 import pytest
 
 from zt_dsp_py.version import (
@@ -100,3 +103,30 @@ def test_build_date_rejects_other_shapes() -> None:
     for bad in ("2026-10-24", "2026102", "20261332x", "   "):
         with pytest.raises(ValueError):
             implementation_identifier("PY", "1.0.0", bad)
+
+
+def test_build_date_matches_the_commit_date() -> None:
+    # The date segment is the head commit's date; a git checkout pins BUILD_DATE to it
+    if shutil.which("git") is None:
+        pytest.skip("git is not available")
+    proc = subprocess.run(
+        ["git", "log", "-1", "--format=%cd", "--date=format:%Y%m%d"],
+        capture_output=True,
+        text=True,
+        cwd=git_repository_root(),
+    )
+    if proc.returncode != 0:
+        pytest.skip("no git checkout available")
+    assert BUILD_DATE == proc.stdout.strip()
+
+
+def git_repository_root() -> str:
+    # Run from the repository root; fall back to the current directory outside a checkout
+    proc = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        return "."
+    return proc.stdout.strip()
