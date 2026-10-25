@@ -42,6 +42,19 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 - The Rust integration tests moved from the binary entry point into the library, so they
   can reach the modules directly.
 
+### Removed
+
+- **The Python server implementation moved to the ZT-DSP-server repository.**
+  `zt_dsp_sv_py/` (package, tests, pyproject, LICENSE, CONFORMANCE.md, README)
+  now lives in ZT-DSP-server. The H8 ruling settled the placement: the client
+  role is a P2P/TCP direct endpoint, the server role is the relay-hop stand-in
+  for NAT traversal, and the client repository ships no server code. The server
+  CI steps (`Server role version banner`, `Server role tests`) and the
+  `python-format-server` lint job went with it; the three READMEs now state that
+  both server implementations (Rust and Python) live in ZT-DSP-server.
+  `SERVER_VERSIONS` stays in both version contracts as the pairing table for
+  the server role.
+
 ### Fixed
 
 - **The `zt-dsp-sv` wheel was unbuildable and under-declared.** Its pyproject
