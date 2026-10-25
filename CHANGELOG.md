@@ -44,6 +44,15 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Fixed
 
+- **The `zt-dsp-sv` wheel was unbuildable and under-declared.** Its pyproject
+  listed a package directory that does not exist (no `package-dir`, so
+  `pip wheel` failed with "package directory 'zt_dsp_sv_py' does not exist"),
+  declared no dependency on `zt-dsp-py` although `server.py` imports it,
+  carried no license file, and claimed `requires-python >=3.9` while the
+  dependency needs >=3.10. The pyproject now maps the flat layout, depends
+  on `zt-dsp-py>=1.0.0`, carries `LICENSE` verbatim, and requires Python
+  >=3.10; `pip wheel` produces a wheel whose METADATA shows all fields.
+
 - **20 source references pointed at appendix letters that no longer exist.** The docs repo
   commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
   had moved into the client README, but 20 docstrings and comments across `cli.py`,
