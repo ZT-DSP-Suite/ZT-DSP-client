@@ -12,7 +12,7 @@
 CI 里两侧（Python / Rust）只**读** `vectors.json`，从不重新生成。
 理由：向量若由被检验方自己算出，检验就退化成自证——Python 生成、Rust 断言，
 只能证明「Rust 等于 Python」；它证明不了「两者都等于规范」。
-所以 RFC 向量取自 RFC 原文（第三方权威），协议向量在生成后**提交进仓**，
+所以 RFC 向量取自 RFC 原文（外部来源），协议向量在生成后**提交进仓**，
 改动它会出现在 diff 里，人能看到。
 
 用法：
@@ -164,13 +164,13 @@ def self_assert_rfc(vectors: list[dict]) -> None:
 def build() -> dict:
     vectors: list[dict] = []
 
-    # ---- RFC 5869 官方测试向量（第三方权威，非本项目推导）----
+    # ---- RFC 5869 测试向量（外部来源，非本项目推导）----
     # ⚠ 这些常量是**手抄进代码的**，所以下面每一条都由 self_assert_rfc()
     # 用实现重算一遍再比对：手抄错一位就在生成时炸掉，而不是安静地流进 CI。
     vectors.append({
         "name": "rfc5869-tc1-sha256",
         "kind": "hkdf",
-        "why": "RFC 5869 Appendix A.1 官方测试向量，两侧必须逐字节命中",
+        "why": "RFC 5869 Appendix A.1 测试向量，两侧必须逐字节命中",
         "hash": "SHA-256",
         "ikm": "0b" * 22,
         "salt": "000102030405060708090a0b0c",
@@ -198,11 +198,33 @@ def build() -> dict:
         ),
     })
 
-    # ---- RFC 7748 官方 X25519 向量 ----
+    # ---- OpenSSL 独立实现交叉验证向量（外部来源，非本项目推导）----
+    # 这条向量的 OKM 由本机 OpenSSL 3.5.9 的 openssl kdf 产出，
+    # 与 Python 标准库 hmac/hashlib 手写的 HKDF 结果一致：
+    #   openssl kdf -keylen 32 -kdfopt digest:SHA3-256 -kdfopt hexkey:<ikm> -kdfopt hexinfo:5a542d4453502d454b2d7633 -kdfopt mode:EXTRACT_AND_EXPAND HKDF
+    # 三方（本仓实现、OpenSSL、标准库手写）给出同一 OKM，
+    # 所以协议自己的 info 标签也被外部实现覆盖到。
+    vectors.append({
+        "name": "openssl-sha3-256-hkdf-crosscheck",
+        "kind": "hkdf",
+        "why": "OpenSSL 3.5.9 openssl kdf 与标准库手写 HKDF 产出的同一 OKM，"
+               "覆盖协议自己的 info 标签",
+        "hash": "SHA3-256",
+        "ikm": bytes(range(32)).hex(),
+        "salt": "00" * 32,
+        "info": "5a542d4453502d454b2d7633",
+        "length_bits": 256,
+        "okm": (
+            "31d7a5ad0d9cec1994d4762371dcd44"
+            "46a1d2a1ed70dff1435ca98afd9b077d1"
+        ),
+    })
+
+    # ---- RFC 7748 X25519 测试向量 ----
     vectors.append({
         "name": "rfc7748-x25519-dh",
         "kind": "x25519",
-        "why": "RFC 7748 §6.1 官方 DH 向量：Alice 私钥 × Bob 公钥",
+        "why": "RFC 7748 §6.1 DH 测试向量：Alice 私钥 × Bob 公钥",
         "scalar": "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a",
         "peer_public": "de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f",
         "shared": "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742",

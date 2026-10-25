@@ -106,13 +106,18 @@ class SecureSession:
                     )
 
                 # -- state forward-rolling (completed before encryption) --
-                ek_snapshot = bytes(self.send_ek)
+                # Working copy of the old EK: mutable, so it can be wiped once the packet is built.
+                ek_work = bytearray(self.send_ek)
                 seq = self.seq_send
                 sid_snapshot = bytes(self.session_id)
                 next_seed = secure_random(NEXT_SEED_LEN)
-                new_ek = self.suite.hkdf(
-                    ek_snapshot + next_seed, INFO_EK_ROTATE, self.params.key_len
-                )
+                ikm = bytearray(len(ek_work) + len(next_seed))
+                ikm[: len(ek_work)] = ek_work
+                ikm[len(ek_work) :] = next_seed
+                try:
+                    new_ek = self.suite.hkdf(ikm, INFO_EK_ROTATE, self.params.key_len)
+                finally:
+                    secure_zero(ikm)
                 secure_zero(self.send_ek)
                 self.send_ek = bytearray(new_ek)
                 self.seq_send = seq + 1
@@ -136,12 +141,15 @@ class SecureSession:
                 + self.local_hash
                 + plaintext
                 + padding_part
-                + next_seed
+                + bytes(next_seed)
             )
 
             nonce = gcm_nonce(seq)
             aad = build_aad(sid_snapshot, seq)
-            ciphertext = self.suite.aead_encrypt(ek_snapshot, nonce, payload, aad)
+            try:
+                ciphertext = self.suite.aead_encrypt(ek_work, nonce, payload, aad)
+            finally:
+                secure_zero(ek_work)
             packet = pack_data_packet(sid_snapshot, seq, ciphertext)
 
             try:
@@ -188,14 +196,17 @@ class SecureSession:
                     raise ZTDSPSecurityError(
                         "Session ID mismatch; dropping packet (sub-channel crosstalk or residual old session)"
                     )
-                ek_snapshot = bytes(self.recv_ek)
+                ek_work = bytearray(self.recv_ek)
                 aad = build_aad(session_id, seq)
 
             try:
-                # Step 3: GCM decryption and authentication (AAD takes part in authentication)
-                payload = self.suite.aead_decrypt(
-                    ek_snapshot, gcm_nonce(seq), ciphertext, aad
-                )
+                try:
+                    # Step 3: GCM decryption and authentication (AAD takes part in authentication)
+                    payload = self.suite.aead_decrypt(
+                        ek_work, gcm_nonce(seq), ciphertext, aad
+                    )
+                finally:
+                    secure_zero(ek_work)
                 plaintext = self._validate_payload(payload, seq)
             except (ZTDSPSecurityError, ZTDSPProtocolError):
                 self._terminate()
@@ -249,9 +260,19 @@ class SecureSession:
                 )
 
             # Ratchet rotation + sequence number advance (must be completed before step 8 -- out-of-window packets are also rolled forward)
-            new_ek = self.suite.hkdf(
-                bytes(self.recv_ek) + next_seed, INFO_EK_ROTATE, self.params.key_len
-            )
+            # The HKDF input is a mutable working copy so it can be wiped after
+            # use, symmetrically with the send side. hkdf() returns bytes, so the
+            # derived copy below cannot be zeroed from Python; only the input is.
+            ikm = bytearray(self.recv_ek)
+            ikm += bytearray(next_seed)
+            try:
+                new_ek = self.suite.hkdf(
+                    ikm,
+                    INFO_EK_ROTATE,
+                    self.params.key_len,
+                )
+            finally:
+                secure_zero(ikm)
             secure_zero(self.recv_ek)
             self.recv_ek = bytearray(new_ek)
             self.seq_recv = seq
