@@ -32,7 +32,7 @@ def test_guide_defaults_and_wire_json() -> None:
         params.aead_name,
     ) == (256, 1024, 60, 256, "SHA3-256", "AES-256-GCM")
     # F.1: under default parameters the parameter JSON is exactly 120 bytes,
-    # and byte-for-byte equal to the official layout (no version / protocol-identifier fields)
+    # and byte-for-byte equal to the specified layout (no version / protocol-identifier fields)
     expected = (
         b'{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,'
         b'"module_flags":{},"random_len":256,"random_rate":1024,'

@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Cryptographic primitives layer (Master Guide 1.0.0 Section 4.2 /
+"""Cryptographic primitives layer (Master Guide Section 4.2 /
 Appendices F.3-F.5).
 
 Default suite: X25519 + HKDF-SHA3-256 + HMAC-SHA3-256 + AES-256-GCM.
-The hash algorithm is selected by the hash_name parameter (officially
-supported: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
-official AEAD implementation contains only AES-256-GCM.
+The hash algorithm is selected by the hash_name parameter (allowed
+values: SHA3-256/384/512 and SHA-256/384/512, Appendix F.1); the
+reference implementation contains only AES-256-GCM.
 
 Security statements:
 - X25519 low-order point / out-of-bounds public keys (all zeros, u=1,
@@ -90,7 +90,7 @@ def constant_time_compare(a: bytes, b: bytes) -> bool:
 
 def hmac_sha3(key: bytes, message: bytes) -> bytes:
     """HMAC-SHA3-256 (fixed algorithm - token hash derivation does not
-    vary with params.hash_name; see Master Guide 1.0.0 Section
+    vary with params.hash_name; see Master Guide Section
     4.1.1 placeholder path)."""
     h = _crypto_hmac.HMAC(key, hashes.SHA3_256())
     h.update(message)
@@ -131,7 +131,7 @@ class CryptoSuite:
             )
         if aead_name != "AES-256-GCM":
             raise ZTDSPCryptoError(
-                f"Unsupported AEAD algorithm: {aead_name}; the official implementation only contains AES-256-GCM"
+                f"Unsupported AEAD algorithm: {aead_name}; the reference implementation only contains AES-256-GCM"
             )
         self.hash_name = hash_name
         self.aead_name = aead_name

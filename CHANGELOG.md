@@ -28,6 +28,9 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Changed
 
+- **Document version aligned to 1.0.2.** Both implementations now report
+  `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
+  deprecated hardware key-storage notices.
 - CI now pins **every** action to a commit SHA. Two steps in the interop job were left
   on movable tags, which contradicted the stated policy on that file's own header.
 - The interop CI job is renamed from `Interop (Python <-> Rust, byte-level)` to
@@ -51,6 +54,16 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   branch refuses non-finite values. Hostile-but-legal values are pinned by
   `test_primitives.py`, a responder-level silent-drop test, and a Rust parser
   rejection assertion.
+
+- **The `zt-dsp-sv` wheel was unbuildable and under-declared.** Its pyproject
+  listed a package directory that does not exist (no `package-dir`, so
+  `pip wheel` failed with "package directory 'zt_dsp_sv_py' does not exist"),
+  declared no dependency on `zt-dsp-py` although `server.py` imports it,
+  carried no license file, and claimed `requires-python >=3.9` while the
+  dependency needs >=3.10. The pyproject now maps the flat layout, depends
+  on `zt-dsp-py>=1.0.0`, carries `LICENSE` verbatim, and requires Python
+  >=3.10; `pip wheel` produces a wheel whose METADATA shows all fields.
+
 - **20 source references pointed at appendix letters that no longer exist.** The docs repo
   commit `6e1d425` ("Prune stale appendices") removed appendices A / D / E, whose content
   had moved into the client README, but 20 docstrings and comments across `cli.py`,

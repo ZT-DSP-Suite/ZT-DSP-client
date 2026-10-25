@@ -12,18 +12,6 @@ Build with the [DEV-GUIDE](https://github.com/ZT-DSP-Suite/ZT-DSP-docs/blob/main
 
 > ZT-DSP — Zero Trust Dynamic Synchronization Protocol. This repository is the **client (reference) implementation**.
 
-> ## Hardware support (TPM / HWID)
->
-> **Neither implementation in this repository supports the TPM or the HWID.**
-> `zt_dsp_py` and `zt_dsp_rs` contain no code that writes, reads or modifies a Trusted Platform Module
-> or a Hardware Identifier. The PSK and the token are ordinary configuration values supplied by the
-> caller (`--psk-file`, `--psk-env`, `--psk`); keeping them secret is the caller's responsibility.
-> Binding keys to a TPM/HWID is a protocol-level design goal that is **planned for a later version**.
->
-> This statement is re-issued with every release; the authoritative statement is the TPM/HWID
-> support declaration in Master Guide section 4.1.4. For the current release it reads:
-> write TPM — not supported; write HWID — not supported; read or modify TPM/HWID — not supported.
-
 ## Documentation
 
 | 中文 | English |
@@ -41,7 +29,7 @@ Documentation follows a bilingual mirror layout: `cn/` and `en/` contain the sam
 | `zt_dsp_sv_py/` | Python | `ZT-DSP_SV-1.0.0` |
 
 The development languages are **Python** and **Rust**; all implementations are
-first-class and follow the same Protocol Master Guide (docs 1.0.1). Other languages can be
+first-class and follow the same Protocol Master Guide (docs 1.0.2). Other languages can be
 added following the implementation-identifier rule `ZT-DSP_<prefix>-<implementation version>`.
 
 Source comments and docstrings are in English.

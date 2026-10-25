@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-//! Transport and session runner (Master Guide 1.0.0 Appendix H.3 timers / H.6 cleanup semantics).
+//! Transport and session runner (Master Guide Appendix H.3 timers / H.6 cleanup semantics).
 //!
 //! Provides:
 //! - Two runner entry points, listen (responder) and connect (initiator), with connection retry and a self-connection warning;
@@ -346,7 +346,7 @@ pub fn run_listen(cfg: &SessionConfig, host: &str, port: u16) -> Result<()> {
     };
     drop(listener);
 
-    // connection rate limiting (off = unlimited, kept consistent with the official CLI behavior)
+    // connection rate limiting (off = unlimited, kept consistent with the reference CLI behavior)
     if let Some(l) = &limiter {
         if !l.allow() {
             // Over the limit: close immediately and silently (no bytes sent)
