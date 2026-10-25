@@ -19,7 +19,7 @@ CI 里两侧（Python / Rust）只**读** `vectors.json`，从不重新生成。
     cd ZT-DSP-client
     python test-vectors/generate_vectors.py
 
-覆盖的推导链（与 Master Guide 1.0.0 第 4.2 节 / 附录 F 一一对应）：
+覆盖的推导链（与 Master Guide 第 4.2 节 / 附录 F 一一对应）：
     dh          = X25519(sk, pk)                                  附录 F.3
     mk          = HKDF(ikm = PSK || dh, salt = session_salt,
                       info = "ZT-DSP-MK-v3", L = key_len)          4.2.2
@@ -288,7 +288,7 @@ def build() -> dict:
 
     return {
         "schema": "zt-dsp-shared-vectors/1",
-        "note": ("Shared known-answer vectors for ZT-DSP 1.0.0. Consumed by BOTH "
+        "note": ("Shared known-answer vectors for ZT-DSP 1.0.2. Consumed by BOTH "
                  "zt_dsp_py and zt_dsp_rs. Regenerate with "
                  "test-vectors/generate_vectors.py and review the diff."),
         "labels": {

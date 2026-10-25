@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (c) 2026 ZT-DSP Suite maintainers (copyright holder: SCAL-ROAM)
 
-"""Protocol-layer exception hierarchy (Master Guide 1.0.0, Appendix H.5).
+"""Protocol-layer exception hierarchy (Master Guide, Appendix H.5).
 
 The upper layer must distinguish "retry" from "terminate" by exception type:
 - ZTDSPSecurityError: security event — always terminate the session and
