@@ -4,6 +4,8 @@
 
 """Protocol primitive tests: parameter validation, P2P identity derivation, key derivation formulas (Appendix F.1 / 4.2.2 / 4.2.3)."""
 
+import json
+
 import pytest
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -80,6 +82,18 @@ def test_from_wire_converges_errors() -> None:
         ISOSTRESSParams.from_wire({"random_len": "not-an-int"})
     with pytest.raises(ISOSTRESSParamError):
         ISOSTRESSParams.from_wire({"key_len": 999})
+    # Legal JSON, hostile values: 1e999 parses to float infinity and int(inf)
+    # used to raise OverflowError outside the funnel (bare traceback). The
+    # same family: negative infinity, and a giant integer that overflows the
+    # later range checks only after int() succeeds.
+    for raw in (
+        '{"random_len": 1e999}',
+        '{"random_len": -1e999}',
+        '{"key_len": 1e999}',
+        '{"random_len": ' + "1" + "0" * 400 + "}",
+    ):
+        with pytest.raises(ISOSTRESSParamError):
+            ISOSTRESSParams.from_wire(json.loads(raw))
     ok = ISOSTRESSParams.from_wire({"random_len": 512, "window": 45})
     assert ok.random_len == 512 and ok.window == 45
 

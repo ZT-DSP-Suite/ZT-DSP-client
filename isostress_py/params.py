@@ -164,7 +164,9 @@ class ISOSTRESSParams:
     def from_wire(cls, d: Any) -> "ISOSTRESSParams":
         """Builds a parameter set from the peer's JSON dict. Peer-controlled
         input: all type/value errors are funneled into ISOSTRESSParamError;
-        ValueError/TypeError must not escape (Appendix H.4)."""
+        ValueError/TypeError/OverflowError must not escape (Appendix H.4).
+        OverflowError arrives with legal JSON such as 1e999: json.loads
+        yields float infinity and int(inf) overflows."""
         if not isinstance(d, dict):
             raise ISOSTRESSParamError("peer parameter payload must be a JSON object")
         try:
@@ -180,7 +182,13 @@ class ISOSTRESSParams:
                 aead_name=str(d.get("aead", AEAD_NAME)),
                 module_flags=dict(module_flags),
             )
-        except (ISOSTRESSParamError, ValueError, TypeError, RecursionError) as exc:
+        except (
+            ISOSTRESSParamError,
+            ValueError,
+            TypeError,
+            OverflowError,
+            RecursionError,
+        ) as exc:
             if isinstance(exc, ISOSTRESSParamError):
                 raise
             raise ISOSTRESSParamError(f"peer parameters invalid: {exc}") from exc

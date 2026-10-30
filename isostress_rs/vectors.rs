@@ -5,7 +5,7 @@
 //!
 //! 读的是 `isostress-client/test-vectors/vectors.json`，与 `isostress_py/tests/test_vectors.py`
 //! **同一份文件**。这不是「Rust 抄 Python 的答案」：JSON 是提交进仓的产物，
-//! 其中 RFC 5869 / RFC 7748 两条来自 RFC 原文（第三方权威），协议向量在生成后经人工复核。
+//! 其中 RFC 5869 / RFC 7748 两条来自 RFC 原文（外部来源），协议向量在生成后经人工复核。
 //!
 //! 没有这份文件时，两个实现各自的单测都可能是绿的而线上互不通——
 //! 单测证明不了「两侧对同一输入产出同一字节」，只有共享期望值能。
@@ -38,7 +38,7 @@ fn vec_of<'a>(d: &'a Value, kind: &str) -> Vec<&'a Value> {
         .collect()
 }
 
-/// 向量里的 hash_name → CryptoSuite。AEAD 固定 AES-256-GCM（唯一官方实现）。
+/// 向量里的 hash_name → CryptoSuite。AEAD 固定 AES-256-GCM（唯一实现）。
 fn suite(hash_name: &str) -> CryptoSuite {
     CryptoSuite::new(hash_name, "AES-256-GCM").expect("hash from vector")
 }
@@ -92,7 +92,7 @@ fn protocol_labels_match_source_constants() {
     );
 }
 
-/// RFC 5869 A.1 / A.3：第三方权威常量，验证 HKDF 本身。
+/// RFC 5869 A.1 / A.3：外部来源常量，验证 HKDF 本身。
 #[test]
 fn hkdf_matches_rfc5869() {
     let d = doc();
@@ -113,7 +113,7 @@ fn hkdf_matches_rfc5869() {
     }
 }
 
-/// RFC 7748 §6.1：第三方权威常量。
+/// RFC 7748 §6.1：外部来源常量。
 #[test]
 fn x25519_matches_rfc7748() {
     let d = doc();

@@ -10,7 +10,7 @@ import threading
 from typing import Dict, Tuple
 
 from isostress_py.errors import SilentDropError, ISOSTRESSSecurityError
-from isostress_py.frames import force_close_socket, unpack_phase_one
+from isostress_py.frames import force_close_socket, pack_phase_one, unpack_phase_one
 from isostress_py.handshake import HANDSHAKE_TIMEOUT, HandshakePeer
 from isostress_py.params import ISOSTRESSParams
 
@@ -155,6 +155,36 @@ def test_param_mismatch_silence_sends_nothing() -> None:
     assert isinstance(outcome.get("responder_error"), SilentDropError)
     # No bytes received from the responder (None = timeout with no data; b"" = peer closed)
     assert outcome["received"] in (None, b"")
+
+
+def test_hostile_param_json_responder_silent() -> None:
+    # Legal JSON, hostile value: random_len 1e999 parses to float infinity and
+    # int(inf) used to escape the funnel as a bare OverflowError traceback.
+    # The responder converges to the strict silent drop instead (Appendix H.4).
+    responder = HandshakePeer(PSK, ISOSTRESSParams(), "responder", silent_hold=0.1)
+    left, right = _pair()
+    param_json = (
+        b'{"aead":"AES-256-GCM","hash":"SHA3-256","key_len":256,'
+        b'"module_flags":{},"random_len":1e999,"random_rate":1024,"window":60}'
+    )
+    frame = pack_phase_one(param_json, bytes(64), bytes(32))
+    outcome: Dict[str, object] = {}
+
+    def run_responder() -> None:
+        try:
+            responder.perform_handshake(right)
+        except Exception as exc:  # noqa: BLE001 (test must collect any exception)
+            outcome["responder_error"] = exc
+
+    tb = threading.Thread(target=run_responder)
+    tb.start()
+    left.sendall(frame)
+    tb.join(5)
+    try:
+        assert isinstance(outcome.get("responder_error"), SilentDropError)
+    finally:
+        force_close_socket(left)
+        force_close_socket(right)
     force_close_socket(left)
     force_close_socket(right)
 

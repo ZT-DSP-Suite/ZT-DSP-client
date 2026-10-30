@@ -67,11 +67,11 @@ def secure_random(n: int) -> bytes:
 
 
 def secure_zero(buf: Optional[Union[bytearray, memoryview]]) -> bool:
-    """Zero a mutable buffer in place and report whether it worked.
+    """Zero a mutable buffer in place. Best effort; the return value is diagnostic.
 
     Returns False for immutable objects such as ``bytes``: those cannot be
-    zeroed from Python, so the caller must not assume the copy is gone.
-    A failure to zero is never swallowed silently.
+    zeroed from Python. Callers are not required to check the result; a False
+    means the buffer was immutable and the caller must not assume it is gone.
     """
     if buf is None:
         return True

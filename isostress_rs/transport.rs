@@ -17,6 +17,7 @@
 //! - `SO_REUSEADDR` is not set on Windows (avoids grabbing ports
 //!   already bound by others); enabled on Unix only to reuse TIME_WAIT.
 
+use std::fmt;
 use std::io::{BufRead, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -38,7 +39,10 @@ pub const DEFAULT_CONNECT_RETRY_INTERVAL: f64 = 5.0;
 pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(30);
 
 /// Session configuration (the normalized product of the CLI).
-#[derive(Debug, Clone)]
+///
+/// No `Clone`: every consumer takes `&SessionConfig` and clones only the
+/// fields it needs, so no unnoticed PSK copies accumulate. The hand-written
+/// `Debug` never prints the PSK.
 pub struct SessionConfig {
     pub psk: Vec<u8>,
     pub params: Params,
@@ -51,6 +55,23 @@ pub struct SessionConfig {
     pub retry_interval: f64,
     /// Connection rate limit (connections per second; 0 = off)
     pub rate_limit: u32,
+}
+
+impl fmt::Debug for SessionConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SessionConfig")
+            .field("psk_len", &self.psk.len())
+            .field("params", &self.params)
+            .field("time_window", &self.time_window)
+            .field("padding", &self.padding)
+            .field("jitter", &self.jitter)
+            .field("silent_hold", &self.silent_hold)
+            .field("handshake_timeout", &self.handshake_timeout)
+            .field("retry_count", &self.retry_count)
+            .field("retry_interval", &self.retry_interval)
+            .field("rate_limit", &self.rate_limit)
+            .finish()
+    }
 }
 
 impl Default for SessionConfig {
@@ -501,5 +522,27 @@ pub fn run_session(role: Role, cfg: &SessionConfig, host: &str, port: u16) -> Re
     match role {
         Role::Responder => run_listen(cfg, host, port),
         Role::Initiator => run_connect(cfg, host, port),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SessionConfig;
+
+    /// SessionConfig carries the PSK. Its Debug output must show the key
+    /// length, never the key bytes; without this guard a future derive
+    /// or field addition would leak the PSK into one `{:?}` print.
+    #[test]
+    fn debug_output_contains_no_psk() {
+        let cfg = SessionConfig {
+            psk: vec![0x5A; 32],
+            ..SessionConfig::default()
+        };
+        let out = format!("{cfg:?}");
+        assert!(
+            !out.contains("5a5a") && !out.contains("5A5A"),
+            "PSK leaked via Debug: {out}"
+        );
+        assert!(out.contains("psk_len: 32"), "length stays visible: {out}");
     }
 }

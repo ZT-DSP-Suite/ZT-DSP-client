@@ -5,8 +5,8 @@ All notable changes to this repository are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-**Note on authority:** this file is a convenience record, not the source of truth. The
-authoritative change history is `git log`. If the two ever disagree, `git log` wins.
+**Note:** this file is a convenience record, not the source of truth. The change history
+lives in `git log`. If the two ever disagree, `git log` wins.
 
 ## [Unreleased]
 
@@ -53,6 +53,17 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   regenerated. Numbering restarts at 1.0.0 on 2026-10-29: development builds advance
   only the `-YYYYMMDD` segment; a numeric bump happens only on a wire-format change or
   a release.
+- **The Rust key-holding structs no longer expose themselves to `{:?}`.**
+  `SessionMaterial`, `SessionState` and `SessionConfig` carried derived
+  `Debug`, and the first and last also derived `Clone`. `SessionMaterial`
+  holds the session keys, `SessionState` holds both direction keys,
+  `SessionConfig` holds the PSK, and the CLI `Args` holds the `--psk`
+  string: one `{:?}` print of a live value emits key bytes, and a `Clone`
+  produces key copies outside the wipe paths. `SessionMaterial` and
+  `SessionConfig` now carry hand-written `Debug` impls that print lengths
+  only; `SessionState` and `Args` lost `Debug`; the two `Clone` derives
+  are gone. Two tests pin that the Debug output shows lengths and never
+  key bytes.
 - **Document version aligned to 1.0.0.** Both implementations now report
   `(docs 1.0.0)`; the program version stays 1.0.0. The three READMEs drop the
   deprecated hardware key-storage notices.
@@ -72,6 +83,17 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   can reach the modules directly.
 
 ### Fixed
+
+- **A legal JSON number crashed the responder outside the funnel.** `json.loads`
+  parses `1e999` to float infinity, and `int(inf)` raises `OverflowError`, which
+  neither `ISOSTRESSParams.from_wire` (`params.py`) nor the handshake's parameter
+  convergence (`handshake.py`) caught — a peer could produce a bare traceback
+  where Appendix H.4 demands a funnelled, silent rejection. Both capture tuples
+  now include `OverflowError`. The Rust path was audited and needs no change:
+  serde_json rejects out-of-range numbers at parse time and `coerce_u64`'s float
+  branch refuses non-finite values. Hostile-but-legal values are pinned by
+  `test_primitives.py`, a responder-level silent-drop test, and a Rust parser
+  rejection assertion.
 
 - **The `isostress-sv` wheel was unbuildable and under-declared.** Its pyproject
   listed a package directory that does not exist (no `package-dir`, so
