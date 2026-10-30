@@ -51,7 +51,7 @@ static ABOUT_LINE: LazyLock<String> = LazyLock::new(|| {
     name = "isostress-rs",
     version = VERSION_LINE.as_str(),
     about = ABOUT_LINE.as_str(),
-    after_help = "Examples:\n  # Listener (responder side)\n  isostress-rs --role listen --port 37291 --psk-file psk.txt\n  # Connector (initiator side)\n  isostress-rs --role connect --host <peer IP> --port 37291 --psk-file psk.txt\n  # PSK via environment variable\n  export ZT_DSP_PSK=$(isostress-rs pskgen)\n  isostress-rs --role listen --port 37291 --psk-env\n\nPSK security recommendations:\n  1. Prefer --psk-file (permissions 0600)\n  2. Next --psk-env (environment variable ZT_DSP_PSK)\n  3. Last --psk (insecure, visible in the process list)\n\nRunning with no arguments prints this usage. Extended modules (TCA/AORS/ocean mode etc.) are out of scope for this minimal distribution."
+    after_help = "Examples:\n  # Listener (responder side)\n  isostress-rs --role listen --port 37291 --psk-file psk.txt\n  # Connector (initiator side)\n  isostress-rs --role connect --host <peer IP> --port 37291 --psk-file psk.txt\n  # PSK via environment variable\n  export ISOSTRESS_PSK=$(isostress-rs pskgen)\n  isostress-rs --role listen --port 37291 --psk-env\n\nPSK security recommendations:\n  1. Prefer --psk-file (permissions 0600)\n  2. Next --psk-env (environment variable ISOSTRESS_PSK)\n  3. Last --psk (insecure, visible in the process list)\n\nRunning with no arguments prints this usage. Extended modules (TCA/AORS/ocean mode etc.) are out of scope for this minimal distribution."
 )]
 pub struct Cli {
     /// Role: listen = listener (responder), connect = connector (initiator)
@@ -69,7 +69,7 @@ pub struct Cli {
     /// PSK file path (recommended)
     #[arg(long)]
     psk_file: Option<String>,
-    /// Read from the ZT_DSP_PSK environment variable
+    /// Read from the ISOSTRESS_PSK environment variable
     #[arg(long, default_value_t = false)]
     psk_env: bool,
     /// Random-number length in bits (multiple of 8)
@@ -196,10 +196,10 @@ pub fn load_psk_from_file(path: &str) -> Result<Vec<u8>> {
     normalize_psk(text)
 }
 
-/// Load the PSK from the ZT_DSP_PSK environment variable.
+/// Load the PSK from the ISOSTRESS_PSK environment variable.
 /// The value is never opened as a path, even if it happens to be an existing file.
 pub fn load_psk_from_env() -> Result<Option<Vec<u8>>> {
-    match std::env::var("ZT_DSP_PSK") {
+    match std::env::var("ISOSTRESS_PSK") {
         Ok(raw) if !raw.is_empty() => Ok(Some(normalize_psk(&raw)?)),
         _ => Ok(None),
     }
@@ -331,7 +331,7 @@ fn run_main_flow(cli: &Cli) -> i32 {
         match load_psk_from_env() {
             Ok(Some(p)) => p,
             Ok(None) => {
-                eprintln!("[!] Environment variable ZT_DSP_PSK is not set");
+                eprintln!("[!] Environment variable ISOSTRESS_PSK is not set");
                 return 1;
             }
             Err(e) => {

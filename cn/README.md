@@ -75,8 +75,8 @@ isostress-py --role listen --port 37291 --psk-file psk.txt
 isostress-py --role connect --host <对端IP> --port 37291 --psk-file psk.txt
 
 # 环境变量方式（推荐用于脚本）
-set ZT_DSP_PSK=<64位hex>          # Windows
-export ZT_DSP_PSK=<64位hex>       # Linux/macOS
+set ISOSTRESS_PSK=<64位hex>          # Windows
+export ISOSTRESS_PSK=<64位hex>       # Linux/macOS
 isostress-py --role listen --port 37291 --psk-env
 ```
 
@@ -124,7 +124,7 @@ python -m pytest isostress_py/tests -q      # 从仓库根目录运行
 
 | 项 | 值 |
 |----|----|
-| 适用的文档版本 | `1.0.0`、`1.0.1` 与 `1.0.2`（可适用多个，见下「适用关系」） |
+| 适用的文档版本 | `1.0.0` |
 | 客户端版本 | `ISOSTRESS_PY-1.0.0-20261030`（本仓库 Python）、`ISOSTRESS_RS-1.0.0-20261030`（本仓库 Rust） |
 | 服务器版本 | `ISOSTRESS_SV-1.0.0-20261030`（本仓库 `isostress_sv_py/`） |
 | 程序标识 | `ISOSTRESS_PY-1.0.0-20261030`（前缀 `PY`） |
@@ -140,7 +140,7 @@ python -m pytest isostress_py/tests -q      # 从仓库根目录运行
 |----|------|
 | 格式 | `1.0.x`（主.次.修订） |
 | 载体 | 总指导文档（独立文档仓库 `isostress-docs` 中的 `cn/spec/isostress-1.0.0-总指导.md`） |
-| 现行值 | `1.0.2` |
+| 现行值 | `1.0.0` |
 | 修订位递增 | 澄清、勘误、可读性改进——不改变任何线上行为定义 |
 | 次位递增 | 新增附录或可选章节——不改变线上行为定义 |
 | 主位递增 | 协议核心语义重述（通常伴随客户端/服务器版本联动） |

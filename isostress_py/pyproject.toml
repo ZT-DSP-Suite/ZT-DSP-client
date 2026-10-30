@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "isostress-py"
 version = "1.0.1"
-description = "isostress (ISTS) (code 1.0.0; follows the isostress Protocol Master Guide, docs 1.0.2)"
+description = "isostress (ISTS) (code 1.0.0; follows the isostress Protocol Master Guide, docs 1.0.0)"
 requires-python = ">=3.10"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]

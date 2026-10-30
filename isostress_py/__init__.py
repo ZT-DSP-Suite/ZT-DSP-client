@@ -5,7 +5,7 @@
 """isostress (ISTS).
 
 Reference implementation (client version ISOSTRESS_PY-1.0.0, applying to the
-"isostress Protocol Master Guide", total-guide version 1.0.2).
+"isostress Protocol Master Guide", total-guide version 1.0.0).
 
 Programming usage:
 

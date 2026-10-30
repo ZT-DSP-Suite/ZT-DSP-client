@@ -7,7 +7,7 @@
 
 All scenarios bind to the 127.0.0.1 loopback only. Suites:
 
-  [interop]  with ISOSTRESS_PY-1.0.0 (the current Python reference implementation, conforming to docs 1.0.2)
+  [interop]  with ISOSTRESS_PY-1.0.0 (the current Python reference implementation, conforming to docs 1.0.0)
     A. Python listens (responder) ← Rust connects (initiator)   → expected: handshake + bidirectional message exchange
     B. Rust listens (responder)   ← Python connects (initiator) → expected: handshake + bidirectional message exchange
 
@@ -16,7 +16,7 @@ Usage:
 
 Default binary lookup order:
   1) --rust-bin argument
-  2) environment variable ZT_DSP_RS_BIN
+  2) environment variable ISOSTRESS_RS_BIN
   3) target/release/isostress-rs(.exe)   (standard build path inside this directory)
 """
 
@@ -42,7 +42,7 @@ def find_rust_bin(arg):
     candidates = []
     if arg:
         candidates.append(Path(arg))
-    env = os.environ.get("ZT_DSP_RS_BIN")
+    env = os.environ.get("ISOSTRESS_RS_BIN")
     if env:
         candidates.append(Path(env))
     exe = "isostress-rs.exe" if os.name == "nt" else "isostress-rs"
@@ -52,7 +52,7 @@ def find_rust_bin(arg):
             return c
     raise SystemExit(
         "[!] isostress-rs executable not found. Build it first and pass the path via "
-        "--rust-bin, or set the environment variable ZT_DSP_RS_BIN."
+        "--rust-bin, or set the environment variable ISOSTRESS_RS_BIN."
     )
 
 
@@ -218,7 +218,7 @@ def suite_interop(rust_bin, port):
 
     if ok:
         print("\n[[ok]] interop suite passed: ISOSTRESS_RS-1.0.0 and ISOSTRESS_PY-1.0.0 interoperate on the wire"
-              "(both conforming to docs 1.0.2)")
+              "(both conforming to docs 1.0.0)")
     else:
         print("\n[!] interop suite has failing scenarios")
     return ok

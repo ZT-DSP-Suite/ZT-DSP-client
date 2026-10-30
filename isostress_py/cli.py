@@ -105,8 +105,8 @@ def load_psk_from_file(path: str) -> bytes:
 
 
 def load_psk_from_env() -> Optional[bytes]:
-    """Load the PSK from the ZT_DSP_PSK environment variable."""
-    raw = os.environ.get("ZT_DSP_PSK")
+    """Load the PSK from the ISOSTRESS_PSK environment variable."""
+    raw = os.environ.get("ISOSTRESS_PSK")
     if raw:
         return normalize_psk(raw)
     return None
@@ -280,12 +280,12 @@ def build_parser() -> argparse.ArgumentParser:
   # Connector side (initiator)
   isostress-py --role connect --host <peer IP> --port 37291 --psk-file psk.txt
   # PSK via environment variable
-  export ZT_DSP_PSK=$(python -c "import secrets; print(secrets.token_hex(32))")
+  export ISOSTRESS_PSK=$(python -c "import secrets; print(secrets.token_hex(32))")
   isostress-py --role listen --port 37291 --psk-env
 
 PSK security recommendations:
   1. Prefer --psk-file (permissions 0600)
-  2. Then --psk-env (environment variable ZT_DSP_PSK)
+  2. Then --psk-env (environment variable ISOSTRESS_PSK)
   3. Last resort --psk (command line, insecure, visible in the process list)
 
 Running without arguments on a terminal starts the interactive wizard (README quick start);
@@ -313,7 +313,7 @@ License:
     parser.add_argument(
         "--psk-env",
         action="store_true",
-        help="Read from environment variable ZT_DSP_PSK",
+        help="Read from environment variable ISOSTRESS_PSK",
     )
     parser.add_argument(
         "--random-len",
@@ -379,7 +379,7 @@ License:
     parser.add_argument(
         "--no-banner",
         action="store_true",
-        help="Do not print the startup banner (also via ZT_DSP_NO_BANNER)",
+        help="Do not print the startup banner (also via ISOSTRESS_NO_BANNER)",
     )
     return parser
 
@@ -430,7 +430,7 @@ def main() -> None:
             # Non-interactive context (pipe, CI, IDE runner): print usage instead of hanging.
             parser.print_help()
             return
-        if not ns.no_banner and not os.environ.get("ZT_DSP_NO_BANNER"):
+        if not ns.no_banner and not os.environ.get("ISOSTRESS_NO_BANNER"):
             _emit_banner(sys.stderr)
         wizard = run_wizard()
         if wizard is None:
@@ -487,7 +487,7 @@ def main() -> None:
     elif ns.psk_env:
         psk_bytes = load_psk_from_env()
         if psk_bytes is None:
-            print("[!] Environment variable ZT_DSP_PSK is not set", file=sys.stderr)
+            print("[!] Environment variable ISOSTRESS_PSK is not set", file=sys.stderr)
             sys.exit(1)
     elif ns.psk:
         print("[!] Warning: command-line --psk is insecure", file=sys.stderr)

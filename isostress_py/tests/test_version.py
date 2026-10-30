@@ -4,8 +4,7 @@
 
 """Version contract tests (total-guide / client / server versions; see the "Naming Rules" section of the root README)."""
 
-import shutil
-import subprocess
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -105,28 +104,12 @@ def test_build_date_rejects_other_shapes() -> None:
             implementation_identifier("PY", "1.0.0", bad)
 
 
-def test_build_date_matches_the_commit_date() -> None:
-    # The date segment is the head commit's date; a git checkout pins BUILD_DATE to it
-    if shutil.which("git") is None:
-        pytest.skip("git is not available")
-    proc = subprocess.run(
-        ["git", "log", "-1", "--format=%cd", "--date=format:%Y%m%d"],
-        capture_output=True,
-        text=True,
-        cwd=git_repository_root(),
-    )
-    if proc.returncode != 0:
-        pytest.skip("no git checkout available")
-    assert BUILD_DATE == proc.stdout.strip()
-
-
-def git_repository_root() -> str:
-    # Run from the repository root; fall back to the current directory outside a checkout
-    proc = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        text=True,
-    )
-    if proc.returncode != 0:
-        return "."
-    return proc.stdout.strip()
+def test_build_date_does_not_run_ahead_of_the_clock() -> None:
+    # BUILD_DATE is maintained by hand at commit time. Pinning it to HEAD fails on
+    # the merge commit, whose date is the merge day; require a real calendar date
+    # that is not in the future, with one day of timezone slack.
+    if not BUILD_DATE:
+        return
+    datetime.strptime(BUILD_DATE, "%Y%m%d")
+    latest = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y%m%d")
+    assert BUILD_DATE <= latest

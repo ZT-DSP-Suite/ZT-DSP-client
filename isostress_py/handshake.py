@@ -33,7 +33,7 @@ import os
 import sys
 
 
-_DEBUG = os.environ.get("ZT_DSP_DEBUG") == "1"
+_DEBUG = os.environ.get("ISOSTRESS_DEBUG") == "1"
 
 
 def _diag(msg: str) -> None:

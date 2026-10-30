@@ -5,7 +5,7 @@
 //!
 //! Word-for-word aligned with the Python reference implementation `isostress_py/version.py`:
 //!
-//! - **total-guide version (docs version)**: `1.0.2`, used only for the revision count of the Master Guide
+//! - **total-guide version (docs version)**: `1.0.0`, used only for the revision count of the Master Guide
 //!   document itself; it does not participate in network communication;
 //! - **client version**: `ISOSTRESS_<prefix>-<major.minor.patch>`; this implementation is `ISOSTRESS_RS-1.0.0`
 //!   (language prefix RS = Rust);

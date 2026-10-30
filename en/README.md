@@ -75,8 +75,8 @@ isostress-py --role listen --port 37291 --psk-file psk.txt
 isostress-py --role connect --host <peer IP> --port 37291 --psk-file psk.txt
 
 # Environment variable approach (recommended for scripts)
-set ZT_DSP_PSK=<64-digit hex>          # Windows
-export ZT_DSP_PSK=<64-digit hex>       # Linux/macOS
+set ISOSTRESS_PSK=<64-digit hex>          # Windows
+export ISOSTRESS_PSK=<64-digit hex>       # Linux/macOS
 isostress-py --role listen --port 37291 --psk-env
 ```
 
@@ -124,7 +124,7 @@ and a real two-sided TCP flow.
 
 | Item | Value |
 |----|----|
-| applicable document version | 1.0.0, 1.0.1 and 1.0.2 (may be several; see "Applicability" below) |
+| applicable document version | 1.0.0 |
 | client version | ISOSTRESS_PY-1.0.0-20261030 (Python in this repository), ISOSTRESS_RS-1.0.0-20261030 (Rust in this repository) |
 | server version | ISOSTRESS_SV-1.0.0-20261030 (`isostress_sv_py/` in this repository) |
 | program ID | ISOSTRESS_PY-1.0.0-20261030 (prefix PY) |
@@ -140,7 +140,7 @@ and a real two-sided TCP flow.
 |----|------|
 | format | 1.0.x (major.minor.revision) |
 | carrier | the Master Guide document (`en/spec/isostress-1.0.0-Master_Guide.md` in the standalone document repository `isostress-docs`) |
-| current value | `1.0.2` |
+| current value | `1.0.0` |
 | revision digit increment | clarifications, errata, readability improvements — no change to any on-wire behavior definition |
 | minor digit increment | new appendix or optional section — no change to on-wire behavior definitions |
 | major digit increment | restatement of core protocol semantics (usually coupled with a client/server version increment) |

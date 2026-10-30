@@ -8,7 +8,7 @@ This project does not use a single abstract "code version". It has **three kinds
 versioned carrier**, and the relation between them is many-to-many:
 
 total-guide version (docs version)
-    The revision number of the Master Guide itself, written as `docs 1.0.2`.
+    The revision number of the Master Guide itself, written as `docs 1.0.0`.
     Used only for the revision counting of the document; it takes no part in network communication.
 
 client version

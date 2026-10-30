@@ -12,7 +12,7 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Added
 
-- **isostress 1.0.2 specification additions (normative).** The 1.0.2 working tree adds a
+- **isostress 1.0.0 specification additions (normative).** The 1.0.0 working tree adds a
   normative resource bound to H.3 -- per held connection: hold duration, concurrent
   held-connection count, and buffered-byte bound; the hold duration range is `(0, 15s]`
   and the 15 s ceiling cannot be relaxed -- plus three matching `C.1` checklist items
@@ -40,6 +40,11 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
 
 ### Changed
 
+- **Environment variables renamed.** The four environment variables now use the
+  `ISOSTRESS_` prefix: `ISOSTRESS_PSK`, `ISOSTRESS_NO_BANNER`, `ISOSTRESS_DEBUG`
+  and `ISOSTRESS_RS_BIN`. Scripts and CI jobs that export the retired prefix must
+  switch; the old names are no longer read. Breaking for tooling only, not for the
+  wire format.
 - **Project renamed to isostress (ISTS); numbering reset.** The retired name is gone
   from modules, packages, identifiers and prose: `isostress_py` / `isostress_rs` /
   `isostress_sv_py`, packages `isostress-py` / `isostress-rs`, identifiers
@@ -48,8 +53,8 @@ authoritative change history is `git log`. If the two ever disagree, `git log` w
   regenerated. Numbering restarts at 1.0.0 on 2026-10-29: development builds advance
   only the `-YYYYMMDD` segment; a numeric bump happens only on a wire-format change or
   a release.
-- **Document version aligned to 1.0.2.** Both implementations now report
-  `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
+- **Document version aligned to 1.0.0.** Both implementations now report
+  `(docs 1.0.0)`; the program version stays 1.0.0. The three READMEs drop the
   deprecated hardware key-storage notices.
 - Development builds now carry the build-date segment in the program identifier
   (`ISOSTRESS_PY-1.0.0-20261030`, `ISOSTRESS_RS-1.0.0-20261030`, `ISOSTRESS_SV-1.0.0-20261030`).
