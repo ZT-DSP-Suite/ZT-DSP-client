@@ -32,7 +32,8 @@ use crate::frames::{
 use crate::handshake::{SessionMaterial, INFO_EK_ROTATE};
 use crate::params::{MAX_PAD, MAX_PLAINTEXT};
 
-#[derive(Debug)]
+// No Debug on this state: it holds both direction keys, and a future
+// `{:?}` on it would print them. Redact by hand if formatting is needed.
 struct SessionState {
     session_id: Option<[u8; SESSION_ID_LEN]>,
     send_ek: Option<Vec<u8>>,

@@ -28,6 +28,17 @@ lives in `git log`. If the two ever disagree, `git log` wins.
 
 ### Changed
 
+- **The Rust key-holding structs no longer expose themselves to `{:?}`.**
+  `SessionMaterial`, `SessionState` and `SessionConfig` carried derived
+  `Debug`, and the first and last also derived `Clone`. `SessionMaterial`
+  holds the session keys, `SessionState` holds both direction keys,
+  `SessionConfig` holds the PSK, and the CLI `Args` holds the `--psk`
+  string: one `{:?}` print of a live value emits key bytes, and a `Clone`
+  produces key copies outside the wipe paths. `SessionMaterial` and
+  `SessionConfig` now carry hand-written `Debug` impls that print lengths
+  only; `SessionState` and `Args` lost `Debug`; the two `Clone` derives
+  are gone. Two tests pin that the Debug output shows lengths and never
+  key bytes.
 - **Document version aligned to 1.0.2.** Both implementations now report
   `(docs 1.0.2)`; the program version stays 1.0.0. The three READMEs drop the
   deprecated hardware key-storage notices.
