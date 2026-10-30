@@ -457,6 +457,10 @@ mod tests {
         assert!(Params::from_value(&v).is_err());
         let v: Value = serde_json::from_str(r#"{"key_len": 999}"#).unwrap();
         assert!(Params::from_value(&v).is_err());
+        // Out-of-range numbers (1e999) are rejected by the JSON parser itself;
+        // the float branch of coerce_u64 refuses non-finite values as a second
+        // guard. Peer-controlled overflow has no path to a panic here.
+        assert!(serde_json::from_str::<Value>(r#"{"random_len": 1e999}"#).is_err());
         // Numeric string convergence (aligned with Python int() behavior)
         let v: Value = serde_json::from_str(r#"{"random_len": "512", "window": 45}"#).unwrap();
         let ok = Params::from_value(&v).unwrap();

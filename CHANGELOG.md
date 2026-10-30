@@ -44,6 +44,17 @@ lives in `git log`. If the two ever disagree, `git log` wins.
 
 ### Fixed
 
+- **A legal JSON number crashed the responder outside the funnel.** `json.loads`
+  parses `1e999` to float infinity, and `int(inf)` raises `OverflowError`, which
+  neither `ZTDSPParams.from_wire` (`params.py`) nor the handshake's parameter
+  convergence (`handshake.py`) caught — a peer could produce a bare traceback
+  where Appendix H.4 demands a funnelled, silent rejection. Both capture tuples
+  now include `OverflowError`. The Rust path was audited and needs no change:
+  serde_json rejects out-of-range numbers at parse time and `coerce_u64`'s float
+  branch refuses non-finite values. Hostile-but-legal values are pinned by
+  `test_primitives.py`, a responder-level silent-drop test, and a Rust parser
+  rejection assertion.
+
 - **The `zt-dsp-sv` wheel was unbuildable and under-declared.** Its pyproject
   listed a package directory that does not exist (no `package-dir`, so
   `pip wheel` failed with "package directory 'zt_dsp_sv_py' does not exist"),
